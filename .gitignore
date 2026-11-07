@@ -41,3 +41,6 @@ backend/data/runs/
 # 유사 반응 인덱스 (112MB) — scripts/build_analog_index.py가 ORD에서 다시 만든다.
 # 측정 결과(analog_validation.json)는 작아서 커밋한다. metrics.json과 같은 이유다.
 backend/data/analogs/
+
+# 가격 임포트가 남기는 백업 (git이 이미 이전 값을 갖고 있다)
+*.csv.bak

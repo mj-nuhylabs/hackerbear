@@ -81,6 +81,8 @@ export async function getCost(route, { targetG, purification }) {
               pack_price: l.pack_price,
               currency: l.currency,
               supplier: l.supplier,
+              catalog_no: l.catalog_no,
+              url: l.url,
               as_of_date: l.as_of_date,
               mock: l.price_is_mock,
             }

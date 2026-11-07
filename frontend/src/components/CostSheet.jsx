@@ -1,9 +1,37 @@
 import { DASH, grams, mmol, usd } from '../lib/format'
 import { Mock, Mol } from './bits'
+import './cost.css'
+
+// Where one row's price came from. A real price links to the page it was read from, so the number can be checked;
+// an example price says so instead. Those are the only two cases — a price with no source does not get in
+// (scripts/import_prices.py refuses it).
+function PriceSource({ price }) {
+  if (price.mock) {
+    return (
+      <div className="price-src">
+        <Mock what="Price" />
+      </div>
+    )
+  }
+  const label = [price.supplier, price.catalog_no].filter(Boolean).join(' ')
+  return (
+    <div className="price-src">
+      {price.url ? (
+        <a href={price.url} target="_blank" rel="noreferrer noopener" title={`${label} — list price read ${price.as_of_date}`}>
+          {label || 'source'}
+        </a>
+      ) : (
+        <span className="muted">{label}</span>
+      )}
+    </div>
+  )
+}
 
 export default function CostSheet({ cost, targetG, setTargetG, purification, setPurification }) {
   const { lines, totals } = cost
-  const asOf = lines.find((l) => l.price)?.price.as_of_date
+  const priced = lines.filter((l) => l.price)
+  const real = priced.filter((l) => !l.price.mock)
+  const asOf = real[0]?.price.as_of_date ?? priced[0]?.price.as_of_date
   return (
     <section className="panel cost" aria-labelledby="cost-title">
       <div className="panel-head">
@@ -87,7 +115,16 @@ export default function CostSheet({ cost, targetG, setTargetG, purification, set
                 <td className="r num">{l.compound.mw != null ? l.compound.mw.toFixed(2) : DASH}</td>
                 <td className="r num">{mmol(l.n)} mmol</td>
                 <td className="r num">{grams(l.massG)}</td>
-                <td className="r num">{l.price ? `${usd(l.price.price_per_g)}/g` : DASH}</td>
+                <td className="r num">
+                  {l.price ? (
+                    <>
+                      {usd(l.price.price_per_g)}/g
+                      <PriceSource price={l.price} />
+                    </>
+                  ) : (
+                    DASH
+                  )}
+                </td>
                 <td className="r num">{usd(l.consumption)}</td>
                 <td className="r num">{l.price ? `${l.packs} × ${l.price.pack_size_g} g` : DASH}</td>
                 <td className="r num strong">{usd(l.purchase)}</td>
@@ -120,9 +157,20 @@ export default function CostSheet({ cost, targetG, setTargetG, purification, set
       </div>
 
       <p className="cost-foot muted small">
-        Unit and pack prices are <Mock what="Prices" /> values {asOf && `(snapshot dated ${asOf})`}. Yield uses the
-        figure reported for the step where there is one, else the median of its closest recorded reactions, else an
-        assumed 70% — each step says which. Every equivalent is assumed to be 1.0.
+        {real.length > 0 && (
+          <>
+            {real.length} of {priced.length} prices are supplier list prices read on {asOf}; each links to the page it
+            came from. The pack is the smallest one at or above 1 g, and the unit price is that same pack&apos;s, so
+            the two totals differ only by what is left in the bottle.{' '}
+          </>
+        )}
+        {real.length < priced.length && (
+          <>
+            The rest are <Mock what="Prices" /> values.{' '}
+          </>
+        )}
+        Yield uses the figure reported for the step where there is one, else the median of its closest recorded
+        reactions, else an assumed 70% — each step says which. Every equivalent is assumed to be 1.0.
       </p>
     </section>
   )

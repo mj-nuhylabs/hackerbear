@@ -47,6 +47,10 @@ def table() -> dict[str, dict]:
                 "pack_price": _num(row.get("pack_price")),
                 "currency": row.get("currency") or None,
                 "supplier": row.get("supplier") or None,
+                # 출처. 가격은 숫자고, 숫자에는 출처가 있어야 한다 (절대 규칙 2).
+                # 예시 행에는 비어 있고, 실제 행에는 읽어 온 제품 페이지 주소가 들어 있다
+                "catalog_no": row.get("catalog_no") or None,
+                "url": row.get("url") or None,
                 "as_of_date": row.get("as_of_date") or None,
                 "is_mock": str(row.get("is_mock", "")).strip().lower() in ("1", "true", "yes"),
             }

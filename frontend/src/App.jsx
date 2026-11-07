@@ -190,7 +190,8 @@ function RouteList({ routes, costs, routeId, onPick, targetG, search }) {
         })}
       </ul>
       <p className="muted small">
-        Costs use <Mock what="Prices" /> prices.
+        Costs use supplier list prices where a material has one, and <Mock what="Prices" /> values for the rest. The
+        bill of materials says which is which, per material.
       </p>
     </section>
   )

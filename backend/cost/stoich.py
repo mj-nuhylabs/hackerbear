@@ -118,6 +118,8 @@ def bom(steps: list[dict], leaf_materials: list[dict], target_g: float,
             "purchase_cost": purchase,
             "currency": (p or {}).get("currency"),
             "supplier": (p or {}).get("supplier"),
+            "catalog_no": (p or {}).get("catalog_no"),
+            "url": (p or {}).get("url"),
             "as_of_date": (p or {}).get("as_of_date"),
             "price_is_mock": bool((p or {}).get("is_mock")),
         })
