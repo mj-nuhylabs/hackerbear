@@ -45,9 +45,19 @@ function Explain({ route, stepIndex }) {
 
   async function run() {
     setState({ status: 'loading' })
-    const data = await api.explain(route, stepIndex)
-    const text = [data.why_works, data.why_fails, data.next_experiment].join(' ')
-    setState({ status: 'done', data, guard: checkText(text) })
+    try {
+      const data = await api.explain(route, stepIndex)
+      // The backend says why when it wrote nothing (no API key, or the guard discarded the text). Show that reason,
+      // not empty columns under a "guard passed" line.
+      if (data.available === false) {
+        setState({ status: 'unavailable', reason: data.reason })
+        return
+      }
+      const text = [data.why_works, data.why_fails, data.next_experiment].join(' ')
+      setState({ status: 'done', data, guard: checkText(text) })
+    } catch (e) {
+      setState({ status: 'unavailable', reason: e.message })
+    }
   }
 
   return (
@@ -63,6 +73,7 @@ function Explain({ route, stepIndex }) {
           </button>
         )}
       </div>
+      {state.status === 'unavailable' && <p className="muted">No explanation was written: {state.reason}</p>}
       {state.status === 'done' && !state.guard.ok && (
         <p className="guard guard-fail">Guard blocked this: the text contains {state.guard.hits.join(', ')}.</p>
       )}
@@ -248,11 +259,15 @@ export default function StepDetail({ route, stepIndex, onSelect, scale, targetG,
 
       <div className="gaps">
         <h3>Substrate classes this template has not been tried on {isMock('gaps') && <Mock what="Gaps" />}</h3>
-        <ul className="chips">
-          {[...new Set(s.gaps)].map((g) => (
-            <li key={g}>{g}</li>
-          ))}
-        </ul>
+        {s.gaps?.length ? (
+          <ul className="chips">
+            {[...new Set(s.gaps)].map((g) => (
+              <li key={g}>{g}</li>
+            ))}
+          </ul>
+        ) : (
+          <p className="muted">{DASH} Not computed for this step yet.</p>
+        )}
       </div>
     </section>
   )

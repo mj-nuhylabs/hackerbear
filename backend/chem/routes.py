@@ -48,16 +48,17 @@ def _walk(node: dict, steps: list, leaves: dict):
     """AiZynth route dict(타겟→말단)를 후위 순회 → steps는 출발물질→타겟 위상 순서."""
     if node.get("type") != "mol":
         return
+    # SVG는 UI가 스킴·스텝·BOM에 그대로 꽂는다 (RDKit 렌더)
     if not node.get("children"):
-        c = describe(node["smiles"], svg=False)
+        c = describe(node["smiles"])
         leaves[c["smiles"]] = {**c, "in_stock": bool(node.get("in_stock"))}
         return
     rxn = node["children"][0]
     for child in rxn.get("children", []):
         _walk(child, steps, leaves)
     md = rxn.get("metadata", {}) or {}
-    reactants = [describe(m["smiles"], svg=False) for m in rxn.get("children", [])]
-    product = describe(node["smiles"], svg=False)
+    reactants = [describe(m["smiles"]) for m in rxn.get("children", [])]
+    product = describe(node["smiles"])
     steps.append({
         "rxn_smiles": ".".join(r["smiles"] for r in reactants) + ">>" + product["smiles"],
         "template_id": md.get("template_hash"),
@@ -77,7 +78,8 @@ def _finish_steps(steps: list[dict]) -> list[dict]:
         tier = decide(has_corpus_record=bool(records),
                       precedent_count=s["precedent_count"],
                       plausibility_calibrated=cal)
-        lit_yield = provenance.reported_yield(records)
+        lit_pct = provenance.reported_yield(records)              # 레코드의 퍼센트 값
+        lit_yield = lit_pct / 100.0 if lit_pct is not None else None  # assumed_yield·UI와 같은 0–1 비율
         out.append({
             "rxn_smiles": s["rxn_smiles"],
             "template_id": s["template_id"],
@@ -86,9 +88,10 @@ def _finish_steps(steps: list[dict]) -> list[dict]:
             "product": s["product"],
             "evidence": provenance.evidence_from(records, s["precedent_count"], tier),
             "conditions": provenance.conditions_from(records),
+            "procedure": provenance.procedure_from(records, [r["smiles"] for r in s["reactants"]]),
             "reported_yield": lit_yield,
             # 계산에 쓰는 값. 문헌값이 있으면 그것, 없으면 가정값이고 플래그로 표시한다
-            "assumed_yield": (lit_yield / 100.0) if lit_yield is not None else ASSUMED_YIELD,
+            "assumed_yield": lit_yield if lit_yield is not None else ASSUMED_YIELD,
             "yield_is_assumed": lit_yield is None,
             "plausibility_raw": raw,
             "plausibility_calibrated": cal,

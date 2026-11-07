@@ -1,6 +1,5 @@
-import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react'
+import { useEffect, useRef, useState, useSyncExternalStore } from 'react'
 import * as api from './api'
-import { computeCost } from './lib/cost'
 import { usd } from './lib/format'
 import { tierCounts } from './lib/route'
 import { CopyText, Mock, Mol, TIER_INFO, TierBadge } from './components/bits'
@@ -145,7 +144,7 @@ function RouteList({ routes, costs, routeId, onPick, targetG, search }) {
     <section className="panel routes" aria-labelledby="routes-title">
       <div className="panel-head">
         <h2 id="routes-title">{routes.length} routes</h2>
-        <p className="muted small">AiZynthFinder searched for {search.search_time_s} s. Highest score first.</p>
+        <p className="muted small">AiZynthFinder searched for {search?.search_time_s ?? '—'} s. Highest score first.</p>
       </div>
       <ul className="route-list">
         {routes.map((r, i) => {
@@ -255,7 +254,8 @@ export default function App() {
   const [runKind, setRunKind] = useState(kind)
   const [reading, setReading] = useState(null) // Octet's reading of the typed text: { text, ...readText() }
   const runId = useRef(0)
-  const prices = api.getPrices()
+  // route id → cost (undefined while it is worked out, null if /cost failed)
+  const [costs, setCosts] = useState({})
 
   // extra: { inchikey, source } for a structure Octet drew or read (api.resolve matches the mock by InChIKey).
   async function run(q, k = kind, extra = {}) {
@@ -263,6 +263,7 @@ export default function App() {
     setError(null)
     setTarget(null)
     setRoutes([])
+    setCosts({}) // route ids repeat across searches (R1, R2, …), so an old cost must not show on a new route
     let query = q
     let as = k === 'auto' ? api.detectKind(q) : k
     let more = extra
@@ -279,6 +280,9 @@ export default function App() {
           as = 'smiles'
           more = {
             inchikey: read.inchikey,
+            // Octet read this name, so /resolve only ever sees the SMILES and answers with no name of its own.
+            // Keep what the chemist typed (Octet's corrected spelling where it fixed one) as the card's heading.
+            name: read.shown || q.trim(),
             source: read.corrected
               ? `Octet’s offline name reader, spelling fixed to “${read.shown}”`
               : `Octet’s offline name reader (${read.kind})`,
@@ -288,10 +292,12 @@ export default function App() {
       }
       const t = await api.resolve(query, query === q ? k : 'smiles', more)
       if (id !== runId.current) return
-      setTarget({ ...t, source: more.source })
+      setTarget({ ...t, name: t.name ?? more.name ?? null, source: more.source })
       setPhase('searching')
       const res = await api.getRoutes(t.smiles, 4)
       if (id !== runId.current) return
+      // The search stats come with the routes from the backend; the mock carries them on the target.
+      if (res.search) setTarget((cur) => ({ ...cur, search: res.search }))
       setRoutes(res.routes)
       pick(res.routes[0])
       setPhase('ready')
@@ -328,10 +334,28 @@ export default function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  const costs = useMemo(
-    () => Object.fromEntries(routes.map((r) => [r.id, computeCost(r, { targetG, purification, prices })])),
-    [routes, targetG, purification, prices],
-  )
+  // Every route's bill of materials, from POST /cost. Debounced, since the purification slider fires on every tick.
+  useEffect(() => {
+    if (!routes.length) return
+    let live = true
+    const t = setTimeout(
+      () => {
+        Promise.all(
+          routes.map((r) =>
+            api.getCost(r, { targetG, purification }).then(
+              (c) => [r.id, c],
+              () => [r.id, null],
+            ),
+          ),
+        ).then((pairs) => live && setCosts(Object.fromEntries(pairs)))
+      },
+      api.USE_MOCK ? 0 : 200,
+    )
+    return () => {
+      live = false
+      clearTimeout(t)
+    }
+  }, [routes, targetG, purification])
   const route = routes.find((r) => r.id === routeId)
   const routeIndex = routes.findIndex((r) => r.id === routeId)
   const detected = kind === 'auto' ? api.detectKind(query) : null
@@ -442,8 +466,18 @@ export default function App() {
             ))}
           </div>
           <p className="mock-note small">
-            Mockup. Structures, masses, routes and precedent counts are computed with RDKit and AiZynthFinder; values
-            tagged <Mock /> are placeholders.
+            {api.USE_MOCK ? (
+              <>
+                Mockup. Structures, masses, routes and precedent counts are computed with RDKit and AiZynthFinder;
+                values tagged <Mock /> are placeholders.
+              </>
+            ) : (
+              <>
+                Live. Routes and precedent counts come from AiZynthFinder, records and procedures from ORD, structures
+                and masses from RDKit, and scores from our plausibility model. Values tagged <Mock /> are
+                placeholders.
+              </>
+            )}
           </p>
         </div>
 
@@ -499,13 +533,24 @@ export default function App() {
                 onOpenInDraw={openDraw}
               />
 
-              <CostSheet
-                cost={costs[route.id]}
-                targetG={targetG}
-                setTargetG={setTargetG}
-                purification={purification}
-                setPurification={setPurification}
-              />
+              {costs[route.id] ? (
+                <CostSheet
+                  cost={costs[route.id]}
+                  targetG={targetG}
+                  setTargetG={setTargetG}
+                  purification={purification}
+                  setPurification={setPurification}
+                />
+              ) : (
+                <section className="panel cost" aria-labelledby="cost-title">
+                  <h2 id="cost-title">Bill of materials</h2>
+                  <p className="muted">
+                    {costs[route.id] === null
+                      ? 'The bill of materials could not be computed. If the backend restarted, run the search again.'
+                      : 'Working out the bill of materials…'}
+                  </p>
+                </section>
+              )}
 
               <ModelPanel />
             </div>

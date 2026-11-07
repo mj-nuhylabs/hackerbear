@@ -1,8 +1,9 @@
 // API 계층. USE_MOCK=false로 바꾸면 FastAPI(/api → :8000)로 붙는다.
 // 목업 응답은 API 계약(CLAUDE_HACKFNM.md)과 같은 모양을 유지한다.
 import demo from './mock/demo.json'
+import { computeCost } from './lib/cost'
 
-export const USE_MOCK = true
+export const USE_MOCK = false
 export const ANALOGOUS_MIN = demo.analogous_min_precedents
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
@@ -61,8 +62,48 @@ export async function getRoutes(smiles, maxDepth = 4) {
   return { routes: t.routes.map(hydrateRoute) }
 }
 
-// STUB: 실제로는 POST /cost가 가격 스냅샷(data/prices.csv)으로 계산해 돌려준다
-export const getPrices = () => demo.prices
+// 경로 하나의 BOM과 합계. 실제로는 POST /cost(backend/cost/stoich.py)가 data/prices.csv로 계산하고, 여기서는 UI가
+// 쓰는 모양으로 옮기기만 한다. 목업에서는 같은 수식의 JS 구현(lib/cost.js)을 demo.json 가격으로 돌린다.
+export async function getCost(route, { targetG, purification }) {
+  if (USE_MOCK) return computeCost(route, { targetG, purification, prices: demo.prices })
+  const c = await post('/cost', { route_id: route.id, target_g: targetG, purification_factor: purification })
+  const leaves = new Map(route.leaf_materials.map((m) => [m.smiles, m]))
+  return {
+    lines: c.bom.map((l) => ({
+      compound: leaves.get(l.smiles) ?? { smiles: l.smiles, mw: l.mw, name: l.name, svg: null },
+      n: l.moles,
+      massG: l.mass_g,
+      price:
+        l.price_per_g != null
+          ? {
+              price_per_g: l.price_per_g,
+              pack_size_g: l.pack_size_g,
+              pack_price: l.pack_price,
+              currency: l.currency,
+              supplier: l.supplier,
+              as_of_date: l.as_of_date,
+              mock: l.price_is_mock,
+            }
+          : null,
+      consumption: l.consumption_cost,
+      packs: l.packs,
+      purchase: l.purchase_cost,
+    })),
+    stepScale: c.steps.map((s) => ({
+      nRxn: s.n_rxn,
+      yield: s.yield,
+      yieldSource: s.yield_is_assumed ? 'assumed' : 'reported',
+    })),
+    catalysts: [],
+    totals: {
+      consumption: c.totals.consumption_cost,
+      purchase: c.totals.purchase_cost,
+      unpriced: c.totals.unpriced_materials,
+      timeH: c.totals.reaction_time_h,
+      untimedSteps: c.totals.steps_without_time,
+    },
+  }
+}
 
 // 목업 설명문. 실제로는 llm/explain.py가 검색된 레코드만 입력으로 받아 쓰고, 가드를 통과해야 나온다.
 const EXPLAIN = {

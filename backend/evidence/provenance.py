@@ -68,6 +68,20 @@ def match(reactants: list[str], product: str) -> list[dict]:
     return sorted(hits, key=_completeness, reverse=True)
 
 
+def procedure_from(records: list[dict], reactants: list[str]) -> dict | None:
+    """절차 패널에 띄울 레코드 하나 — 가장 완전한 것, 원문 그대로. 없으면 None.
+
+    match()를 통과한 레코드만 들어오므로 짝은 둘뿐이다: 반응물 집합이 같으면 exact, 레코드가
+    염·시약을 더 적었으면 covered.
+    """
+    if not records:
+        return None
+    r = records[0]
+    want = {c for c in (canon(x) for x in reactants) if c}
+    have = {c for c in (canon(x) for x in (r.get("reactants") or [])) if c}
+    return {**r, "match": "exact" if have == want else "covered"}
+
+
 def evidence_from(records: list[dict], precedent_count: int, tier: str) -> dict:
     """Evidence 블록. source_ids·url은 레코드에 있는 것만."""
     return {

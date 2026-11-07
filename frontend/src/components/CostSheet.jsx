@@ -84,7 +84,7 @@ export default function CostSheet({ cost, targetG, setTargetG, purification, set
                     <code className="bom-smiles">{l.compound.smiles}</code>
                   </div>
                 </td>
-                <td className="r num">{l.compound.mw.toFixed(2)}</td>
+                <td className="r num">{l.compound.mw != null ? l.compound.mw.toFixed(2) : DASH}</td>
                 <td className="r num">{mmol(l.n)} mmol</td>
                 <td className="r num">{grams(l.massG)}</td>
                 <td className="r num">{l.price ? `${usd(l.price.price_per_g)}/g` : DASH}</td>

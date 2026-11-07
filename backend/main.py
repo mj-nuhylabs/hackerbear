@@ -2,12 +2,16 @@
 import json
 from pathlib import Path
 
+from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
 
 from chem.image_routes import router as image_router
 from chem.resolve import ResolveError, resolve as resolve_query
+
+# 저장소 루트의 .env (ANTHROPIC_API_KEY). 셸에 이미 있는 값은 덮어쓰지 않는다
+load_dotenv(Path(__file__).resolve().parents[1] / ".env")
 
 DATA = Path(__file__).resolve().parent / "data"
 

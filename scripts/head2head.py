@@ -48,17 +48,22 @@ for name, path in (("ord_all (1.33M)", f"{D}/model.pkl"),
     auc_clean = roc_auc_score(yte[clean], p[clean])
     print(f"  {name:18s} ROC-AUC {auc:.4f}   (excluding rows it saw: {auc_clean:.4f}, n={clean.sum():,})")
 
-# per corpus, to see where the difference lives
-corp = ds.corpus.to_numpy()[te]
-print("\nby corpus (big model):")
+# per reaction class, on the SAME rows — a headline average can hide a class going backwards
 with open(f"{D}/model.pkl", "rb") as f:
-    big = pickle.load(f)["model"]
-pb = big.predict_proba(Xte)[:, 1]
+    pb = pickle.load(f)["model"].predict_proba(Xte)[:, 1]
 with open(f"{D}/runs/uspto50k/model.pkl", "rb") as f:
-    small = pickle.load(f)["model"]
-ps = small.predict_proba(Xte)[:, 1]
-for c in np.unique(corp):
-    m_ = corp == c
-    if len(np.unique(yte[m_])) == 2:
-        print(f"  {c:10s} n={m_.sum():>7,}  big {roc_auc_score(yte[m_], pb[m_]):.4f}  "
-              f"small {roc_auc_score(yte[m_], ps[m_]):.4f}")
+    ps = pickle.load(f)["model"].predict_proba(Xte)[:, 1]
+
+# ORD rows carry no class label, so they all sit in class 0
+NAMES = {0: "ORD (unlabelled)", 1: "heteroatom alkylation/arylation", 2: "acylation",
+         3: "C-C bond formation", 4: "heterocycle formation", 5: "protection",
+         6: "deprotection", 7: "reduction", 8: "oxidation",
+         9: "functional group interconversion", 10: "functional group addition"}
+cls = ds.rxn_class.to_numpy()[te]
+print(f"\nsame rows, by reaction class:\n{'class':<34}{'n':>9}{'old':>9}{'new':>9}{'diff':>9}")
+for c in sorted(set(cls)):
+    m_ = cls == c
+    if len(np.unique(yte[m_])) < 2:
+        continue
+    o, n_ = roc_auc_score(yte[m_], ps[m_]), roc_auc_score(yte[m_], pb[m_])
+    print(f"{NAMES.get(c, str(c)):<34}{m_.sum():>9,}{o:>9.4f}{n_:>9.4f}{n_ - o:>+9.4f}")

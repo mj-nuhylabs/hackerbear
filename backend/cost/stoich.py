@@ -138,6 +138,11 @@ def bom(steps: list[dict], leaf_materials: list[dict], target_g: float,
             "reaction_time_h": total_h if steps_with_time else None,
             "steps_without_time": len(steps) - len(steps_with_time),
         },
+        # 스텝별 규모 (steps와 같은 순서). 생성물을 아무도 안 쓰는 스텝은 n_rxn이 None이다
+        "steps": [{"n_rxn": roll["n_rxn"].get(i),
+                   "yield": float(s.get("assumed_yield") or 0.0) or None,
+                   "yield_is_assumed": bool(s.get("yield_is_assumed"))}
+                  for i, s in enumerate(steps)],
         "assumptions": {
             "purification_factor": purification_factor,
             "equivalents": DEFAULT_EQUIV,

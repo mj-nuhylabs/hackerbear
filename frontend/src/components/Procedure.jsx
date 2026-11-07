@@ -94,8 +94,9 @@ export default function Procedure({ procedure }) {
           <h3>Procedure</h3>
         </div>
         <p className="proc-none">
-          No record in the corpus makes this compound, so there is no written procedure to show. Nothing here is filled
-          in with a typical or estimated value.
+          No matching ORD record was found for this step, so there is no written procedure to show. For now the lookup
+          covers only the products of the example routes, so for other molecules this does not mean the corpus has
+          none. Nothing here is filled in with a typical or estimated value.
         </p>
       </div>
     )
