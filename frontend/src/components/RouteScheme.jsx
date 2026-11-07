@@ -8,17 +8,12 @@ function Arrow({ step, index, side, selected, onSelect }) {
       type="button"
       className={`arrow-cell ${selected ? 'is-selected' : ''}`}
       aria-pressed={selected}
-      aria-label={`단계 ${index + 1} 자세히 보기`}
+      aria-label={`Show details for step ${index + 1}`}
       onClick={() => onSelect(index)}
     >
       <span className="arrow-side">
         {side.map((r) => (
-          <Mol
-            key={r.smiles}
-            compound={r}
-            size="xs"
-            caption={r.fromStep != null ? `단계 ${r.fromStep + 1} 생성물` : null}
-          />
+          <Mol key={r.smiles} compound={r} size="xs" caption={r.fromStep != null ? `from step ${r.fromStep + 1}` : null} />
         ))}
       </span>
       <svg className="arrow-line" viewBox="0 0 120 12" preserveAspectRatio="none" aria-hidden="true">
@@ -26,7 +21,7 @@ function Arrow({ step, index, side, selected, onSelect }) {
         <path d="M104 1 L118 6 L104 11 Z" />
       </svg>
       <span className="arrow-label">
-        <span className="arrow-step">단계 {index + 1}</span>
+        <span className="arrow-step">Step {index + 1}</span>
         <TierBadge tier={step.evidence.tier} size="sm" />
       </span>
     </button>
@@ -50,8 +45,8 @@ export default function RouteScheme({ route, targetName, selectedStep, onSelect 
 
   return (
     <div className="scheme-wrap" ref={wrapRef}>
-      <div className="scheme" role="group" aria-label="반응 스킴">
-        <Mol compound={start} size="md" caption="출발물질" />
+      <div className="scheme" role="group" aria-label="Reaction scheme">
+        <Mol compound={start} size="md" caption="starting material" />
         {cells.map((c) => (
           <div className="scheme-pair" key={c.stepIndex}>
             <Arrow
@@ -64,14 +59,14 @@ export default function RouteScheme({ route, targetName, selectedStep, onSelect 
             <Mol
               compound={c.product}
               size="md"
-              caption={c.stepIndex === last ? targetName : `중간체 ${c.stepIndex + 1}`}
+              caption={c.stepIndex === last ? targetName : `intermediate ${c.stepIndex + 1}`}
             />
           </div>
         ))}
       </div>
       {branches.length > 0 && (
         <div className="scheme-branches">
-          <p className="branch-note">주 사슬에 합류하는 분기 단계</p>
+          <p className="branch-note">Branch steps feeding the main chain</p>
           {branches.map((b) => (
             <div className="scheme branch" key={b.stepIndex}>
               <div className="branch-inputs">
@@ -89,7 +84,7 @@ export default function RouteScheme({ route, targetName, selectedStep, onSelect 
                 selected={selectedStep === b.stepIndex}
                 onSelect={onSelect}
               />
-              <Mol compound={b.product} size="sm" caption={`중간체 ${b.stepIndex + 1}`} />
+              <Mol compound={b.product} size="sm" caption={`intermediate ${b.stepIndex + 1}`} />
             </div>
           ))}
         </div>

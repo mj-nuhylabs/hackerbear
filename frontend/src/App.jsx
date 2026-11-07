@@ -8,7 +8,7 @@ import RouteScheme from './components/RouteScheme'
 import StepDetail from './components/StepDetail'
 import CostSheet from './components/CostSheet'
 
-const KIND_LABEL = { name: '이름', cas: 'CAS 번호', smiles: 'SMILES' }
+const KIND_LABEL = { name: 'a name', cas: 'a CAS number', smiles: 'SMILES' }
 
 function TargetCard({ target }) {
   return (
@@ -23,7 +23,7 @@ function TargetCard({ target }) {
           <dd className="num">{target.cas ?? '—'}</dd>
         </div>
         <div className="kv-row">
-          <dt>분자량</dt>
+          <dt>Molar mass</dt>
           <dd>
             <span className="num">{target.mw.toFixed(2)}</span> g/mol
           </dd>
@@ -49,10 +49,8 @@ function RouteList({ routes, costs, routeId, onPick, targetG, search }) {
   return (
     <section className="panel routes" aria-labelledby="routes-title">
       <div className="panel-head">
-        <h2 id="routes-title">경로 {routes.length}개</h2>
-        <p className="muted small">
-          AiZynthFinder가 {search.search_time_s}초 동안 탐색했습니다. 점수가 높은 순서입니다.
-        </p>
+        <h2 id="routes-title">{routes.length} routes</h2>
+        <p className="muted small">AiZynthFinder searched for {search.search_time_s} s. Highest score first.</p>
       </div>
       <ul className="route-list">
         {routes.map((r, i) => {
@@ -66,32 +64,40 @@ function RouteList({ routes, costs, routeId, onPick, targetG, search }) {
                 onClick={() => onPick(r)}
               >
                 <span className="rc-top">
-                  <span className="rc-name">경로 {i + 1}</span>
-                  <span className="rc-steps">{r.steps.length}단계</span>
+                  <span className="rc-name">Route {i + 1}</span>
+                  <span className="rc-steps">
+                    {r.steps.length} step{r.steps.length > 1 ? 's' : ''}
+                  </span>
                 </span>
-                <span className="tier-strip" aria-label="단계별 증거 등급">
+                <span className="tier-strip" aria-label="Evidence tier per step">
                   {r.steps.map((s, k) => (
-                    <span key={k} className={`pip pip-${s.evidence.tier.toLowerCase()}`} title={`단계 ${k + 1}: ${s.evidence.tier}`} />
+                    <span
+                      key={k}
+                      className={`pip pip-${s.evidence.tier.toLowerCase()}`}
+                      title={`Step ${k + 1}: ${s.evidence.tier}`}
+                    />
                   ))}
                 </span>
                 <span className="rc-figs">
                   <span>
-                    구매 물질 {r.leaf_materials.length}종
-                    {c.COMPUTED > 0 && <span className="rc-warn"> · 선례 부족 {c.COMPUTED}단계</span>}
+                    {r.leaf_materials.length} to buy
+                    {c.COMPUTED > 0 && <span className="rc-warn"> · {c.COMPUTED} thin on precedent</span>}
                   </span>
                   <span className="rc-cost">
-                    {targetG} g 기준 <strong className="num">{usd(costs[r.id]?.totals.purchase)}</strong>
+                    <strong className="num">{usd(costs[r.id]?.totals.purchase)}</strong> for {targetG} g
                   </span>
                 </span>
                 <span className="rc-score muted small">
-                  점수 {r.aizynth_score.toFixed(3)} <span className="rc-id">{r.id}</span>
+                  Score {r.aizynth_score.toFixed(3)} <span className="rc-id">{r.id}</span>
                 </span>
               </button>
             </li>
           )
         })}
       </ul>
-      <p className="muted small">구매액은 <Mock what="가격" /> 가격으로 계산했습니다.</p>
+      <p className="muted small">
+        Costs use <Mock what="Prices" /> prices.
+      </p>
     </section>
   )
 }
@@ -103,9 +109,9 @@ function Legend() {
         <li key={t}>
           <TierBadge tier={t} size="sm" />
           <span>
-            {t === 'REPORTED' && '코퍼스에 같은 반응 레코드가 있음'}
-            {t === 'ANALOGOUS' && `템플릿 문헌 선례 ${api.ANALOGOUS_MIN}건 이상`}
-            {t === 'COMPUTED' && `선례 ${api.ANALOGOUS_MIN}건 미만 또는 타당성 낮음`}
+            {t === 'REPORTED' && 'Corpus holds this exact reaction'}
+            {t === 'ANALOGOUS' && `Template has ${api.ANALOGOUS_MIN}+ precedents`}
+            {t === 'COMPUTED' && `Under ${api.ANALOGOUS_MIN} precedents, or low plausibility`}
           </span>
         </li>
       ))}
@@ -119,12 +125,12 @@ function Loading({ phase }) {
       <span className="spinner" aria-hidden="true" />
       <div>
         <p className="loading-title">
-          {phase === 'resolving' ? '구조를 확인하는 중입니다' : '역합성 경로를 탐색하는 중입니다'}
+          {phase === 'resolving' ? 'Resolving the structure' : 'Searching retrosynthetic routes'}
         </p>
         <p className="muted small">
           {phase === 'resolving'
-            ? '이름이나 CAS 번호를 PubChem에서 SMILES로 바꾸고 RDKit으로 정규화합니다.'
-            : 'AiZynthFinder가 USPTO 템플릿으로 최대 4단계까지 거꾸로 풀어 구매 가능한 물질에 닿는 경로를 찾습니다.'}
+            ? 'Turning the name or CAS number into SMILES through PubChem, then canonicalizing with RDKit.'
+            : 'AiZynthFinder works backward up to 4 steps with USPTO templates until every branch reaches buyable material.'}
         </p>
       </div>
     </div>
@@ -194,7 +200,7 @@ export default function App() {
         <div className="wrap topbar-inner">
           <div className="brand">
             <span className="wordmark">SynthPath</span>
-            <span className="tagline">문헌 근거 합성 경로 플래너</span>
+            <span className="tagline">Literature-grounded synthesis planner</span>
           </div>
           <form
             className="search"
@@ -204,31 +210,31 @@ export default function App() {
             }}
           >
             <label className="sr-only" htmlFor="kind">
-              입력 종류
+              Input type
             </label>
             <select id="kind" value={kind} onChange={(e) => setKind(e.target.value)}>
-              <option value="auto">자동 감지</option>
-              <option value="name">이름</option>
-              <option value="cas">CAS 번호</option>
+              <option value="auto">Auto-detect</option>
+              <option value="name">Name</option>
+              <option value="cas">CAS number</option>
               <option value="smiles">SMILES</option>
             </select>
             <label className="sr-only" htmlFor="q">
-              타겟 분자
+              Target molecule
             </label>
             <input
               id="q"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="이름, CAS 번호 또는 SMILES"
+              placeholder="Name, CAS number or SMILES"
               autoComplete="off"
               spellCheck="false"
             />
             <button type="submit" className="btn btn-primary" disabled={busy}>
-              경로 찾기
+              Find routes
             </button>
           </form>
           <div className="demos">
-            <span className="muted small">{detected ? `${KIND_LABEL[detected]}(으)로 인식` : '예시 타겟'}</span>
+            <span className="muted small">{detected ? `Read as ${KIND_LABEL[detected]}` : 'Try'}</span>
             {api.DEMO_TARGETS.map((t) => (
               <button
                 key={t.name}
@@ -249,14 +255,14 @@ export default function App() {
       <div className="notice">
         <div className="wrap notice-inner">
           <p>
-            <strong>UI 목업입니다.</strong> 구조, 분자량, 경로, 템플릿 선례 수는 RDKit과 AiZynthFinder로 실제 계산한
-            값입니다. <Mock /> 표시가 붙은 값은 흐름을 보여주기 위한 예시입니다.
+            <strong>This is a UI mockup.</strong> Structures, molar masses, routes and precedent counts are computed for
+            real with RDKit and AiZynthFinder. Anything tagged <Mock /> stands in to show the flow.
           </p>
-          <ol className="flow" aria-label="사용 흐름">
-            <li>타겟 입력</li>
-            <li>경로 비교</li>
-            <li>단계별 근거 확인</li>
-            <li>목표량 비용 계산</li>
+          <ol className="flow" aria-label="How it goes">
+            <li>Enter a target</li>
+            <li>Compare routes</li>
+            <li>Check the evidence</li>
+            <li>Price the batch</li>
           </ol>
         </div>
       </div>
@@ -264,7 +270,7 @@ export default function App() {
       <main className="wrap bench">
         {phase === 'error' && (
           <div className="panel error" role="alert">
-            <p className="loading-title">“{query}”을(를) 찾지 못했습니다</p>
+            <p className="loading-title">No match for &ldquo;{query}&rdquo;</p>
             <p className="muted">{error}</p>
           </div>
         )}
@@ -292,9 +298,12 @@ export default function App() {
               <div className="panel-head scheme-head">
                 <div>
                   <h2 id="scheme-title">
-                    경로 {routeIndex + 1} <span className="of">{route.steps.length}단계</span>
+                    Route {routeIndex + 1}{' '}
+                    <span className="of">
+                      {route.steps.length} step{route.steps.length > 1 ? 's' : ''}
+                    </span>
                   </h2>
-                  <p className="muted small">화살표를 누르면 그 단계의 근거와 조건을 봅니다.</p>
+                  <p className="muted small">Click an arrow to see that step&rsquo;s evidence and conditions.</p>
                 </div>
                 <Legend />
               </div>
@@ -319,14 +328,14 @@ export default function App() {
 
             <section className="panel calib" aria-labelledby="calib-title">
               <div className="calib-text">
-                <h2 id="calib-title">타당성 모델 캘리브레이션</h2>
+                <h2 id="calib-title">Plausibility model calibration</h2>
                 <p className="muted">
-                  반응 타당성 분류기를 학습하면 홀드아웃 세트의 reliability diagram이 여기에 뜹니다. 점수가 0.7인 반응들이
-                  실제로 70% 맞는지를 보여주는 그래프입니다.
+                  Once the plausibility classifier is trained, its reliability diagram on the holdout set shows up here:
+                  whether reactions the model scores at 0.7 really do work about 70% of the time.
                 </p>
               </div>
               <div className="calib-frame">
-                <span>학습 전</span>
+                <span>not trained yet</span>
                 <code>GET /calibration</code>
               </div>
             </section>

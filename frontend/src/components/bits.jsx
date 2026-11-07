@@ -1,9 +1,9 @@
 import { useState } from 'react'
 
 export const TIER_INFO = {
-  REPORTED: { label: 'REPORTED', say: '코퍼스에 같은 반응 레코드가 있습니다.' },
-  ANALOGOUS: { label: 'ANALOGOUS', say: '템플릿이 적용됐고, 이 템플릿의 문헌 선례가 충분합니다.' },
-  COMPUTED: { label: 'COMPUTED', say: '템플릿은 적용됐지만 선례가 적거나 타당성 점수가 낮습니다.' },
+  REPORTED: { label: 'REPORTED', say: 'The corpus holds a record for this exact reaction.' },
+  ANALOGOUS: { label: 'ANALOGOUS', say: 'The template applies, and it has enough precedent in the literature.' },
+  COMPUTED: { label: 'COMPUTED', say: 'The template applies, but precedent is thin or plausibility is low.' },
 }
 
 export function TierBadge({ tier, size }) {
@@ -16,8 +16,8 @@ export function TierBadge({ tier, size }) {
 
 export function Mock({ what }) {
   return (
-    <span className="mock" title={what ? `${what}: 예시값이며 실데이터가 아닙니다` : '예시값이며 실데이터가 아닙니다'}>
-      예시값
+    <span className="mock" title={what ? `${what}: an example value, not real data` : 'An example value, not real data'}>
+      example
     </span>
   )
 }
@@ -29,7 +29,7 @@ export function Mol({ compound, size = 'md', caption }) {
       {compound.svg ? (
         <div className="mol-svg" dangerouslySetInnerHTML={{ __html: compound.svg }} />
       ) : (
-        <div className="mol-svg mol-missing">구조 없음</div>
+        <div className="mol-svg mol-missing">no structure</div>
       )}
       {caption && <figcaption>{caption}</figcaption>}
     </figure>
@@ -53,7 +53,7 @@ export function CopyText({ text, className = '' }) {
     <span className={`copytext ${className}`}>
       <code id={`copy-${text.length}`}>{text}</code>
       <button type="button" className="ghost-btn" onClick={copy}>
-        {done ? '복사됨' : '복사'}
+        {done ? 'Copied' : 'Copy'}
       </button>
     </span>
   )

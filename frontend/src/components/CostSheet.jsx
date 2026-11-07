@@ -7,13 +7,13 @@ export default function CostSheet({ cost, targetG, setTargetG, purification, set
   return (
     <section className="panel cost" aria-labelledby="cost-title">
       <div className="panel-head">
-        <h2 id="cost-title">구매 목록과 비용</h2>
-        <p className="muted">말단 물질만 구매 대상입니다. 중간체는 경로 안에서 만듭니다.</p>
+        <h2 id="cost-title">Bill of materials</h2>
+        <p className="muted">Only leaf materials are bought. Intermediates get made along the route.</p>
       </div>
 
       <div className="cost-controls">
         <label className="ctl" htmlFor="target-g">
-          <span>목표량</span>
+          <span>Target amount</span>
           <span className="ctl-input">
             <input
               id="target-g"
@@ -28,7 +28,7 @@ export default function CostSheet({ cost, targetG, setTargetG, purification, set
         </label>
         <label className="ctl ctl-range" htmlFor="purif">
           <span>
-            정제 회수율 <span className="assumed">가정값</span>
+            Purification recovery <span className="assumed">assumed</span>
           </span>
           <span className="ctl-input">
             <input
@@ -51,27 +51,27 @@ export default function CostSheet({ cost, targetG, setTargetG, purification, set
         <table className="bom">
           <thead>
             <tr>
-              <th scope="col">물질</th>
+              <th scope="col">Material</th>
               <th scope="col" className="r">
-                분자량
+                Molar mass
               </th>
               <th scope="col" className="r">
-                필요량
+                Needed
               </th>
               <th scope="col" className="r">
-                질량
+                Mass
               </th>
               <th scope="col" className="r">
-                단가
+                Unit price
               </th>
               <th scope="col" className="r">
-                소비량 기준
+                Consumption
               </th>
               <th scope="col" className="r">
-                포장
+                Packs
               </th>
               <th scope="col" className="r">
-                구매액
+                Purchase
               </th>
             </tr>
           </thead>
@@ -99,27 +99,29 @@ export default function CostSheet({ cost, targetG, setTargetG, purification, set
 
       <div className="totals">
         <div className="total">
-          <span className="total-k">소비량 기준</span>
+          <span className="total-k">Consumption basis</span>
           <span className="total-v num">{usd(totals.consumption)}</span>
-          <span className="muted small">실제로 쓰는 양만큼의 금액</span>
+          <span className="muted small">What the material you actually use is worth</span>
         </div>
         <div className="total total-main">
-          <span className="total-k">실제 구매액</span>
+          <span className="total-k">Actual purchase</span>
           <span className="total-v num">{usd(totals.purchase)}</span>
-          <span className="muted small">포장 단위로 사야 하는 금액</span>
+          <span className="muted small">What you pay buying whole packs</span>
         </div>
         <div className="total">
-          <span className="total-k">예상 소요 시간</span>
+          <span className="total-k">Estimated time</span>
           <span className="total-v num">{totals.timeH != null ? `${totals.timeH} h` : DASH}</span>
           <span className="muted small">
-            {totals.untimedSteps > 0 ? `${totals.untimedSteps}개 단계 시간 미상` : '모든 단계 시간 확인됨'}
+            {totals.untimedSteps > 0
+              ? `${totals.untimedSteps} step${totals.untimedSteps > 1 ? 's' : ''} with no time on record`
+              : 'Every step has a time on record'}
           </span>
         </div>
       </div>
 
       <p className="cost-foot muted small">
-        단가와 포장 가격은 <Mock what="가격" /> {asOf && `(스냅샷 기준일 ${asOf})`}입니다. 수율은 문헌값이 있으면 그 값을,
-        없으면 가정값 70%를 씁니다. 당량은 모두 1.0으로 가정했습니다.
+        Unit and pack prices are <Mock what="Prices" /> values {asOf && `(snapshot dated ${asOf})`}. Yield uses the
+        reported figure where there is one, otherwise an assumed 70%. Every equivalent is assumed to be 1.0.
       </p>
     </section>
   )

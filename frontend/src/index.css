@@ -25,8 +25,8 @@
   --bad: #b3261e;
   --good: #1d7f47;
 
-  --font-body: 'IBM Plex Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', system-ui, sans-serif;
-  --font-display: 'IBM Plex Sans Condensed', 'IBM Plex Sans KR', 'Arial Narrow', system-ui, sans-serif;
+  --font-body: 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-display: 'IBM Plex Sans Condensed', 'IBM Plex Sans', 'Arial Narrow', system-ui, sans-serif;
   --font-mono: 'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, monospace;
 
   --fs-xs: 0.75rem;
@@ -530,7 +530,7 @@ button, input, select { font: inherit; color: inherit; }
 }
 @media (max-width: 760px) {
   .topbar-inner { grid-template-columns: minmax(0, 1fr); grid-template-areas: 'brand' 'search' 'demos'; }
-  .search select { width: 104px; }
+  .search select { width: auto; min-width: 124px; }
   .rail { grid-template-columns: minmax(0, 1fr); }
   .step-grid, .explain-cols, .totals { grid-template-columns: minmax(0, 1fr); }
   .calib { grid-template-columns: minmax(0, 1fr); }
@@ -539,7 +539,7 @@ button, input, select { font: inherit; color: inherit; }
 }
 @media (max-width: 480px) {
   .search { flex-wrap: wrap; }
-  .search input { flex-basis: calc(100% - 112px); }
+  .search input { flex-basis: calc(100% - 136px); }
   .search .btn-primary { width: 100%; }
   .panel { padding: 14px; }
 }

@@ -51,7 +51,7 @@
        "evidence": {
         "tier": "ANALOGOUS",
         "source_ids": [
-         "US-예시-2078613"
+         "US-EXAMPLE-2078613"
         ],
         "precedent_count": 655,
         "url": null,
@@ -65,9 +65,9 @@
        "plausibility_raw": 0.68,
        "plausibility_calibrated": 0.56,
        "gaps": [
-        "α-키랄 카보닐",
-        "피리딘 N-옥사이드",
-        "전자 부족 헤테로아릴"
+        "alpha-chiral carbonyl",
+        "pyridine N-oxide",
+        "electron-poor heteroaryl"
        ],
        "mock": [
         "plausibility_raw",
@@ -102,7 +102,7 @@
        "evidence": {
         "tier": "ANALOGOUS",
         "source_ids": [
-         "US-예시-7588088"
+         "US-EXAMPLE-7588088"
         ],
         "precedent_count": 54,
         "url": null,
@@ -116,8 +116,8 @@
        "plausibility_raw": 0.63,
        "plausibility_calibrated": 0.52,
        "gaps": [
-        "오쏘-이치환 아릴",
-        "α-키랄 카보닐"
+        "ortho,ortho-disubstituted aryl",
+        "alpha-chiral carbonyl"
        ],
        "mock": [
         "plausibility_raw",
@@ -152,8 +152,8 @@
        "evidence": {
         "tier": "REPORTED",
         "source_ids": [
-         "US-예시-7169791",
-         "ORD-예시-3f9a2c"
+         "US-EXAMPLE-7169791",
+         "ORD-EXAMPLE-3f9a2c"
         ],
         "precedent_count": 171,
         "url": null,
@@ -168,7 +168,7 @@
         "time_h": 12,
         "catalyst": null,
         "catalyst_loading": null,
-        "source_id": "ORD-예시-3f9a2c",
+        "source_id": "ORD-EXAMPLE-3f9a2c",
         "mock": true
        },
        "reported_yield": 0.82,
@@ -176,7 +176,7 @@
        "plausibility_raw": 0.85,
        "plausibility_calibrated": 0.7,
        "gaps": [
-        "피리딘 N-옥사이드"
+        "pyridine N-oxide"
        ],
        "mock": [
         "plausibility_raw",
@@ -249,7 +249,7 @@
        "evidence": {
         "tier": "ANALOGOUS",
         "source_ids": [
-         "US-예시-2078613"
+         "US-EXAMPLE-2078613"
         ],
         "precedent_count": 655,
         "url": null,
@@ -263,9 +263,9 @@
        "plausibility_raw": 0.68,
        "plausibility_calibrated": 0.56,
        "gaps": [
-        "α-키랄 카보닐",
-        "피리딘 N-옥사이드",
-        "전자 부족 헤테로아릴"
+        "alpha-chiral carbonyl",
+        "pyridine N-oxide",
+        "electron-poor heteroaryl"
        ],
        "mock": [
         "plausibility_raw",
@@ -300,7 +300,7 @@
        "evidence": {
         "tier": "ANALOGOUS",
         "source_ids": [
-         "US-예시-6377838"
+         "US-EXAMPLE-6377838"
         ],
         "precedent_count": 299,
         "url": null,
@@ -314,9 +314,9 @@
        "plausibility_raw": 0.93,
        "plausibility_calibrated": 0.76,
        "gaps": [
-        "피리딘 N-옥사이드",
-        "전자 부족 헤테로아릴",
-        "피리딘 N-옥사이드"
+        "pyridine N-oxide",
+        "electron-poor heteroaryl",
+        "pyridine N-oxide"
        ],
        "mock": [
         "plausibility_raw",
@@ -351,7 +351,7 @@
        "evidence": {
         "tier": "ANALOGOUS",
         "source_ids": [
-         "US-예시-9028030"
+         "US-EXAMPLE-9028030"
         ],
         "precedent_count": 171,
         "url": null,
@@ -365,7 +365,7 @@
        "plausibility_raw": 0.85,
        "plausibility_calibrated": 0.7,
        "gaps": [
-        "피리딘 N-옥사이드"
+        "pyridine N-oxide"
        ],
        "mock": [
         "plausibility_raw",
@@ -436,7 +436,7 @@
        "evidence": {
         "tier": "ANALOGOUS",
         "source_ids": [
-         "US-예시-7588088"
+         "US-EXAMPLE-7588088"
         ],
         "precedent_count": 54,
         "url": null,
@@ -450,8 +450,8 @@
        "plausibility_raw": 0.63,
        "plausibility_calibrated": 0.52,
        "gaps": [
-        "오쏘-이치환 아릴",
-        "α-키랄 카보닐"
+        "ortho,ortho-disubstituted aryl",
+        "alpha-chiral carbonyl"
        ],
        "mock": [
         "plausibility_raw",
@@ -486,7 +486,7 @@
        "evidence": {
         "tier": "ANALOGOUS",
         "source_ids": [
-         "US-예시-4261861"
+         "US-EXAMPLE-4261861"
         ],
         "precedent_count": 9162,
         "url": null,
@@ -500,7 +500,7 @@
        "plausibility_raw": 0.76,
        "plausibility_calibrated": 0.62,
        "gaps": [
-        "α-키랄 카보닐"
+        "alpha-chiral carbonyl"
        ],
        "mock": [
         "plausibility_raw",
@@ -564,7 +564,7 @@
        "evidence": {
         "tier": "ANALOGOUS",
         "source_ids": [
-         "US-예시-6377838"
+         "US-EXAMPLE-6377838"
         ],
         "precedent_count": 299,
         "url": null,
@@ -578,9 +578,9 @@
        "plausibility_raw": 0.93,
        "plausibility_calibrated": 0.76,
        "gaps": [
-        "피리딘 N-옥사이드",
-        "전자 부족 헤테로아릴",
-        "피리딘 N-옥사이드"
+        "pyridine N-oxide",
+        "electron-poor heteroaryl",
+        "pyridine N-oxide"
        ],
        "mock": [
         "plausibility_raw",
@@ -615,7 +615,7 @@
        "evidence": {
         "tier": "ANALOGOUS",
         "source_ids": [
-         "US-예시-4261861"
+         "US-EXAMPLE-4261861"
         ],
         "precedent_count": 9162,
         "url": null,
@@ -629,7 +629,7 @@
        "plausibility_raw": 0.76,
        "plausibility_calibrated": 0.62,
        "gaps": [
-        "α-키랄 카보닐"
+        "alpha-chiral carbonyl"
        ],
        "mock": [
         "plausibility_raw",
@@ -693,7 +693,7 @@
        "evidence": {
         "tier": "ANALOGOUS",
         "source_ids": [
-         "US-예시-7588088"
+         "US-EXAMPLE-7588088"
         ],
         "precedent_count": 54,
         "url": null,
@@ -707,8 +707,8 @@
        "plausibility_raw": 0.63,
        "plausibility_calibrated": 0.52,
        "gaps": [
-        "오쏘-이치환 아릴",
-        "α-키랄 카보닐"
+        "ortho,ortho-disubstituted aryl",
+        "alpha-chiral carbonyl"
        ],
        "mock": [
         "plausibility_raw",
@@ -743,7 +743,7 @@
        "evidence": {
         "tier": "ANALOGOUS",
         "source_ids": [
-         "US-예시-7788044"
+         "US-EXAMPLE-7788044"
         ],
         "precedent_count": 133,
         "url": null,
@@ -757,8 +757,8 @@
        "plausibility_raw": 0.59,
        "plausibility_calibrated": 0.48,
        "gaps": [
-        "보호되지 않은 1차 알코올",
-        "오쏘-이치환 아릴"
+        "unprotected primary alcohol",
+        "ortho,ortho-disubstituted aryl"
        ],
        "mock": [
         "plausibility_raw",
@@ -843,7 +843,7 @@
        "evidence": {
         "tier": "ANALOGOUS",
         "source_ids": [
-         "US-예시-8477459"
+         "US-EXAMPLE-8477459"
         ],
         "precedent_count": 53,
         "url": null,
@@ -857,8 +857,8 @@
        "plausibility_raw": 0.74,
        "plausibility_calibrated": 0.61,
        "gaps": [
-        "자유 페놀 OH 공존",
-        "입체장애 2차 아민"
+        "free phenolic OH present",
+        "hindered secondary amine"
        ],
        "mock": [
         "plausibility_raw",
@@ -893,7 +893,7 @@
        "evidence": {
         "tier": "ANALOGOUS",
         "source_ids": [
-         "US-예시-6008916"
+         "US-EXAMPLE-6008916"
         ],
         "precedent_count": 131,
         "url": null,
@@ -907,9 +907,9 @@
        "plausibility_raw": 0.91,
        "plausibility_calibrated": 0.75,
        "gaps": [
-        "보호되지 않은 1차 알코올",
-        "오쏘-이치환 아릴",
-        "자유 페놀 OH 공존"
+        "unprotected primary alcohol",
+        "ortho,ortho-disubstituted aryl",
+        "free phenolic OH present"
        ],
        "mock": [
         "plausibility_raw",
@@ -938,7 +938,7 @@
        "evidence": {
         "tier": "ANALOGOUS",
         "source_ids": [
-         "US-예시-1071141"
+         "US-EXAMPLE-1071141"
         ],
         "precedent_count": 3763,
         "url": null,
@@ -952,9 +952,9 @@
        "plausibility_raw": 0.76,
        "plausibility_calibrated": 0.62,
        "gaps": [
-        "α-키랄 카보닐",
-        "전자 부족 헤테로아릴",
-        "보호되지 않은 1차 알코올"
+        "alpha-chiral carbonyl",
+        "electron-poor heteroaryl",
+        "unprotected primary alcohol"
        ],
        "mock": [
         "plausibility_raw",
@@ -989,7 +989,7 @@
        "evidence": {
         "tier": "ANALOGOUS",
         "source_ids": [
-         "US-예시-8039830"
+         "US-EXAMPLE-8039830"
         ],
         "precedent_count": 169,
         "url": null,
@@ -1003,7 +1003,7 @@
        "plausibility_raw": 0.85,
        "plausibility_calibrated": 0.7,
        "gaps": [
-        "피리딘 N-옥사이드"
+        "pyridine N-oxide"
        ],
        "mock": [
         "plausibility_raw",
@@ -1074,7 +1074,7 @@
        "evidence": {
         "tier": "ANALOGOUS",
         "source_ids": [
-         "US-예시-8477459"
+         "US-EXAMPLE-8477459"
         ],
         "precedent_count": 53,
         "url": null,
@@ -1088,8 +1088,8 @@
        "plausibility_raw": 0.74,
        "plausibility_calibrated": 0.61,
        "gaps": [
-        "자유 페놀 OH 공존",
-        "입체장애 2차 아민"
+        "free phenolic OH present",
+        "hindered secondary amine"
        ],
        "mock": [
         "plausibility_raw",
@@ -1124,7 +1124,7 @@
        "evidence": {
         "tier": "ANALOGOUS",
         "source_ids": [
-         "US-예시-6008916"
+         "US-EXAMPLE-6008916"
         ],
         "precedent_count": 131,
         "url": null,
@@ -1138,9 +1138,9 @@
        "plausibility_raw": 0.91,
        "plausibility_calibrated": 0.75,
        "gaps": [
-        "보호되지 않은 1차 알코올",
-        "오쏘-이치환 아릴",
-        "자유 페놀 OH 공존"
+        "unprotected primary alcohol",
+        "ortho,ortho-disubstituted aryl",
+        "free phenolic OH present"
        ],
        "mock": [
         "plausibility_raw",
@@ -1169,7 +1169,7 @@
        "evidence": {
         "tier": "ANALOGOUS",
         "source_ids": [
-         "US-예시-1071141"
+         "US-EXAMPLE-1071141"
         ],
         "precedent_count": 3763,
         "url": null,
@@ -1183,9 +1183,9 @@
        "plausibility_raw": 0.76,
        "plausibility_calibrated": 0.62,
        "gaps": [
-        "α-키랄 카보닐",
-        "전자 부족 헤테로아릴",
-        "보호되지 않은 1차 알코올"
+        "alpha-chiral carbonyl",
+        "electron-poor heteroaryl",
+        "unprotected primary alcohol"
        ],
        "mock": [
         "plausibility_raw",
@@ -1220,7 +1220,7 @@
        "evidence": {
         "tier": "ANALOGOUS",
         "source_ids": [
-         "US-예시-3071603"
+         "US-EXAMPLE-3071603"
         ],
         "precedent_count": 538,
         "url": null,
@@ -1234,8 +1234,8 @@
        "plausibility_raw": 0.58,
        "plausibility_calibrated": 0.48,
        "gaps": [
-        "자유 페놀 OH 공존",
-        "α-키랄 카보닐"
+        "free phenolic OH present",
+        "alpha-chiral carbonyl"
        ],
        "mock": [
         "plausibility_raw",
@@ -1306,7 +1306,7 @@
        "evidence": {
         "tier": "ANALOGOUS",
         "source_ids": [
-         "US-예시-8477459"
+         "US-EXAMPLE-8477459"
         ],
         "precedent_count": 53,
         "url": null,
@@ -1320,8 +1320,8 @@
        "plausibility_raw": 0.74,
        "plausibility_calibrated": 0.61,
        "gaps": [
-        "자유 페놀 OH 공존",
-        "입체장애 2차 아민"
+        "free phenolic OH present",
+        "hindered secondary amine"
        ],
        "mock": [
         "plausibility_raw",
@@ -1356,7 +1356,7 @@
        "evidence": {
         "tier": "ANALOGOUS",
         "source_ids": [
-         "US-예시-6008916"
+         "US-EXAMPLE-6008916"
         ],
         "precedent_count": 131,
         "url": null,
@@ -1370,9 +1370,9 @@
        "plausibility_raw": 0.91,
        "plausibility_calibrated": 0.75,
        "gaps": [
-        "보호되지 않은 1차 알코올",
-        "오쏘-이치환 아릴",
-        "자유 페놀 OH 공존"
+        "unprotected primary alcohol",
+        "ortho,ortho-disubstituted aryl",
+        "free phenolic OH present"
        ],
        "mock": [
         "plausibility_raw",
@@ -1401,7 +1401,7 @@
        "evidence": {
         "tier": "ANALOGOUS",
         "source_ids": [
-         "US-예시-1071141"
+         "US-EXAMPLE-1071141"
         ],
         "precedent_count": 3763,
         "url": null,
@@ -1415,9 +1415,9 @@
        "plausibility_raw": 0.76,
        "plausibility_calibrated": 0.62,
        "gaps": [
-        "α-키랄 카보닐",
-        "전자 부족 헤테로아릴",
-        "보호되지 않은 1차 알코올"
+        "alpha-chiral carbonyl",
+        "electron-poor heteroaryl",
+        "unprotected primary alcohol"
        ],
        "mock": [
         "plausibility_raw",
@@ -1452,7 +1452,7 @@
        "evidence": {
         "tier": "ANALOGOUS",
         "source_ids": [
-         "US-예시-8799041"
+         "US-EXAMPLE-8799041"
         ],
         "precedent_count": 5220,
         "url": null,
@@ -1466,8 +1466,8 @@
        "plausibility_raw": 0.56,
        "plausibility_calibrated": 0.46,
        "gaps": [
-        "전자 부족 헤테로아릴",
-        "보호되지 않은 1차 알코올"
+        "electron-poor heteroaryl",
+        "unprotected primary alcohol"
        ],
        "mock": [
         "plausibility_raw",
@@ -1508,7 +1508,7 @@
        "plausibility_raw": 0.7,
        "plausibility_calibrated": 0.57,
        "gaps": [
-        "알카인 공존"
+        "alkyne present"
        ],
        "mock": [
         "plausibility_raw",
@@ -1579,7 +1579,7 @@
        "evidence": {
         "tier": "ANALOGOUS",
         "source_ids": [
-         "US-예시-8477459"
+         "US-EXAMPLE-8477459"
         ],
         "precedent_count": 53,
         "url": null,
@@ -1593,8 +1593,8 @@
        "plausibility_raw": 0.74,
        "plausibility_calibrated": 0.61,
        "gaps": [
-        "자유 페놀 OH 공존",
-        "입체장애 2차 아민"
+        "free phenolic OH present",
+        "hindered secondary amine"
        ],
        "mock": [
         "plausibility_raw",
@@ -1629,7 +1629,7 @@
        "evidence": {
         "tier": "ANALOGOUS",
         "source_ids": [
-         "US-예시-6008916"
+         "US-EXAMPLE-6008916"
         ],
         "precedent_count": 131,
         "url": null,
@@ -1643,9 +1643,9 @@
        "plausibility_raw": 0.91,
        "plausibility_calibrated": 0.75,
        "gaps": [
-        "보호되지 않은 1차 알코올",
-        "오쏘-이치환 아릴",
-        "자유 페놀 OH 공존"
+        "unprotected primary alcohol",
+        "ortho,ortho-disubstituted aryl",
+        "free phenolic OH present"
        ],
        "mock": [
         "plausibility_raw",
@@ -1674,7 +1674,7 @@
        "evidence": {
         "tier": "ANALOGOUS",
         "source_ids": [
-         "US-예시-1071141"
+         "US-EXAMPLE-1071141"
         ],
         "precedent_count": 3763,
         "url": null,
@@ -1688,9 +1688,9 @@
        "plausibility_raw": 0.76,
        "plausibility_calibrated": 0.62,
        "gaps": [
-        "α-키랄 카보닐",
-        "전자 부족 헤테로아릴",
-        "보호되지 않은 1차 알코올"
+        "alpha-chiral carbonyl",
+        "electron-poor heteroaryl",
+        "unprotected primary alcohol"
        ],
        "mock": [
         "plausibility_raw",
@@ -1725,7 +1725,7 @@
        "evidence": {
         "tier": "ANALOGOUS",
         "source_ids": [
-         "US-예시-7061900"
+         "US-EXAMPLE-7061900"
         ],
         "precedent_count": 354,
         "url": null,
@@ -1739,8 +1739,8 @@
        "plausibility_raw": 0.75,
        "plausibility_calibrated": 0.61,
        "gaps": [
-        "보호되지 않은 1차 알코올",
-        "보호되지 않은 1차 알코올"
+        "unprotected primary alcohol",
+        "unprotected primary alcohol"
        ],
        "mock": [
         "plausibility_raw",
@@ -1781,7 +1781,7 @@
        "plausibility_raw": 0.7,
        "plausibility_calibrated": 0.57,
        "gaps": [
-        "알카인 공존"
+        "alkyne present"
        ],
        "mock": [
         "plausibility_raw",
@@ -1852,7 +1852,7 @@
        "evidence": {
         "tier": "ANALOGOUS",
         "source_ids": [
-         "US-예시-8477459"
+         "US-EXAMPLE-8477459"
         ],
         "precedent_count": 53,
         "url": null,
@@ -1866,8 +1866,8 @@
        "plausibility_raw": 0.74,
        "plausibility_calibrated": 0.61,
        "gaps": [
-        "자유 페놀 OH 공존",
-        "입체장애 2차 아민"
+        "free phenolic OH present",
+        "hindered secondary amine"
        ],
        "mock": [
         "plausibility_raw",
@@ -1902,7 +1902,7 @@
        "evidence": {
         "tier": "ANALOGOUS",
         "source_ids": [
-         "US-예시-6008916"
+         "US-EXAMPLE-6008916"
         ],
         "precedent_count": 131,
         "url": null,
@@ -1916,9 +1916,9 @@
        "plausibility_raw": 0.91,
        "plausibility_calibrated": 0.75,
        "gaps": [
-        "보호되지 않은 1차 알코올",
-        "오쏘-이치환 아릴",
-        "자유 페놀 OH 공존"
+        "unprotected primary alcohol",
+        "ortho,ortho-disubstituted aryl",
+        "free phenolic OH present"
        ],
        "mock": [
         "plausibility_raw",
@@ -1947,7 +1947,7 @@
        "evidence": {
         "tier": "ANALOGOUS",
         "source_ids": [
-         "US-예시-1071141"
+         "US-EXAMPLE-1071141"
         ],
         "precedent_count": 3763,
         "url": null,
@@ -1961,9 +1961,9 @@
        "plausibility_raw": 0.76,
        "plausibility_calibrated": 0.62,
        "gaps": [
-        "α-키랄 카보닐",
-        "전자 부족 헤테로아릴",
-        "보호되지 않은 1차 알코올"
+        "alpha-chiral carbonyl",
+        "electron-poor heteroaryl",
+        "unprotected primary alcohol"
        ],
        "mock": [
         "plausibility_raw",
@@ -1998,7 +1998,7 @@
        "evidence": {
         "tier": "ANALOGOUS",
         "source_ids": [
-         "US-예시-8039830"
+         "US-EXAMPLE-8039830"
         ],
         "precedent_count": 169,
         "url": null,
@@ -2012,7 +2012,7 @@
        "plausibility_raw": 0.85,
        "plausibility_calibrated": 0.7,
        "gaps": [
-        "피리딘 N-옥사이드"
+        "pyridine N-oxide"
        ],
        "mock": [
         "plausibility_raw",
@@ -2059,8 +2059,8 @@
        "plausibility_raw": 0.55,
        "plausibility_calibrated": 0.45,
        "gaps": [
-        "오쏘-이치환 아릴",
-        "자유 페놀 OH 공존"
+        "ortho,ortho-disubstituted aryl",
+        "free phenolic OH present"
        ],
        "mock": [
         "plausibility_raw",
@@ -2159,7 +2159,7 @@
        "evidence": {
         "tier": "ANALOGOUS",
         "source_ids": [
-         "US-예시-2150138"
+         "US-EXAMPLE-2150138"
         ],
         "precedent_count": 1646,
         "url": null,
@@ -2173,8 +2173,8 @@
        "plausibility_raw": 0.73,
        "plausibility_calibrated": 0.6,
        "gaps": [
-        "입체장애 2차 아민",
-        "전자 부족 헤테로아릴"
+        "hindered secondary amine",
+        "electron-poor heteroaryl"
        ],
        "mock": [
         "plausibility_raw",
@@ -2249,9 +2249,9 @@
        "plausibility_raw": 0.9,
        "plausibility_calibrated": 0.74,
        "gaps": [
-        "자유 페놀 OH 공존",
-        "자유 페놀 OH 공존",
-        "알카인 공존"
+        "free phenolic OH present",
+        "free phenolic OH present",
+        "alkyne present"
        ],
        "mock": [
         "plausibility_raw",
@@ -2315,7 +2315,7 @@
        "evidence": {
         "tier": "ANALOGOUS",
         "source_ids": [
-         "US-예시-6572704"
+         "US-EXAMPLE-6572704"
         ],
         "precedent_count": 131,
         "url": null,
@@ -2329,7 +2329,7 @@
        "plausibility_raw": 0.79,
        "plausibility_calibrated": 0.65,
        "gaps": [
-        "오쏘-이치환 아릴"
+        "ortho,ortho-disubstituted aryl"
        ],
        "mock": [
         "plausibility_raw",
@@ -2380,7 +2380,7 @@
        "evidence": {
         "tier": "ANALOGOUS",
         "source_ids": [
-         "US-예시-4866991"
+         "US-EXAMPLE-4866991"
         ],
         "precedent_count": 3983,
         "url": null,
@@ -2394,7 +2394,7 @@
        "plausibility_raw": 0.86,
        "plausibility_calibrated": 0.71,
        "gaps": [
-        "알카인 공존"
+        "alkyne present"
        ],
        "mock": [
         "plausibility_raw",
@@ -2444,7 +2444,7 @@
        "evidence": {
         "tier": "ANALOGOUS",
         "source_ids": [
-         "US-예시-1343253"
+         "US-EXAMPLE-1343253"
         ],
         "precedent_count": 398,
         "url": null,
@@ -2458,9 +2458,9 @@
        "plausibility_raw": 0.68,
        "plausibility_calibrated": 0.56,
        "gaps": [
-        "α-키랄 카보닐",
-        "보호되지 않은 1차 알코올",
-        "α-키랄 카보닐"
+        "alpha-chiral carbonyl",
+        "unprotected primary alcohol",
+        "alpha-chiral carbonyl"
        ],
        "mock": [
         "plausibility_raw",
@@ -2771,7 +2771,7 @@
    "pack_size_g": 25,
    "pack_price": 444.67,
    "currency": "USD",
-   "supplier": "예시 공급사",
+   "supplier": "Example supplier",
    "as_of_date": "2026-11-01",
    "mock": true
   },
@@ -2780,7 +2780,7 @@
    "pack_size_g": 25,
    "pack_price": 581.88,
    "currency": "USD",
-   "supplier": "예시 공급사",
+   "supplier": "Example supplier",
    "as_of_date": "2026-11-01",
    "mock": true
   },
@@ -2789,7 +2789,7 @@
    "pack_size_g": 500,
    "pack_price": 5430.25,
    "currency": "USD",
-   "supplier": "예시 공급사",
+   "supplier": "Example supplier",
    "as_of_date": "2026-11-01",
    "mock": true
   },
@@ -2798,7 +2798,7 @@
    "pack_size_g": 100,
    "pack_price": 779.0,
    "currency": "USD",
-   "supplier": "예시 공급사",
+   "supplier": "Example supplier",
    "as_of_date": "2026-11-01",
    "mock": true
   },
@@ -2807,7 +2807,7 @@
    "pack_size_g": 25,
    "pack_price": 79.27,
    "currency": "USD",
-   "supplier": "예시 공급사",
+   "supplier": "Example supplier",
    "as_of_date": "2026-11-01",
    "mock": true
   },
@@ -2816,7 +2816,7 @@
    "pack_size_g": 25,
    "pack_price": 480.37,
    "currency": "USD",
-   "supplier": "예시 공급사",
+   "supplier": "Example supplier",
    "as_of_date": "2026-11-01",
    "mock": true
   },
@@ -2825,7 +2825,7 @@
    "pack_size_g": 100,
    "pack_price": 1149.0,
    "currency": "USD",
-   "supplier": "예시 공급사",
+   "supplier": "Example supplier",
    "as_of_date": "2026-11-01",
    "mock": true
   },
@@ -2834,7 +2834,7 @@
    "pack_size_g": 5,
    "pack_price": 65.8,
    "currency": "USD",
-   "supplier": "예시 공급사",
+   "supplier": "Example supplier",
    "as_of_date": "2026-11-01",
    "mock": true
   },
@@ -2843,7 +2843,7 @@
    "pack_size_g": 500,
    "pack_price": 5409.25,
    "currency": "USD",
-   "supplier": "예시 공급사",
+   "supplier": "Example supplier",
    "as_of_date": "2026-11-01",
    "mock": true
   },
@@ -2852,7 +2852,7 @@
    "pack_size_g": 100,
    "pack_price": 247.0,
    "currency": "USD",
-   "supplier": "예시 공급사",
+   "supplier": "Example supplier",
    "as_of_date": "2026-11-01",
    "mock": true
   },
@@ -2861,7 +2861,7 @@
    "pack_size_g": 5,
    "pack_price": 171.4,
    "currency": "USD",
-   "supplier": "예시 공급사",
+   "supplier": "Example supplier",
    "as_of_date": "2026-11-01",
    "mock": true
   },
@@ -2870,7 +2870,7 @@
    "pack_size_g": 100,
    "pack_price": 1093.0,
    "currency": "USD",
-   "supplier": "예시 공급사",
+   "supplier": "Example supplier",
    "as_of_date": "2026-11-01",
    "mock": true
   },
@@ -2879,7 +2879,7 @@
    "pack_size_g": 500,
    "pack_price": 1937.25,
    "currency": "USD",
-   "supplier": "예시 공급사",
+   "supplier": "Example supplier",
    "as_of_date": "2026-11-01",
    "mock": true
   },
@@ -2888,7 +2888,7 @@
    "pack_size_g": 5,
    "pack_price": 146.2,
    "currency": "USD",
-   "supplier": "예시 공급사",
+   "supplier": "Example supplier",
    "as_of_date": "2026-11-01",
    "mock": true
   },
@@ -2897,7 +2897,7 @@
    "pack_size_g": 100,
    "pack_price": 1005.0,
    "currency": "USD",
-   "supplier": "예시 공급사",
+   "supplier": "Example supplier",
    "as_of_date": "2026-11-01",
    "mock": true
   },
@@ -2906,7 +2906,7 @@
    "pack_size_g": 5,
    "pack_price": 172.0,
    "currency": "USD",
-   "supplier": "예시 공급사",
+   "supplier": "Example supplier",
    "as_of_date": "2026-11-01",
    "mock": true
   },
@@ -2915,7 +2915,7 @@
    "pack_size_g": 5,
    "pack_price": 187.6,
    "currency": "USD",
-   "supplier": "예시 공급사",
+   "supplier": "Example supplier",
    "as_of_date": "2026-11-01",
    "mock": true
   },
@@ -2924,7 +2924,7 @@
    "pack_size_g": 25,
    "pack_price": 290.67,
    "currency": "USD",
-   "supplier": "예시 공급사",
+   "supplier": "Example supplier",
    "as_of_date": "2026-11-01",
    "mock": true
   },
@@ -2933,7 +2933,7 @@
    "pack_size_g": 5,
    "pack_price": 66.2,
    "currency": "USD",
-   "supplier": "예시 공급사",
+   "supplier": "Example supplier",
    "as_of_date": "2026-11-01",
    "mock": true
   },
@@ -2942,7 +2942,7 @@
    "pack_size_g": 100,
    "pack_price": 971.0,
    "currency": "USD",
-   "supplier": "예시 공급사",
+   "supplier": "Example supplier",
    "as_of_date": "2026-11-01",
    "mock": true
   },
@@ -2951,7 +2951,7 @@
    "pack_size_g": 25,
    "pack_price": 418.77,
    "currency": "USD",
-   "supplier": "예시 공급사",
+   "supplier": "Example supplier",
    "as_of_date": "2026-11-01",
    "mock": true
   },
@@ -2960,7 +2960,7 @@
    "pack_size_g": 5,
    "pack_price": 147.6,
    "currency": "USD",
-   "supplier": "예시 공급사",
+   "supplier": "Example supplier",
    "as_of_date": "2026-11-01",
    "mock": true
   },
@@ -2969,7 +2969,7 @@
    "pack_size_g": 100,
    "pack_price": 51.0,
    "currency": "USD",
-   "supplier": "예시 공급사",
+   "supplier": "Example supplier",
    "as_of_date": "2026-11-01",
    "mock": true
   }

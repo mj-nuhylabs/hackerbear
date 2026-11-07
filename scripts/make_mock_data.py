@@ -95,15 +95,15 @@ def mock_price(smiles: str) -> dict:
         "pack_size_g": pack,
         "pack_price": round(per_g * pack * discount, 2),
         "currency": "USD",
-        "supplier": "예시 공급사",
+        "supplier": "Example supplier",
         "as_of_date": "2026-11-01",
         "mock": True,
     }
 
 
 GAP_POOL = [
-    "오쏘-이치환 아릴", "전자 부족 헤테로아릴", "입체장애 2차 아민", "자유 페놀 OH 공존",
-    "보호되지 않은 1차 알코올", "α-키랄 카보닐", "피리딘 N-옥사이드", "알카인 공존",
+    "ortho,ortho-disubstituted aryl", "electron-poor heteroaryl", "hindered secondary amine", "free phenolic OH present",
+    "unprotected primary alcohol", "alpha-chiral carbonyl", "pyridine N-oxide", "alkyne present",
 ]
 
 
@@ -133,7 +133,7 @@ def walk(node: dict, steps: list, leaves: dict):
         "product": product,
         "evidence": {
             "tier": tier,
-            "source_ids": [f"US-예시-{seed % 9000000 + 1000000}"] if tier != "COMPUTED" else [],
+            "source_ids": [f"US-EXAMPLE-{seed % 9000000 + 1000000}"] if tier != "COMPUTED" else [],
             "precedent_count": occ,
             "url": None,
             "mock": ["source_ids"],
@@ -196,9 +196,9 @@ def main(names: list[str]):
 
     # 데모용: 첫 타겟 최상위 경로의 마지막 스텝을 REPORTED 예시로 (전부 예시값)
     s = targets[0]["routes"][0]["steps"][-1]
-    s["evidence"].update({"tier": "REPORTED", "source_ids": ["US-예시-7169791", "ORD-예시-3f9a2c"], "mock": ["tier", "source_ids"]})
+    s["evidence"].update({"tier": "REPORTED", "source_ids": ["US-EXAMPLE-7169791", "ORD-EXAMPLE-3f9a2c"], "mock": ["tier", "source_ids"]})
     s["conditions"] = {"solvent": "DMF", "temperature_c": 25, "time_h": 12, "catalyst": None, "catalyst_loading": None,
-                       "source_id": "ORD-예시-3f9a2c", "mock": True}
+                       "source_id": "ORD-EXAMPLE-3f9a2c", "mock": True}
     s["reported_yield"] = 0.82
     s["mock"] = s["mock"] + ["conditions", "reported_yield"]
 

@@ -6,10 +6,10 @@ import { Mock, Mol, TIER_INFO, TierBadge } from './bits'
 
 function Conditions({ c }) {
   const rows = [
-    ['용매', c?.solvent],
-    ['온도', c?.temperature_c != null ? `${c.temperature_c} °C` : null],
-    ['시간', c?.time_h != null ? `${c.time_h} h` : null],
-    ['촉매', c?.catalyst],
+    ['Solvent', c?.solvent],
+    ['Temperature', c?.temperature_c != null ? `${c.temperature_c} °C` : null],
+    ['Time', c?.time_h != null ? `${c.time_h} h` : null],
+    ['Catalyst', c?.catalyst],
   ]
   return (
     <>
@@ -18,7 +18,7 @@ function Conditions({ c }) {
           <dt>{k}</dt>
           <dd>
             {v ?? DASH}
-            {v != null && c?.mock && <Mock what="반응 조건" />}
+            {v != null && c?.mock && <Mock what="Conditions" />}
           </dd>
         </div>
       ))}
@@ -53,36 +53,37 @@ function Explain({ route, stepIndex }) {
     <div className="explain">
       <div className="explain-head">
         <div>
-          <h3>설명</h3>
-          <p className="muted">이 단계의 출처 레코드만 입력으로 받아 LLM이 문장으로 정리합니다.</p>
+          <h3>Explanation</h3>
+          <p className="muted">The model writes prose from this step&rsquo;s source records and nothing else.</p>
         </div>
         {state.status !== 'done' && (
           <button type="button" className="btn" onClick={run} disabled={state.status === 'loading'}>
-            {state.status === 'loading' ? '작성 중…' : '설명 생성'}
+            {state.status === 'loading' ? 'Writing…' : 'Write explanation'}
           </button>
         )}
       </div>
       {state.status === 'done' && !state.guard.ok && (
-        <p className="guard guard-fail">가드가 막았습니다: {state.guard.hits.join(', ')}이(가) 포함되어 있습니다.</p>
+        <p className="guard guard-fail">Guard blocked this: the text contains {state.guard.hits.join(', ')}.</p>
       )}
       {state.status === 'done' && state.guard.ok && (
         <>
           <div className="explain-cols">
             <section>
-              <h4>왜 될 만한가</h4>
+              <h4>Why it should work</h4>
               <p>{state.data.why_works}</p>
             </section>
             <section>
-              <h4>어디서 막힐 수 있나</h4>
+              <h4>Where it could fail</h4>
               <p>{state.data.why_fails}</p>
             </section>
             <section>
-              <h4>다음 실험</h4>
+              <h4>Next experiment</h4>
               <p>{state.data.next_experiment}</p>
             </section>
           </div>
           <p className="guard guard-ok">
-            출력 가드 통과: 구조식, 숫자와 단위, DOI, 특허번호가 없습니다. {state.data.mock && <Mock what="설명문" />}
+            Guard passed: no structures, no numbers with units, no DOIs, no patent numbers.{' '}
+            {state.data.mock && <Mock what="Explanation" />}
           </p>
         </>
       )}
@@ -102,15 +103,15 @@ export default function StepDetail({ route, stepIndex, onSelect, scale, targetG 
       <header className="step-head">
         <div className="step-title-row">
           <h2 id="step-title">
-            단계 {stepIndex + 1}
+            Step {stepIndex + 1}
             <span className="of"> / {n}</span>
           </h2>
           <TierBadge tier={ev.tier} />
-          {evMock('tier') && <Mock what="증거 등급" />}
+          {evMock('tier') && <Mock what="Evidence tier" />}
         </div>
         <div className="step-nav">
           <button type="button" className="ghost-btn" disabled={stepIndex === 0} onClick={() => onSelect(stepIndex - 1)}>
-            이전 단계
+            Previous
           </button>
           <button
             type="button"
@@ -118,7 +119,7 @@ export default function StepDetail({ route, stepIndex, onSelect, scale, targetG 
             disabled={stepIndex === n - 1}
             onClick={() => onSelect(stepIndex + 1)}
           >
-            다음 단계
+            Next
           </button>
         </div>
       </header>
@@ -142,33 +143,33 @@ export default function StepDetail({ route, stepIndex, onSelect, scale, targetG 
 
       <div className="step-grid">
         <div className="block">
-          <h3>근거</h3>
+          <h3>Evidence</h3>
           <p className="tier-say">{TIER_INFO[ev.tier].say}</p>
           <dl className="kv">
             <div className="kv-row">
-              <dt>템플릿 선례</dt>
+              <dt>Precedents</dt>
               <dd>
-                <span className="num">{ev.precedent_count.toLocaleString('ko-KR')}건</span>
-                <span className="src">USPTO 템플릿 라이브러리</span>
+                <span className="num">{ev.precedent_count.toLocaleString('en-US')}</span> records
+                <span className="src">USPTO template library</span>
               </dd>
             </div>
             <div className="kv-row">
-              <dt>출처 레코드</dt>
+              <dt>Sources</dt>
               <dd>
                 {ev.source_ids.length ? (
                   <span className="src-list">
                     {ev.source_ids.map((id) => (
                       <code key={id}>{id}</code>
                     ))}
-                    {evMock('source_ids') && <Mock what="출처 ID" />}
+                    {evMock('source_ids') && <Mock what="Source IDs" />}
                   </span>
                 ) : (
-                  <span className="muted">코퍼스에서 선례를 찾지 못함</span>
+                  <span className="muted">No precedent found in the corpus</span>
                 )}
               </dd>
             </div>
             <div className="kv-row">
-              <dt>템플릿 ID</dt>
+              <dt>Template ID</dt>
               <dd>
                 <code>{shortHash(s.template_id)}</code>
               </dd>
@@ -177,21 +178,21 @@ export default function StepDetail({ route, stepIndex, onSelect, scale, targetG 
         </div>
 
         <div className="block">
-          <h3>수율과 조건</h3>
+          <h3>Yield and conditions</h3>
           <dl className="kv">
             <div className="kv-row">
-              <dt>문헌 수율</dt>
+              <dt>Reported yield</dt>
               <dd>
                 {pct(s.reported_yield)}
-                {s.reported_yield != null && isMock('reported_yield') && <Mock what="문헌 수율" />}
+                {s.reported_yield != null && isMock('reported_yield') && <Mock what="Reported yield" />}
               </dd>
             </div>
             <div className="kv-row">
-              <dt>계산에 쓴 수율</dt>
+              <dt>Used in costing</dt>
               <dd>
                 {pct(s.reported_yield ?? s.assumed_yield)}
                 <span className={`assumed ${s.reported_yield != null ? 'is-reported' : ''}`}>
-                  {s.reported_yield != null ? '문헌값' : '가정값'}
+                  {s.reported_yield != null ? 'reported' : 'assumed'}
                 </span>
               </dd>
             </div>
@@ -200,29 +201,25 @@ export default function StepDetail({ route, stepIndex, onSelect, scale, targetG 
         </div>
 
         <div className="block">
-          <h3>
-            반응 타당성 {isMock('plausibility_calibrated') && <Mock what="타당성 점수" />}
-          </h3>
-          <Bar label="모델 원점수" value={s.plausibility_raw} />
-          <Bar label="캘리브레이션 확률" value={s.plausibility_calibrated} emphasize />
-          <p className="muted small">판단은 캘리브레이션된 확률로 합니다.</p>
+          <h3>Reaction plausibility {isMock('plausibility_calibrated') && <Mock what="Plausibility" />}</h3>
+          <Bar label="Model raw score" value={s.plausibility_raw} />
+          <Bar label="Calibrated" value={s.plausibility_calibrated} emphasize />
+          <p className="muted small">Judge by the calibrated probability.</p>
         </div>
 
         <div className="block">
-          <h3>이 단계 스케일</h3>
+          <h3>Scale at this step</h3>
           <p className="scale-num">
             <span className="num">{mmol(scale?.nRxn)}</span> mmol
           </p>
-          <p className="muted small">타겟 {targetG} g을 얻으려면 이만큼 반응시켜야 합니다.</p>
+          <p className="muted small">What you have to run to end up with {targetG} g of target.</p>
         </div>
       </div>
 
       <Explain key={`${route.id}-${stepIndex}`} route={route} stepIndex={stepIndex} />
 
       <div className="gaps">
-        <h3>
-          이 템플릿으로 아직 시험되지 않은 기질군 {isMock('gaps') && <Mock what="갭 분석" />}
-        </h3>
+        <h3>Substrate classes this template has not been tried on {isMock('gaps') && <Mock what="Gaps" />}</h3>
         <ul className="chips">
           {s.gaps.map((g) => (
             <li key={g}>{g}</li>
