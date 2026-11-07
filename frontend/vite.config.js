@@ -34,6 +34,9 @@ export default defineConfig({
   },
   build: { target: 'es2022', chunkSizeWarningLimit: 8000 },
   server: {
+    // 같은 Wi-Fi의 다른 컴퓨터에서도 열 수 있게 0.0.0.0에 바인드한다. /api는 이 서버가 대신
+    // 호출하므로 백엔드는 127.0.0.1에 그대로 두면 된다 (CORS도 필요 없음)
+    host: true,
     // 프론트는 /api/* 로 호출 → FastAPI(:8000)로 프록시
     proxy: {
       '/api': {

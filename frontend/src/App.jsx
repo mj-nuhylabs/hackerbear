@@ -9,6 +9,7 @@ import CostSheet from './components/CostSheet'
 import { ImageSquare, SidebarSimple } from '@phosphor-icons/react'
 import DrawPane, { sendToDraw } from './components/DrawPane'
 import ImagePanel from './components/ImagePanel'
+import Home from './components/Home'
 import { ModelPanel } from './components/ModelPanel'
 import { BAR_H, DRAW_MIN, STRIP, WIDE_MIN, drawMax } from './lib/layout'
 import { engineReady, nameOf, readText } from './octet/engine'
@@ -26,8 +27,6 @@ const OCTET_KIND = {
   Abbreviation: 'Abbreviation',
 }
 
-// Wide enough for Octet Draw and SynthPath side by side; narrower, the drawing pane covers the results while open.
-const WIDE = `(min-width: ${WIDE_MIN}px)`
 const DRAW_W_KEY = 'synthpath.drawWidth'
 const subscribeResize = (f) => {
   addEventListener('resize', f)
@@ -83,6 +82,63 @@ function QueryReading({ reading, detected }) {
     )
   if (detected) return <span className="query-read is-faint">{KIND_TAG[detected]}</span>
   return null
+}
+
+// Typing a target: in the app bar over the results, and at full size on the homescreen (variant 'hero'). Only one
+// is on the page at a time, so they share their element ids' stem.
+function SearchForm({ variant, query, setQuery, kind, setKind, reading, detected, busy, onRun, onImage }) {
+  const hero = variant === 'hero'
+  // The homescreen puts the cursor in its field, except on a touch screen, where that would raise the keyboard.
+  const [focus] = useState(() => hero && matchMedia('(pointer: fine)').matches)
+  return (
+    <form
+      className={`search ${hero ? 'search-hero' : ''}`}
+      onSubmit={(e) => {
+        e.preventDefault()
+        if (query.trim()) onRun(query)
+      }}
+    >
+      <label className="sr-only" htmlFor="kind">
+        Input type
+      </label>
+      <select id="kind" value={kind} onChange={(e) => setKind(e.target.value)}>
+        <option value="auto">Auto-detect</option>
+        <option value="name">Name</option>
+        <option value="cas">CAS number</option>
+        <option value="smiles">SMILES</option>
+      </select>
+      <div className="query">
+        <label className="sr-only" htmlFor="q">
+          Target molecule
+        </label>
+        <input
+          id="q"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder={hero ? 'Name, CAS number or SMILES, for example imatinib' : 'Name, CAS number or SMILES'}
+          autoComplete="off"
+          spellCheck="false"
+          autoFocus={focus}
+        />
+        <QueryReading reading={reading} detected={detected} />
+      </div>
+      {onImage && (
+        <button
+          type="button"
+          className="btn image-btn"
+          aria-label="Read a structure from an image"
+          title="Read a structure from an image"
+          onClick={onImage}
+        >
+          <ImageSquare size={18} aria-hidden="true" />
+          <span aria-hidden="true">Image</span>
+        </button>
+      )}
+      <button type="submit" className="btn btn-primary" disabled={busy}>
+        Find routes
+      </button>
+    </form>
+  )
 }
 
 function TargetCard({ target, onDraw }) {
@@ -146,7 +202,7 @@ function RouteList({ routes, costs, routeId, onPick, targetG, search }) {
         <h2 id="routes-title">{routes.length} routes</h2>
         <p className="muted small">AiZynthFinder searched for {search?.search_time_s ?? '—'} s. Highest score first.</p>
       </div>
-      <ul className="route-list">
+      <ul className="route-list" data-n={routes.length}>
         {routes.map((r, i) => {
           const c = tierCounts(r)
           return (
@@ -235,8 +291,9 @@ function Loading({ phase, kind }) {
 }
 
 export default function App() {
-  const [query, setQuery] = useState('Imatinib')
+  const [query, setQuery] = useState('')
   const [kind, setKind] = useState('auto')
+  // 'idle' is the homescreen: before the first search, and again from the wordmark.
   const [phase, setPhase] = useState('idle')
   const [error, setError] = useState(null)
   const [target, setTarget] = useState(null)
@@ -245,11 +302,12 @@ export default function App() {
   const [stepIdx, setStepIdx] = useState(0)
   const [targetG, setTargetG] = useState(1)
   const [purification, setPurification] = useState(0.9)
-  // Octet Draw is open from the start where it fits beside the results.
-  const [drawOpen, setDrawOpen] = useState(() => matchMedia(WIDE).matches)
+  // Octet Draw starts closed, so the homescreen has the window; its Draw button (or the bar's) opens it.
+  const [drawOpen, setDrawOpen] = useState(false)
   const [drawW, setDrawW] = useState(savedDrawWidth)
   const [imageOpen, setImageOpen] = useState(false)
   const winW = useSyncExternalStore(subscribeResize, windowWidth)
+  // Wide enough for Octet Draw and SynthPath side by side; narrower, the drawing pane covers the results while open.
   const wide = winW >= WIDE_MIN
   const paneW = Math.max(DRAW_MIN, Math.min(drawW, drawMax()))
   const [runKind, setRunKind] = useState(kind)
@@ -330,10 +388,22 @@ export default function App() {
     setStepIdx(r.steps.length - 1)
   }
 
-  useEffect(() => {
-    run('Imatinib', 'name')
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  // Back to the homescreen. A search still running is dropped (its answer no longer matches runId).
+  function goHome() {
+    runId.current++
+    setError(null)
+    setTarget(null)
+    setRoutes([])
+    setCosts({})
+    setPhase('idle')
+    scrollTo(0, 0)
+  }
+
+  // An example target from the homescreen: searched by name, as typed.
+  function runExample(name) {
+    setQuery(name)
+    run(name, 'name')
+  }
 
   // Every route's bill of materials, from POST /cost. Debounced, since the purification slider fires on every tick.
   useEffect(() => {
@@ -380,7 +450,18 @@ export default function App() {
     }
   }, [query, readsNames])
   const shownReading = readsNames && reading?.text === query ? reading : null
-  const toggleLabel = drawOpen ? (wide ? 'Hide drawing' : 'Back to results') : 'Draw'
+  const home = phase === 'idle'
+  const toggleLabel = drawOpen ? (wide ? 'Hide drawing' : home ? 'Back to home' : 'Back to results') : 'Draw'
+  const searchProps = {
+    query,
+    setQuery,
+    kind,
+    setKind,
+    reading: shownReading,
+    detected,
+    busy,
+    onRun: (q) => run(q),
+  }
 
   return (
     <div
@@ -389,7 +470,9 @@ export default function App() {
     >
       <header className="appbar">
         <div className="appbar-lead">
-          <span className="wordmark">SynthPath</span>
+          <button type="button" className="wordmark wordmark-btn" onClick={goHome} title="Home">
+            SynthPath
+          </button>
           <button
             type="button"
             className="pane-toggle"
@@ -402,161 +485,96 @@ export default function App() {
             <span aria-hidden="true">{toggleLabel}</span>
           </button>
         </div>
-        <form
-          className="search"
-          onSubmit={(e) => {
-            e.preventDefault()
-            if (query.trim()) run(query)
-          }}
-        >
-          <label className="sr-only" htmlFor="kind">
-            Input type
-          </label>
-          <select id="kind" value={kind} onChange={(e) => setKind(e.target.value)}>
-            <option value="auto">Auto-detect</option>
-            <option value="name">Name</option>
-            <option value="cas">CAS number</option>
-            <option value="smiles">SMILES</option>
-          </select>
-          <div className="query">
-            <label className="sr-only" htmlFor="q">
-              Target molecule
-            </label>
-            <input
-              id="q"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Name, CAS number or SMILES"
-              autoComplete="off"
-              spellCheck="false"
-            />
-            <QueryReading reading={shownReading} detected={detected} />
-          </div>
-          <button
-            type="button"
-            className="btn image-btn"
-            aria-label="Read a structure from an image"
-            title="Read a structure from an image"
-            onClick={() => setImageOpen(true)}
-          >
-            <ImageSquare size={18} aria-hidden="true" />
-            <span aria-hidden="true">Image</span>
-          </button>
-          <button type="submit" className="btn btn-primary" disabled={busy}>
-            Find routes
-          </button>
-        </form>
+        {/* The homescreen has the search at full size in its hero, so the bar carries none of its own there. */}
+        {!home && <SearchForm {...searchProps} onImage={() => setImageOpen(true)} />}
       </header>
 
       <div className="notebook">
-        <div className="wrap context">
-          <div className="examples" role="group" aria-label="Example targets">
-            <span className="muted small">Examples</span>
-            {api.DEMO_TARGETS.map((t) => (
-              <button
-                key={t.name}
-                type="button"
-                className="chip-btn"
-                onClick={() => {
-                  setQuery(t.name)
-                  run(t.name, 'name')
-                }}
-              >
-                {t.name}
-              </button>
-            ))}
-          </div>
-          <p className="mock-note small">
-            {api.USE_MOCK ? (
-              <>
-                Mockup. Structures, masses, routes and precedent counts are computed with RDKit and AiZynthFinder;
-                values tagged <Mock /> are placeholders.
-              </>
-            ) : (
-              <>
-                Live. Routes and precedent counts come from AiZynthFinder, records and procedures from ORD, structures
-                and masses from RDKit, and scores from our plausibility model. Values tagged <Mock /> are
-                placeholders.
-              </>
+        {home ? (
+          <Home
+            search={<SearchForm {...searchProps} variant="hero" />}
+            onRun={runExample}
+            onDraw={() => openDraw()}
+            onImage={() => setImageOpen(true)}
+          />
+        ) : (
+          <main className="wrap bench">
+            {phase === 'error' && (
+              <div className="panel error" role="alert">
+                <p className="loading-title">No match for &ldquo;{query}&rdquo;</p>
+                <p className="muted">{error}</p>
+              </div>
             )}
-          </p>
-        </div>
+            {busy && <Loading phase={phase} kind={runKind} />}
 
-        <main className="wrap bench">
-          {phase === 'error' && (
-            <div className="panel error" role="alert">
-              <p className="loading-title">No match for &ldquo;{query}&rdquo;</p>
-              <p className="muted">{error}</p>
-            </div>
-          )}
-          {busy && <Loading phase={phase} kind={runKind} />}
+            {target && (
+              <aside className="rail">
+                <TargetCard target={target} onDraw={() => openDraw(target.smiles)} />
+                {phase === 'ready' && (
+                  <RouteList
+                    routes={routes}
+                    costs={costs}
+                    routeId={routeId}
+                    onPick={pick}
+                    targetG={targetG}
+                    search={target.search}
+                  />
+                )}
+              </aside>
+            )}
 
-          {target && (
-            <aside className="rail">
-              <TargetCard target={target} onDraw={() => openDraw(target.smiles)} />
-              {phase === 'ready' && (
-                <RouteList
-                  routes={routes}
-                  costs={costs}
-                  routeId={routeId}
-                  onPick={pick}
-                  targetG={targetG}
-                  search={target.search}
-                />
-              )}
-            </aside>
-          )}
-
-          {phase === 'ready' && route && (
-            <div className="work">
-              <section className="panel scheme-panel" aria-labelledby="scheme-title">
-                <div className="panel-head scheme-head">
-                  <div>
-                    <h2 id="scheme-title">
-                      Route {routeIndex + 1}{' '}
-                      <span className="of">
-                        {route.steps.length} step{route.steps.length > 1 ? 's' : ''}
-                      </span>
-                    </h2>
-                    <p className="muted small">Click an arrow to see that step&rsquo;s evidence and conditions.</p>
+            {phase === 'ready' && route && (
+              <div className="work">
+                <section className="panel scheme-panel" aria-labelledby="scheme-title">
+                  <div className="panel-head scheme-head">
+                    <div>
+                      <h2 id="scheme-title">
+                        Route {routeIndex + 1}{' '}
+                        <span className="of">
+                          {route.steps.length} step{route.steps.length > 1 ? 's' : ''}
+                        </span>
+                      </h2>
+                      <p className="muted small">Click an arrow to see that step&rsquo;s evidence and conditions.</p>
+                    </div>
+                    <Legend />
                   </div>
-                  <Legend />
-                </div>
-                <RouteScheme route={route} targetName={target.name} selectedStep={stepIdx} onSelect={setStepIdx} />
-              </section>
-
-              <StepDetail
-                route={route}
-                stepIndex={stepIdx}
-                onSelect={setStepIdx}
-                scale={costs[route.id]?.stepScale[stepIdx]}
-                targetG={targetG}
-                onOpenInDraw={openDraw}
-              />
-
-              {costs[route.id] ? (
-                <CostSheet
-                  cost={costs[route.id]}
-                  targetG={targetG}
-                  setTargetG={setTargetG}
-                  purification={purification}
-                  setPurification={setPurification}
-                />
-              ) : (
-                <section className="panel cost" aria-labelledby="cost-title">
-                  <h2 id="cost-title">Bill of materials</h2>
-                  <p className="muted">
-                    {costs[route.id] === null
-                      ? 'The bill of materials could not be computed. If the backend restarted, run the search again.'
-                      : 'Working out the bill of materials…'}
-                  </p>
+                  <RouteScheme route={route} targetName={target.name} selectedStep={stepIdx} onSelect={setStepIdx} />
                 </section>
-              )}
 
-              <ModelPanel />
-            </div>
-          )}
-        </main>
+                <StepDetail
+                  route={route}
+                  stepIndex={stepIdx}
+                  onSelect={setStepIdx}
+                  scale={costs[route.id]?.stepScale[stepIdx]}
+                  targetG={targetG}
+                  onOpenInDraw={openDraw}
+                  indexStats={target?.search?.analog_index}
+                />
+
+                {costs[route.id] ? (
+                  <CostSheet
+                    cost={costs[route.id]}
+                    targetG={targetG}
+                    setTargetG={setTargetG}
+                    purification={purification}
+                    setPurification={setPurification}
+                  />
+                ) : (
+                  <section className="panel cost" aria-labelledby="cost-title">
+                    <h2 id="cost-title">Bill of materials</h2>
+                    <p className="muted">
+                      {costs[route.id] === null
+                        ? 'The bill of materials could not be computed. If the backend restarted, run the search again.'
+                        : 'Working out the bill of materials…'}
+                    </p>
+                  </section>
+                )}
+
+                <ModelPanel />
+              </div>
+            )}
+          </main>
+        )}
       </div>
 
       <ImagePanel
