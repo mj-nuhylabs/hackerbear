@@ -14,7 +14,7 @@ import scipy.sparse as sp
 sys.path.insert(0, "/Users/mj/Desktop/HackFM/backend")
 D = "/Users/mj/Desktop/HackFM/backend/data"
 
-ds = pd.read_parquet(f"{D}/ml/dataset.parquet", columns=["rxn", "label", "group", "corpus"])
+ds = pd.read_parquet(f"{D}/ml/dataset.parquet", columns=["rxn", "label", "group", "rxn_class"])
 X = sp.load_npz(f"{D}/ml/X_drfp.npz")
 y = ds.label.to_numpy()
 print(f"dataset {X.shape[0]:,} rows")
