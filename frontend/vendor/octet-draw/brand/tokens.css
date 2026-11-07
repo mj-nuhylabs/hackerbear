@@ -1,0 +1,169 @@
+/* Octet design tokens, generated from tokens.json. Do not edit by hand. */
+/* No web font import: the desktop app bundles the fonts (src/main.tsx). Keep this when regenerating. */
+/* color-scheme comes from color.scheme in tokens.json: native controls follow the theme. */
+
+:root, [data-theme="light"] {
+  color-scheme: light;
+  --brand: #213C99;
+  --brand-hover: #1A317F;
+  --brand-bright: #3F6BFF;
+  --brand-mist: #DCE4F6;
+  --link: #213C99;
+  --navy: #000E2F;
+  --canvas: #FFFFFF;
+  --surface: #F8FAFC;
+  --surface-raised: #FFFFFF;
+  --surface-sunken: #EEF2F8;
+  --hairline: #E2E8F0;
+  --outline: #8190A5;
+  --swatch-edge: rgba(15, 23, 42, 0.12);
+  --ink: #0F172A;
+  --ink-muted: #475569;
+  --ink-faint: #64748B;
+  --on-brand: #FFFFFF;
+  --tooltip: #0F172A;
+  --on-tooltip: #FFFFFF;
+  --selection: rgba(63, 107, 255, 0.14);
+  --backdrop: rgba(15, 23, 42, 0.16);
+  --success: #22775B;
+  --warning: #8B4E18;
+  --error: #B42323;
+  --atom-n: #213C99;
+  --atom-o: #C42B2B;
+  --atom-s: #8A5A00;
+  --atom-p: #B4500F;
+  --atom-halogen: #22775B;
+  --atom-br: #9A3B1C;
+  --atom-i: #940094;
+  --atom-b: #B0475F;
+  --atom-si: #85622B;
+  --atom-metal: #6B35B8;
+  --shadow-float: 0 1px 2px rgba(15, 23, 42, 0.06), 0 8px 24px rgba(15, 23, 42, 0.10);
+  --shadow-focus: 0 0 0 2px #3F6BFF;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --brand: #7299FF;
+    --brand-hover: #89ABFF;
+    --brand-bright: #3F6BFF;
+    --brand-mist: #24335A;
+    --link: #7299FF;
+    --navy: #000E2F;
+    --canvas: #000B24;
+    --surface: #0D1D40;
+    --surface-raised: #142650;
+    --surface-sunken: #000B24;
+    --hairline: #24335A;
+    --outline: #6073A0;
+    --swatch-edge: #8494BD;
+    --ink: #ECF0F8;
+    --ink-muted: #AAB8D6;
+    --ink-faint: #8494BD;
+    --on-brand: #000E2F;
+    --tooltip: #24335A;
+    --on-tooltip: #FFFFFF;
+    --selection: rgba(63, 107, 255, 0.30);
+    --backdrop: rgba(0, 0, 0, 0.45);
+    --success: #46B993;
+    --warning: #E6C5A8;
+    --error: #EFA7A7;
+    --atom-n: #7299FF;
+    --atom-o: #F28B8B;
+    --atom-s: #E0B341;
+    --atom-p: #F2A464;
+    --atom-halogen: #46B993;
+    --atom-br: #EE9A7E;
+    --atom-i: #E68AE6;
+    --atom-b: #F5A3B5;
+    --atom-si: #E0BE8A;
+    --atom-metal: #C8B3E6;
+    --shadow-float: 0 1px 2px rgba(0, 0, 0, 0.40), 0 8px 24px rgba(0, 0, 0, 0.45);
+    --shadow-focus: 0 0 0 2px #3F6BFF;
+  }
+}
+[data-theme="dark"] {
+  color-scheme: dark;
+  --brand: #7299FF;
+  --brand-hover: #89ABFF;
+  --brand-bright: #3F6BFF;
+  --brand-mist: #24335A;
+  --link: #7299FF;
+  --navy: #000E2F;
+  --canvas: #000B24;
+  --surface: #0D1D40;
+  --surface-raised: #142650;
+  --surface-sunken: #000B24;
+  --hairline: #24335A;
+  --outline: #6073A0;
+  --swatch-edge: #8494BD;
+  --ink: #ECF0F8;
+  --ink-muted: #AAB8D6;
+  --ink-faint: #8494BD;
+  --on-brand: #000E2F;
+  --tooltip: #24335A;
+  --on-tooltip: #FFFFFF;
+  --selection: rgba(63, 107, 255, 0.30);
+  --backdrop: rgba(0, 0, 0, 0.45);
+  --success: #46B993;
+  --warning: #E6C5A8;
+  --error: #EFA7A7;
+  --atom-n: #7299FF;
+  --atom-o: #F28B8B;
+  --atom-s: #E0B341;
+  --atom-p: #F2A464;
+  --atom-halogen: #46B993;
+  --atom-br: #EE9A7E;
+  --atom-i: #E68AE6;
+  --atom-b: #F5A3B5;
+  --atom-si: #E0BE8A;
+  --atom-metal: #C8B3E6;
+  --shadow-float: 0 1px 2px rgba(0, 0, 0, 0.40), 0 8px 24px rgba(0, 0, 0, 0.45);
+  --shadow-focus: 0 0 0 2px #3F6BFF;
+}
+:root {
+  --font-sans: "Instrument Sans", -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-icon: 22.37%;
+  --radius-pill: 9999px;
+  --bond-length: 14.4pt;
+  --bond-width: 0.6pt;
+  --bond-bold: 2pt;
+  --bond-spacing: 18%;
+  --hash-spacing: 2.5pt;
+  --chain-angle: 120deg;
+  --margin-width: 1.6pt;
+  --atom-label-font: Arial, Helvetica, sans-serif;
+  --atom-label-size: 10pt;
+  --caption-font: Arial, Helvetica, sans-serif;
+  --caption-size: 10pt;
+  --arrow-head: 6pt;
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --motion-fast: 150ms;
+  --motion: 180ms;
+  --motion-slow: 200ms;
+  --ease-drop: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --motion-drop: 260ms;
+}
+
+.text-display { font-family: var(--font-sans); font-size: 64px; line-height: 64px; font-weight: 600; letter-spacing: -0.035em; }
+.text-title { font-family: var(--font-sans); font-size: 32px; line-height: 38px; font-weight: 600; letter-spacing: -0.025em; }
+.text-headline { font-family: var(--font-sans); font-size: 20px; line-height: 26px; font-weight: 600; letter-spacing: -0.015em; }
+.text-body { font-family: var(--font-sans); font-size: 15px; line-height: 22px; font-weight: 400; letter-spacing: -0.005em; }
+.text-ui { font-family: var(--font-sans); font-size: 13px; line-height: 18px; font-weight: 400; }
+.text-ui-strong { font-family: var(--font-sans); font-size: 13px; line-height: 18px; font-weight: 600; }
+.text-caption { font-family: var(--font-sans); font-size: 11px; line-height: 14px; font-weight: 500; letter-spacing: 0.01em; }
+.text-smiles { font-family: var(--font-mono); font-size: 13px; line-height: 18px; font-weight: 400; }
+.text-formula { font-family: var(--font-mono); font-size: 13px; line-height: 18px; font-weight: 500; }

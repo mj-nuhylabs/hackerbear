@@ -34,15 +34,21 @@ export function detectKind(q) {
   return 'name'
 }
 
-export async function resolve(query, kind = 'auto') {
+// inchikey: set for a structure drawn in Octet Draw, which computes it. The mock matches a drawing to a demo target
+// by InChIKey, since Octet's SMILES is not written the same way as RDKit's.
+export async function resolve(query, kind = 'auto', { inchikey } = {}) {
   if (!USE_MOCK) return post('/resolve', { query, kind })
   await sleep(380)
   const q = query.trim().toLowerCase()
-  const t = demo.targets.find((t) => t.aliases.includes(q) || t.compound.smiles.toLowerCase() === q)
+  const t = demo.targets.find(
+    (t) => t.aliases.includes(q) || t.compound.smiles.toLowerCase() === q || (inchikey && t.compound.inchikey === inchikey),
+  )
   if (!t) {
     const names = DEMO_TARGETS.map((d) => d.name).join(', ')
     throw new Error(
-      `The mockup only carries ${names} for now. The real build resolves any name or CAS number through PubChem.`,
+      inchikey
+        ? `The mockup only carries ${names} for now, and the drawing is none of them. The real build searches any drawn structure.`
+        : `The mockup only carries ${names} for now. The real build resolves any name or CAS number through PubChem.`,
     )
   }
   return { ...hydrate(t.compound), name: t.name, cas: t.cas, search: t.search }

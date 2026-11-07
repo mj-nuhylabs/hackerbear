@@ -92,8 +92,13 @@
   color-scheme: dark;
 }
 
-* { box-sizing: border-box; }
 html { -webkit-text-size-adjust: 100%; }
+
+/* SynthPath's rules stop at Octet Draw's element (.octet-host), which brings its own (scoped in vite.config.js).
+   The custom properties above stay outside: inside @scope a rule matches only below the root, never :root itself. */
+@scope (:root) to (.octet-host) {
+
+* { box-sizing: border-box; }
 body {
   margin: 0;
   background: var(--bg);
@@ -523,6 +528,55 @@ button, input, select { font: inherit; color: inherit; }
 }
 .calib-frame code { font-size: var(--fs-xs); }
 
+/* ── 그리기 (Octet Draw, 이 페이지 안에서 렌더) ───── */
+/* Octet's editor fills the window (position: fixed, inset 0, and it measures innerWidth/innerHeight), so the panel
+   is the whole viewport and SynthPath's controls float over the bottom-left corner, clear of Octet's own panels. */
+.draw-btn { height: 40px; }
+.draw {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100dvh;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: var(--surface);
+  color: var(--ink);
+  overflow: hidden;
+}
+.draw::backdrop { background: rgb(16 21 25 / 0.5); }
+.draw-loading { position: absolute; inset: 0; display: grid; place-items: center; align-content: center; gap: 8px; text-align: center; padding: 24px; }
+.draw-bar {
+  position: fixed;
+  left: 16px;
+  bottom: 16px;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  max-width: min(560px, calc(100vw - 32px));
+  padding: 8px 8px 8px 14px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-panel);
+  box-shadow: 0 6px 24px rgb(16 21 25 / 0.18);
+  font-family: var(--font-body);
+  font-size: var(--fs-sm);
+  line-height: 1.4;
+}
+.draw-bar .btn { height: 34px; }
+.draw-bar .btn-primary { height: 34px; }
+.draw-status { flex: 1; min-width: 0; color: var(--ink-2); }
+.draw-problem { color: var(--bad); font-weight: 500; }
+.draw-open { display: block; margin: 2px auto 0; }
+.target-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+.octet-name { overflow-wrap: anywhere; }
+.octet-read { display: inline-flex; align-items: center; gap: 6px; margin-right: 4px; color: var(--ink-2); }
+.octet-read-mol { display: flex; height: 34px; color: var(--ink); }
+.octet-read-mol svg { height: 34px; width: auto; max-width: 150px; }
+
 /* ── 반응형 ───────────────────────── */
 @media (max-width: 1080px) {
   .bench { grid-template-columns: minmax(0, 1fr); }
@@ -540,9 +594,22 @@ button, input, select { font: inherit; color: inherit; }
 @media (max-width: 480px) {
   .search { flex-wrap: wrap; }
   .search input { flex-basis: calc(100% - 136px); }
-  .search .btn-primary { width: 100%; }
+  .search .btn-primary, .search .draw-btn { width: 100%; }
   .panel { padding: 14px; }
+  .draw-bar { right: 16px; flex-wrap: wrap; }
 }
 @media (prefers-reduced-motion: reduce) {
   .spinner { animation-duration: 2.4s; }
+}
+
+} /* @scope */
+
+/* Octet's editor starts from the browser's defaults, as in its own window; its scoped stylesheets set the rest
+   (brand/tokens.css on this element: colours, fonts, color-scheme). */
+.octet-host {
+  font: initial;
+  line-height: normal;
+  color: CanvasText;
+  text-wrap: initial;
+  -webkit-font-smoothing: auto;
 }

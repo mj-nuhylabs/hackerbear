@@ -7,17 +7,48 @@ import { CopyText, Mock, Mol, TIER_INFO, TierBadge } from './components/bits'
 import RouteScheme from './components/RouteScheme'
 import StepDetail from './components/StepDetail'
 import CostSheet from './components/CostSheet'
+import DrawPanel, { sendToDraw } from './components/DrawPanel'
+import { engineReady, nameOf, readText } from './octet/engine'
 
 const KIND_LABEL = { name: 'a name', cas: 'a CAS number', smiles: 'SMILES' }
 
-function TargetCard({ target }) {
+// Octet's name for the structure: its IUPAC namer, checked by reading the name back. Code, not a model; '—' when it
+// has none.
+function OctetName({ smiles }) {
+  const [name, setName] = useState(undefined) // undefined while Octet's engine loads
+  useEffect(() => {
+    let live = true
+    nameOf(smiles).then(
+      (n) => live && setName(n),
+      () => live && setName(null),
+    )
+    return () => {
+      live = false
+    }
+  }, [smiles])
+  if (name === undefined) return <span className="muted">Octet is loading…</span>
+  return name ?? '—'
+}
+
+function TargetCard({ target, onDraw }) {
   return (
     <section className="panel target" aria-labelledby="target-title">
       <Mol compound={target} size="lg" />
-      <h2 id="target-title" className="target-name">
-        {target.name}
-      </h2>
+      <div className="target-head">
+        <h2 id="target-title" className="target-name">
+          {target.name ?? 'Unnamed structure'}
+        </h2>
+        <button type="button" className="ghost-btn" onClick={onDraw}>
+          Open in Draw
+        </button>
+      </div>
       <dl className="kv">
+        {target.source && (
+          <div className="kv-row">
+            <dt>Structure from</dt>
+            <dd>{target.source}</dd>
+          </div>
+        )}
         <div className="kv-row">
           <dt>CAS</dt>
           <dd className="num">{target.cas ?? '—'}</dd>
@@ -38,6 +69,14 @@ function TargetCard({ target }) {
           <dt>SMILES</dt>
           <dd>
             <CopyText text={target.smiles} />
+          </dd>
+        </div>
+        <div className="kv-row kv-stack">
+          <dt title="Octet Draw's IUPAC namer, checked by reading the name back to the same structure">
+            IUPAC name (Octet)
+          </dt>
+          <dd className="octet-name">
+            <OctetName key={target.smiles} smiles={target.smiles} />
           </dd>
         </div>
       </dl>
@@ -119,7 +158,7 @@ function Legend() {
   )
 }
 
-function Loading({ phase }) {
+function Loading({ phase, kind }) {
   return (
     <div className="loading panel" role="status">
       <span className="spinner" aria-hidden="true" />
@@ -128,9 +167,11 @@ function Loading({ phase }) {
           {phase === 'resolving' ? 'Resolving the structure' : 'Searching retrosynthetic routes'}
         </p>
         <p className="muted small">
-          {phase === 'resolving'
-            ? 'Turning the name or CAS number into SMILES through PubChem, then canonicalizing with RDKit.'
-            : 'AiZynthFinder works backward up to 4 steps with USPTO templates until every branch reaches buyable material.'}
+          {phase !== 'resolving'
+            ? 'AiZynthFinder works backward up to 4 steps with USPTO templates until every branch reaches buyable material.'
+            : kind === 'smiles'
+              ? 'Canonicalizing the SMILES with RDKit.'
+              : 'Turning the name or CAS number into SMILES through PubChem, then canonicalizing with RDKit.'}
         </p>
       </div>
     </div>
@@ -148,19 +189,44 @@ export default function App() {
   const [stepIdx, setStepIdx] = useState(0)
   const [targetG, setTargetG] = useState(1)
   const [purification, setPurification] = useState(0.9)
+  const [drawOpen, setDrawOpen] = useState(false)
+  const [runKind, setRunKind] = useState(kind)
+  const [reading, setReading] = useState(null) // Octet's reading of the typed text: { text, ...readText() }
   const runId = useRef(0)
   const prices = api.getPrices()
 
-  async function run(q, k = kind) {
+  // extra: { inchikey, source } for a structure Octet drew or read (api.resolve matches the mock by InChIKey).
+  async function run(q, k = kind, extra = {}) {
     const id = ++runId.current
     setError(null)
     setTarget(null)
     setRoutes([])
+    let query = q
+    let as = k === 'auto' ? api.detectKind(q) : k
+    let more = extra
+    setRunKind(as)
     setPhase('resolving')
     try {
-      const t = await api.resolve(q, k)
+      // A name or CAS number goes through Octet's offline reader first, once it has loaded. Text it cannot read goes
+      // to /resolve as typed (PubChem in the real build).
+      if (!more.source && (as === 'name' || as === 'cas') && engineReady()) {
+        const read = await readText(q)
+        if (id !== runId.current) return
+        if (read.smiles) {
+          query = read.smiles
+          as = 'smiles'
+          more = {
+            inchikey: read.inchikey,
+            source: read.corrected
+              ? `Octet’s offline name reader, spelling fixed to “${read.shown}”`
+              : `Octet’s offline name reader (${read.kind})`,
+          }
+          setRunKind(as)
+        }
+      }
+      const t = await api.resolve(query, query === q ? k : 'smiles', more)
       if (id !== runId.current) return
-      setTarget(t)
+      setTarget({ ...t, source: more.source })
       setPhase('searching')
       const res = await api.getRoutes(t.smiles, 4)
       if (id !== runId.current) return
@@ -172,6 +238,12 @@ export default function App() {
       setError(e.message)
       setPhase('error')
     }
+  }
+
+  // Opens the Draw panel, with a structure added to the canvas (to the right of the drawing, selected) if given.
+  function openDraw(smiles) {
+    if (smiles) sendToDraw(smiles)
+    setDrawOpen(true)
   }
 
   function pick(r) {
@@ -193,6 +265,25 @@ export default function App() {
   const routeIndex = routes.findIndex((r) => r.id === routeId)
   const detected = kind === 'auto' ? api.detectKind(query) : null
   const busy = phase === 'resolving' || phase === 'searching'
+
+  // While a name or CAS number is typed, Octet shows what it reads it as (and starts loading in the background).
+  const asTyped = kind === 'auto' ? detected : kind
+  const readsNames = asTyped === 'name' || asTyped === 'cas'
+  useEffect(() => {
+    if (!readsNames || !query.trim()) return
+    let live = true
+    const t = setTimeout(() => {
+      readText(query).then(
+        (r) => live && setReading({ text: query, ...r }),
+        () => {},
+      )
+    }, 300)
+    return () => {
+      live = false
+      clearTimeout(t)
+    }
+  }, [query, readsNames])
+  const shownReading = readsNames && reading?.text === query ? reading : null
 
   return (
     <div className="app">
@@ -229,12 +320,28 @@ export default function App() {
               autoComplete="off"
               spellCheck="false"
             />
+            <button type="button" className="btn draw-btn" onClick={() => openDraw()}>
+              Draw
+            </button>
             <button type="submit" className="btn btn-primary" disabled={busy}>
               Find routes
             </button>
           </form>
           <div className="demos">
-            <span className="muted small">{detected ? `Read as ${KIND_LABEL[detected]}` : 'Try'}</span>
+            {shownReading?.smiles ? (
+              <span className="octet-read" title={shownReading.smiles}>
+                <span className="octet-read-mol" aria-hidden="true" dangerouslySetInnerHTML={{ __html: shownReading.svg }} />
+                <span className="small">
+                  {shownReading.corrected
+                    ? `Octet reads “${shownReading.shown}” (spelling fixed)`
+                    : `Octet reads it as: ${shownReading.kind}`}
+                </span>
+              </span>
+            ) : shownReading?.problem ? (
+              <span className="muted small">{shownReading.problem}</span>
+            ) : (
+              <span className="muted small">{detected ? `Read as ${KIND_LABEL[detected]}` : 'Try'}</span>
+            )}
             {api.DEMO_TARGETS.map((t) => (
               <button
                 key={t.name}
@@ -274,11 +381,11 @@ export default function App() {
             <p className="muted">{error}</p>
           </div>
         )}
-        {busy && <Loading phase={phase} />}
+        {busy && <Loading phase={phase} kind={runKind} />}
 
         {target && (
           <aside className="rail">
-            <TargetCard target={target} />
+            <TargetCard target={target} onDraw={() => openDraw(target.smiles)} />
             {phase === 'ready' && (
               <RouteList
                 routes={routes}
@@ -316,6 +423,7 @@ export default function App() {
               onSelect={setStepIdx}
               scale={costs[route.id]?.stepScale[stepIdx]}
               targetG={targetG}
+              onOpenInDraw={openDraw}
             />
 
             <CostSheet
@@ -342,6 +450,17 @@ export default function App() {
           </div>
         )}
       </main>
+
+      <DrawPanel
+        open={drawOpen}
+        onClose={() => setDrawOpen(false)}
+        busy={busy}
+        onSearch={({ smiles, inchikey }) => {
+          setDrawOpen(false)
+          setQuery(smiles)
+          run(smiles, 'smiles', { inchikey, source: 'Drawn in Octet Draw' })
+        }}
+      />
     </div>
   )
 }

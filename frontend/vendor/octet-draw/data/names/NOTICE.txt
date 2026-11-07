@@ -1,0 +1,13 @@
+Wikidata
+https://www.wikidata.org
+
+Name to Structure's dictionary (data/names/dictionary.tsv.gz) holds names, CAS registry numbers and structures of
+chemical compounds from Wikidata, read on 5 November 2026. Wikidata's data is under Creative Commons CC0 1.0
+(https://creativecommons.org/publicdomain/zero/1.0/): no rights reserved. Octet names Wikidata as the source.
+
+FDA Global Substance Registration System (UNII list)
+https://precision.fda.gov/uniisearch
+
+Name to Structure's dictionary also holds CAS registry numbers, names and structures of substances from the U.S. Food
+and Drug Administration's UNII list (4 August 2026), read on 5 November 2026. It is a work of the U.S. government and
+is not copyrighted. Octet names the FDA as the source. The FDA does not endorse Octet.

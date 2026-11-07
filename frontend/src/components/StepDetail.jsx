@@ -91,8 +91,19 @@ function Explain({ route, stepIndex }) {
   )
 }
 
-export default function StepDetail({ route, stepIndex, onSelect, scale, targetG }) {
+export default function StepDetail({ route, stepIndex, onSelect, scale, targetG, onOpenInDraw }) {
   const s = route.steps[stepIndex]
+  // A compound's molar mass, and a button that opens it in the Draw panel (Octet Draw).
+  const caption = (c) => (
+    <>
+      {`${c.mw.toFixed(2)} g/mol`}
+      {onOpenInDraw && (
+        <button type="button" className="ghost-btn draw-open" onClick={() => onOpenInDraw(c.smiles)}>
+          Open in Draw
+        </button>
+      )}
+    </>
+  )
   const n = route.steps.length
   const ev = s.evidence
   const isMock = (k) => s.mock?.includes(k)
@@ -128,14 +139,14 @@ export default function StepDetail({ route, stepIndex, onSelect, scale, targetG 
         {s.reactants.map((r, k) => (
           <span className="rxn-in" key={r.smiles}>
             {k > 0 && <span className="plus">+</span>}
-            <Mol compound={r} size="sm" caption={`${r.mw.toFixed(2)} g/mol`} />
+            <Mol compound={r} size="sm" caption={caption(r)} />
           </span>
         ))}
         <svg className="rxn-arrow" viewBox="0 0 60 12" aria-hidden="true">
           <line x1="0" y1="6" x2="52" y2="6" />
           <path d="M46 1 L60 6 L46 11 Z" />
         </svg>
-        <Mol compound={s.product} size="sm" caption={`${s.product.mw.toFixed(2)} g/mol`} />
+        <Mol compound={s.product} size="sm" caption={caption(s.product)} />
       </div>
       <p className="rxn-smiles">
         <code>{s.rxn_smiles}</code>
