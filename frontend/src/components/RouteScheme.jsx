@@ -1,0 +1,99 @@
+import { useEffect, useRef } from 'react'
+import { schemeLayout } from '../lib/route'
+import { Mol, TierBadge } from './bits'
+
+function Arrow({ step, index, side, selected, onSelect }) {
+  return (
+    <button
+      type="button"
+      className={`arrow-cell ${selected ? 'is-selected' : ''}`}
+      aria-pressed={selected}
+      aria-label={`단계 ${index + 1} 자세히 보기`}
+      onClick={() => onSelect(index)}
+    >
+      <span className="arrow-side">
+        {side.map((r) => (
+          <Mol
+            key={r.smiles}
+            compound={r}
+            size="xs"
+            caption={r.fromStep != null ? `단계 ${r.fromStep + 1} 생성물` : null}
+          />
+        ))}
+      </span>
+      <svg className="arrow-line" viewBox="0 0 120 12" preserveAspectRatio="none" aria-hidden="true">
+        <line x1="0" y1="6" x2="112" y2="6" />
+        <path d="M104 1 L118 6 L104 11 Z" />
+      </svg>
+      <span className="arrow-label">
+        <span className="arrow-step">단계 {index + 1}</span>
+        <TierBadge tier={step.evidence.tier} size="sm" />
+      </span>
+    </button>
+  )
+}
+
+export default function RouteScheme({ route, targetName, selectedStep, onSelect }) {
+  const { start, cells, branches } = schemeLayout(route)
+  const last = route.steps.length - 1
+  const wrapRef = useRef(null)
+
+  // 선택한 단계가 가로 스크롤 밖에 있으면 그 단계가 보이게 맞춘다 (페이지는 움직이지 않음)
+  useEffect(() => {
+    const wrap = wrapRef.current
+    const cell = wrap?.querySelector('.arrow-cell.is-selected')
+    if (!wrap || !cell) return
+    const target = cell.offsetLeft + cell.offsetWidth / 2 - wrap.clientWidth / 2
+    const still = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    wrap.scrollTo({ left: Math.max(0, target), behavior: still ? 'auto' : 'smooth' })
+  }, [route.id, selectedStep])
+
+  return (
+    <div className="scheme-wrap" ref={wrapRef}>
+      <div className="scheme" role="group" aria-label="반응 스킴">
+        <Mol compound={start} size="md" caption="출발물질" />
+        {cells.map((c) => (
+          <div className="scheme-pair" key={c.stepIndex}>
+            <Arrow
+              step={route.steps[c.stepIndex]}
+              index={c.stepIndex}
+              side={c.side}
+              selected={selectedStep === c.stepIndex}
+              onSelect={onSelect}
+            />
+            <Mol
+              compound={c.product}
+              size="md"
+              caption={c.stepIndex === last ? targetName : `중간체 ${c.stepIndex + 1}`}
+            />
+          </div>
+        ))}
+      </div>
+      {branches.length > 0 && (
+        <div className="scheme-branches">
+          <p className="branch-note">주 사슬에 합류하는 분기 단계</p>
+          {branches.map((b) => (
+            <div className="scheme branch" key={b.stepIndex}>
+              <div className="branch-inputs">
+                {b.reactants.map((r, k) => (
+                  <span className="branch-in" key={r.smiles}>
+                    {k > 0 && <span className="plus">+</span>}
+                    <Mol compound={r} size="sm" />
+                  </span>
+                ))}
+              </div>
+              <Arrow
+                step={route.steps[b.stepIndex]}
+                index={b.stepIndex}
+                side={[]}
+                selected={selectedStep === b.stepIndex}
+                onSelect={onSelect}
+              />
+              <Mol compound={b.product} size="sm" caption={`중간체 ${b.stepIndex + 1}`} />
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}

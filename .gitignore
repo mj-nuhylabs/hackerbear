@@ -19,3 +19,6 @@ backend/data/ord/
 
 # OS
 .DS_Store
+
+# Build output (artifact로 퍼블리시하므로 커밋하지 않음)
+frontend/dist/
