@@ -133,17 +133,20 @@ def walk(node: dict, steps: list, leaves: dict):
         "product": product,
         "evidence": {
             "tier": tier,
-            "source_ids": [f"US-EXAMPLE-{seed % 9000000 + 1000000}"] if tier != "COMPUTED" else [],
+            # AiZynthFinder 템플릿 테이블에는 특허번호가 없다(컬럼이 retro_template, template_hash,
+            # classification, library_occurence 넷뿐). 지어내지 않고 비워 둔다 —
+            # 실제 출처는 scripts/attach_procedures.py가 ORD 레코드에서 붙인다.
+            "source_ids": [],
             "precedent_count": occ,
             "url": None,
-            "mock": ["source_ids"],
+            "mock": [],
         },
         "conditions": None,
         "reported_yield": None,
         "assumed_yield": 0.7,
         "plausibility_raw": raw,
         "plausibility_calibrated": round(raw * 0.82, 2),
-        "gaps": [GAP_POOL[(seed >> i) % len(GAP_POOL)] for i in (0, 5, 11)][: 1 + seed % 3],
+        "gaps": sorted({GAP_POOL[(seed >> i) % len(GAP_POOL)] for i in (0, 5, 11)})[: 1 + seed % 3],
         "mock": ["plausibility_raw", "plausibility_calibrated", "gaps"],
     })
 
@@ -194,13 +197,7 @@ def main(names: list[str]):
             "routes": routes,
         })
 
-    # 데모용: 첫 타겟 최상위 경로의 마지막 스텝을 REPORTED 예시로 (전부 예시값)
-    s = targets[0]["routes"][0]["steps"][-1]
-    s["evidence"].update({"tier": "REPORTED", "source_ids": ["US-EXAMPLE-7169791", "ORD-EXAMPLE-3f9a2c"], "mock": ["tier", "source_ids"]})
-    s["conditions"] = {"solvent": "DMF", "temperature_c": 25, "time_h": 12, "catalyst": None, "catalyst_loading": None,
-                       "source_id": "ORD-EXAMPLE-3f9a2c", "mock": True}
-    s["reported_yield"] = 0.82
-    s["mock"] = s["mock"] + ["conditions", "reported_yield"]
+    # 증거 등급·조건·수율은 여기서 만들지 않는다. scripts/attach_procedures.py가 ORD 레코드에서 붙인다.
 
     OUT.parent.mkdir(parents=True, exist_ok=True)
     OUT.write_text(json.dumps({

@@ -1,0 +1,165 @@
+/* Procedure panel. Its own file so it does not touch index.css, which another branch is editing.
+   Colours come from the tokens index.css defines on :root. */
+
+.proc {
+  border-top: 1px solid var(--line);
+  padding-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.proc-head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 6px 16px;
+}
+.proc-head h3 {
+  color: var(--ink);
+  font-size: var(--fs-md);
+}
+.proc-facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  font-size: var(--fs-sm);
+  color: var(--ink-2);
+}
+.proc-facts b {
+  color: var(--ink);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.proc-src {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--fs-xs);
+}
+.proc-src code {
+  background: var(--sunk);
+  border: 1px solid var(--line);
+  border-radius: var(--r-tag);
+  padding: 1px 6px;
+}
+.proc-src a {
+  color: var(--accent);
+}
+
+/* 매칭 등급 — 이 레코드가 이 스텝과 얼마나 맞는지 */
+.match {
+  display: inline-flex;
+  align-items: center;
+  height: 18px;
+  padding: 0 6px;
+  border-radius: var(--r-tag);
+  font-family: var(--font-display);
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+.match-exact,
+.match-covered { background: var(--reported-bg); color: var(--reported); }
+.match-partial { background: var(--analogous-bg); color: var(--analogous); }
+.match-product { background: var(--computed-bg); color: var(--computed); }
+
+.proc-table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--line);
+  border-radius: var(--r-ctl);
+}
+.proc-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--fs-sm);
+}
+.proc-table th {
+  text-align: left;
+  font-weight: 500;
+  color: var(--ink-2);
+  font-size: var(--fs-xs);
+  padding: 7px 10px;
+  background: var(--sunk);
+  border-bottom: 1px solid var(--line);
+  white-space: nowrap;
+}
+.proc-table td {
+  padding: 6px 10px;
+  border-top: 1px solid var(--line);
+  vertical-align: middle;
+}
+.proc-table tr:first-child td { border-top: 0; }
+.proc-table .r { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.proc-role {
+  font-size: var(--fs-xs);
+  color: var(--ink-2);
+  text-transform: lowercase;
+}
+.proc-mat { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 8px; min-width: 0; }
+.proc-name { font-weight: 500; }
+.proc-note { max-width: 80ch; }
+.proc-smiles {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--ink-2);
+  max-width: 240px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.limiting {
+  display: inline-flex;
+  margin-left: 6px;
+  padding: 0 5px;
+  border-radius: var(--r-tag);
+  border: 1px solid var(--line);
+  background: var(--sunk);
+  font-size: 10.5px;
+  color: var(--ink-2);
+}
+
+/* 절차 원문 — 가공하지 않았다는 것이 보이게 인용 형태로 */
+.proc-text {
+  margin: 0;
+  padding: 12px 14px;
+  border-left: 2px solid var(--accent);
+  background: var(--sunk);
+  border-radius: 0 var(--r-ctl) var(--r-ctl) 0;
+  font-size: var(--fs-sm);
+  line-height: 1.65;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.proc-verbatim {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--fs-xs);
+  color: var(--ink-2);
+}
+.proc-verbatim::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--good);
+  flex: none;
+}
+.proc-workups { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 4px; }
+.proc-workups li { font-size: var(--fs-sm); }
+.proc-workups .wk-type { color: var(--ink-2); text-transform: lowercase; }
+
+.proc-none {
+  padding: 12px 14px;
+  border: 1px dashed var(--line);
+  border-radius: var(--r-ctl);
+  font-size: var(--fs-sm);
+  color: var(--ink-2);
+}
+
+@media (max-width: 760px) {
+  .proc-smiles { max-width: 120px; }
+}

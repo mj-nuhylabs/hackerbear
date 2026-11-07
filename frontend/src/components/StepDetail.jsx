@@ -3,6 +3,7 @@ import * as api from '../api'
 import { checkText } from '../lib/guard'
 import { DASH, mmol, pct, shortHash } from '../lib/format'
 import { Mock, Mol, TIER_INFO, TierBadge } from './bits'
+import Procedure from './Procedure'
 
 function Conditions({ c }) {
   const rows = [
@@ -174,8 +175,12 @@ export default function StepDetail({ route, stepIndex, onSelect, scale, targetG,
                     ))}
                     {evMock('source_ids') && <Mock what="Source IDs" />}
                   </span>
-                ) : (
+                ) : ev.tier === 'COMPUTED' ? (
                   <span className="muted">No precedent found in the corpus</span>
+                ) : (
+                  <span className="muted">
+                    The template library counts precedents but does not name the patents behind them
+                  </span>
                 )}
               </dd>
             </div>
@@ -227,12 +232,14 @@ export default function StepDetail({ route, stepIndex, onSelect, scale, targetG,
         </div>
       </div>
 
+      <Procedure procedure={s.procedure} />
+
       <Explain key={`${route.id}-${stepIndex}`} route={route} stepIndex={stepIndex} />
 
       <div className="gaps">
         <h3>Substrate classes this template has not been tried on {isMock('gaps') && <Mock what="Gaps" />}</h3>
         <ul className="chips">
-          {s.gaps.map((g) => (
+          {[...new Set(s.gaps)].map((g) => (
             <li key={g}>{g}</li>
           ))}
         </ul>
