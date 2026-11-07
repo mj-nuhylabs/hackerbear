@@ -1,0 +1,74 @@
+{
+  "featurizer": "drfp",
+  "n_bits": 2048,
+  "model": "LGBMClassifier (defaults)",
+  "split": "product Murcko scaffold groups, 60/20/20",
+  "train_n": 90194,
+  "calib_n": 27167,
+  "dataset": {
+    "positives_processed": 49702,
+    "positives_total": 49702,
+    "positives_with_decoys": 47810,
+    "decoys": 91406,
+    "templates_k": 2000,
+    "max_decoys_per_positive": 2,
+    "timebox_hit": false
+  },
+  "generated": "2026-11-07",
+  "test_n": 23747,
+  "test_base_rate": 0.3509074830504906,
+  "raw": {
+    "roc_auc": 0.9391475386535898,
+    "pr_auc": 0.8842721210237409,
+    "brier": 0.09723534210225027,
+    "ece": 0.043110917571124334
+  },
+  "calibrated": {
+    "roc_auc": 0.9389770647268086,
+    "pr_auc": 0.8789424923294413,
+    "brier": 0.0950735263743177,
+    "ece": 0.010042549065872212
+  },
+  "roc_auc_by_class": {
+    "1": {
+      "n": 7369,
+      "roc_auc": 0.9408416364875637
+    },
+    "2": {
+      "n": 5887,
+      "roc_auc": 0.9770227185651776
+    },
+    "3": {
+      "n": 2725,
+      "roc_auc": 0.9530076275659928
+    },
+    "4": {
+      "n": 388,
+      "roc_auc": 0.7890181107954546
+    },
+    "5": {
+      "n": 366,
+      "roc_auc": 0.9588310080631671
+    },
+    "6": {
+      "n": 4052,
+      "roc_auc": 0.937392342422912
+    },
+    "7": {
+      "n": 1800,
+      "roc_auc": 0.8136384989480684
+    },
+    "8": {
+      "n": 360,
+      "roc_auc": 0.7698983140671061
+    },
+    "9": {
+      "n": 709,
+      "roc_auc": 0.8274204793028321
+    },
+    "10": {
+      "n": 91,
+      "roc_auc": 0.9483870967741935
+    }
+  }
+}
