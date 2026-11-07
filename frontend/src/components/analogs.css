@@ -1,0 +1,171 @@
+/* Closest recorded reactions. Its own file so it does not touch index.css.
+   Colours come from the tokens index.css defines on :root. */
+
+.ana {
+  border-top: 1px solid var(--line);
+  padding-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.ana-head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 6px 16px;
+}
+.ana-head h3 {
+  color: var(--ink);
+  font-size: var(--fs-md);
+}
+
+.ana-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.ana-row {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 4px 12px;
+  padding: 10px 12px;
+  background: var(--sunk);
+  border: 1px solid var(--line);
+  border-radius: var(--r-ctl);
+}
+
+/* How close this record is to the step. The bar is the number, drawn. */
+.ana-sim {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  width: 54px;
+}
+.ana-sim-val {
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+}
+.ana-sim-bar {
+  width: 100%;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--line);
+  overflow: hidden;
+}
+.ana-sim-fill {
+  display: block;
+  height: 100%;
+  background: var(--accent);
+}
+.ana-sim-tag {
+  font-size: 0.6875rem;
+  color: var(--ink-3);
+  letter-spacing: 0.02em;
+}
+
+.ana-body {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.ana-rxn {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  color: var(--ink-2);
+  overflow-wrap: anywhere;
+  line-height: 1.45;
+}
+.ana-facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px 14px;
+  font-size: var(--fs-sm);
+  color: var(--ink-2);
+}
+.ana-facts b {
+  color: var(--ink);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+/* Spread across repeat runs. The range is the point -- a single number would read as precise. */
+.ana-spread {
+  color: var(--ink-3);
+  font-variant-numeric: tabular-nums;
+}
+.ana-src {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--fs-xs);
+}
+.ana-src code {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-tag, 4px);
+  padding: 1px 6px;
+  color: var(--ink-2);
+}
+.ana-src a {
+  color: var(--accent);
+}
+
+.ana-none {
+  font-size: var(--fs-sm);
+  color: var(--ink-2);
+  background: var(--sunk);
+  border: 1px solid var(--line);
+  border-radius: var(--r-ctl);
+  padding: 10px 12px;
+  line-height: 1.5;
+}
+.ana-foot {
+  font-size: var(--fs-xs);
+  color: var(--ink-3);
+  line-height: 1.55;
+}
+
+/* A structure ORD records where a chemist expects a name, shown when Octet cannot name it. */
+.cond-smiles {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  background: var(--sunk);
+  border: 1px solid var(--line);
+  border-radius: var(--r-tag, 4px);
+  padding: 1px 6px;
+  overflow-wrap: anywhere;
+}
+
+/* Where the yield used in costing came from. */
+.ana-basis {
+  display: inline-flex;
+  align-items: center;
+  height: 18px;
+  padding: 0 7px;
+  border-radius: 9px;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.ana-basis-reported {
+  color: var(--reported);
+  background: var(--reported-bg);
+}
+.ana-basis-analogs {
+  color: var(--analogous);
+  background: var(--analogous-bg);
+}
+.ana-basis-assumed {
+  color: var(--computed);
+  background: var(--computed-bg);
+}

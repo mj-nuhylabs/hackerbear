@@ -37,3 +37,7 @@ backend/data/runs/
 # 학습에 3시간 넘게 걸려서, 이게 없으면 새로 clone한 사람은 데모에서 타당성 점수를 못 본다.
 # ord_hits.json을 커밋한 것과 같은 이유다. pkl은 lightgbm/sklearn 버전에 민감하지만,
 # 못 읽으면 predict.py가 (None, None)을 돌려주고 UI에 —로 뜰 뿐 앱은 돈다.
+
+# 유사 반응 인덱스 (112MB) — scripts/build_analog_index.py가 ORD에서 다시 만든다.
+# 측정 결과(analog_validation.json)는 작아서 커밋한다. metrics.json과 같은 이유다.
+backend/data/analogs/

@@ -12,7 +12,7 @@ from __future__ import annotations
 import threading
 from pathlib import Path
 
-from evidence import provenance
+from evidence import analogs, provenance
 from evidence.tiers import ANALOGOUS_MIN_PRECEDENTS, decide
 from model.predict import score_many
 
@@ -70,29 +70,52 @@ def _walk(node: dict, steps: list, leaves: dict):
 
 
 def _finish_steps(steps: list[dict]) -> list[dict]:
-    """타당성 점수(배치) + 증거 등급 + 출처·조건·수율을 붙인다."""
+    """타당성 점수(배치) + 증거 등급 + 출처·조건·수율 + 유사 반응을 붙인다.
+
+    값의 우선순위는 **증거가 가까운 순서**다:
+      1. 이 반응 자체의 레코드 (provenance) — 같은 반응이 기록돼 있다
+      2. 가까운 유사 반응 (analogs)        — 다른 기질로 돌려본 기록이 있다
+      3. 가정값 ASSUMED_YIELD              — 아무것도 없다
+    어느 쪽을 썼는지는 yield_basis에 남겨 UI가 라벨을 붙인다. 2번은 유사도 문턱을 넘을 때만
+    쓴다 (evidence/analogs.py의 측정표 참조).
+    """
     scores = score_many([s["rxn_smiles"] for s in steps])
+    neighbours = analogs.search_many([s["rxn_smiles"] for s in steps])
     out = []
-    for s, (raw, cal) in zip(steps, scores):
+    for s, (raw, cal), hits in zip(steps, scores, neighbours):
         records = provenance.match([r["smiles"] for r in s["reactants"]], s["product"]["smiles"])
         tier = decide(has_corpus_record=bool(records),
                       precedent_count=s["precedent_count"],
                       plausibility_calibrated=cal)
+        evidence = provenance.evidence_from(records, s["precedent_count"], tier)
         lit_pct = provenance.reported_yield(records)              # 레코드의 퍼센트 값
         lit_yield = lit_pct / 100.0 if lit_pct is not None else None  # assumed_yield·UI와 같은 0–1 비율
+
+        analog_yield, analog_basis = analogs.yield_from(hits)
+        if lit_yield is not None:
+            used, basis = lit_yield, {"basis": "reported", "source_ids": evidence["source_ids"]}
+        elif analog_yield is not None:
+            used, basis = analog_yield, analog_basis
+        else:
+            used, basis = ASSUMED_YIELD, {"basis": "assumed", "value": ASSUMED_YIELD}
+
         out.append({
             "rxn_smiles": s["rxn_smiles"],
             "template_id": s["template_id"],
             "classification": s["classification"],
             "reactants": s["reactants"],
             "product": s["product"],
-            "evidence": provenance.evidence_from(records, s["precedent_count"], tier),
-            "conditions": provenance.conditions_from(records),
+            "evidence": evidence,
+            # 조건도 같은 순서. 유사 반응 조건은 from_analog=True로 표시돼 UI가 구분한다
+            "conditions": (provenance.conditions_from(records)
+                           or analogs.conditions_from(hits)),
             "procedure": provenance.procedure_from(records, [r["smiles"] for r in s["reactants"]]),
+            "analogs": hits,
             "reported_yield": lit_yield,
-            # 계산에 쓰는 값. 문헌값이 있으면 그것, 없으면 가정값이고 플래그로 표시한다
-            "assumed_yield": lit_yield if lit_yield is not None else ASSUMED_YIELD,
+            # 계산에 쓰는 값. 출처는 yield_basis가 말해 준다
+            "assumed_yield": used,
             "yield_is_assumed": lit_yield is None,
+            "yield_basis": basis,
             "plausibility_raw": raw,
             "plausibility_calibrated": cal,
         })
@@ -135,5 +158,8 @@ def search(smiles: str, max_depth: int = 4, *, time_limit_s: int = DEFAULT_TIME_
             "solved": bool(stats.get("is_solved")),
             "search_time_s": round(float(stats.get("search_time", 0.0)), 1),
             "analogous_min_precedents": ANALOGOUS_MIN_PRECEDENTS,
+            # 유사 반응 인덱스가 없으면 analogs가 전부 빈 리스트다. UI가 "꺼짐"과 "못 찾음"을
+            # 구분할 수 있어야 한다 — 둘 다 빈 화면으로 보이면 안 된다
+            "analog_index": analogs.stats() or None,
         },
     }

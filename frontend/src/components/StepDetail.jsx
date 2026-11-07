@@ -1,28 +1,78 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import * as api from '../api'
 import { checkText } from '../lib/guard'
-import { DASH, mmol, pct, shortHash } from '../lib/format'
+import { DASH, mmol, pct, shortHash, sig } from '../lib/format'
+import { nameOf } from '../octet/engine'
 import { Mock, Mol, TIER_INFO, TierBadge } from './bits'
 import Procedure from './Procedure'
+import Analogs from './Analogs'
+import './analogs.css'
+
+// ORD는 용매·촉매를 구조로 적는다. 그대로 띄우면 화학자가 "C(CCC)O"를 읽어야 하므로, Octet의
+// 오프라인 명명기로 이름을 붙이고 구조는 title에 남긴다. 이름을 못 붙이면 구조를 그대로 보여준다 —
+// 다른 이름으로 바꾸지 않는다.
+function Structure({ smiles }) {
+  const [name, setName] = useState(undefined)
+  useEffect(() => {
+    let live = true
+    nameOf(smiles).then(
+      (n) => live && setName(n),
+      () => live && setName(null),
+    )
+    return () => {
+      live = false
+    }
+  }, [smiles])
+  if (name) return <span title={smiles}>{name}</span>
+  return <code className="cond-smiles">{smiles}</code>
+}
 
 function Conditions({ c }) {
   const rows = [
-    ['Solvent', c?.solvent],
-    ['Temperature', c?.temperature_c != null ? `${c.temperature_c} °C` : null],
-    ['Time', c?.time_h != null ? `${c.time_h} h` : null],
-    ['Catalyst', c?.catalyst],
+    ['Solvent', c?.solvent, true],
+    ['Temperature', c?.temperature_c != null ? `${sig(c.temperature_c)} °C` : null, false],
+    ['Time', c?.time_h != null ? `${sig(c.time_h)} h` : null, false],
+    ['Catalyst', c?.catalyst, true],
   ]
   return (
     <>
-      {rows.map(([k, v]) => (
+      {rows.map(([k, v, isStructure]) => (
         <div className="kv-row" key={k}>
           <dt>{k}</dt>
           <dd>
-            {v ?? DASH}
+            {v == null ? DASH : isStructure ? <Structure smiles={v} /> : v}
             {v != null && c?.mock && <Mock what="Conditions" />}
+            {/* 이 반응 자체의 기록이 아니라 유사 반응에서 가져온 조건이면 반드시 표시한다 */}
+            {v != null && c?.from_analog && (
+              <span className="ana-basis ana-basis-analogs" title={`Tanimoto ${c.similarity}`}>
+                from analog
+              </span>
+            )}
           </dd>
         </div>
       ))}
+    </>
+  )
+}
+
+// 비용 계산에 들어간 수율과 그 출처. 세 가지뿐이다 — 이 반응의 레코드, 가까운 유사 반응, 가정값.
+// 유사 반응에서 왔으면 하나의 숫자가 아니라 퍼짐을 같이 보여준다: 측정된 평균 오차가 ±20%p라서
+// "62%"만 띄우면 화학자가 ±5%p쯤으로 읽는다 (scripts/validate_analogs.py).
+function YieldUsed({ step }) {
+  const b = step.yield_basis ?? {}
+  const basis = b.basis ?? (step.reported_yield != null ? 'reported' : 'assumed')
+  const label = { reported: 'reported', analogs: 'from analogs', assumed: 'assumed' }[basis]
+  const spread =
+    basis === 'analogs' && b.yield_pct_min != null && b.yield_pct_max != null
+      ? `${Math.round(b.yield_pct_min)}–${Math.round(b.yield_pct_max)}% across ${b.n_analogs} analog${
+          b.n_analogs > 1 ? 's' : ''
+        }`
+      : null
+  return (
+    <>
+      {pct(step.assumed_yield)}
+      <span className={`ana-basis ana-basis-${basis}`}>{label}</span>
+      {spread && <div className="muted small">{spread}</div>}
     </>
   )
 }
@@ -103,7 +153,7 @@ function Explain({ route, stepIndex }) {
   )
 }
 
-export default function StepDetail({ route, stepIndex, onSelect, scale, targetG, onOpenInDraw }) {
+export default function StepDetail({ route, stepIndex, onSelect, scale, targetG, onOpenInDraw, indexStats }) {
   const s = route.steps[stepIndex]
   // A compound's molar mass, and a button that adds it to the drawing (Octet Draw).
   const caption = (c) => (
@@ -217,10 +267,7 @@ export default function StepDetail({ route, stepIndex, onSelect, scale, targetG,
             <div className="kv-row">
               <dt>Used in costing</dt>
               <dd>
-                {pct(s.reported_yield ?? s.assumed_yield)}
-                <span className={`assumed ${s.reported_yield != null ? 'is-reported' : ''}`}>
-                  {s.reported_yield != null ? 'reported' : 'assumed'}
-                </span>
+                <YieldUsed step={s} />
               </dd>
             </div>
             <Conditions c={s.conditions} />
@@ -254,6 +301,8 @@ export default function StepDetail({ route, stepIndex, onSelect, scale, targetG,
       </div>
 
       <Procedure procedure={s.procedure} />
+
+      <Analogs analogs={s.analogs} indexStats={indexStats} />
 
       <Explain key={`${route.id}-${stepIndex}`} route={route} stepIndex={stepIndex} />
 

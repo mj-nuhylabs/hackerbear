@@ -106,6 +106,44 @@ def resolve(body: ResolveIn):
         raise HTTPException(404, str(e)) from e
 
 
+class AnalogsIn(BaseModel):
+    route_id: str
+    step_index: int
+    top_k: int = 5
+
+
+@app.post("/analogs")
+def analogs_for_step(body: AnalogsIn):
+    """스텝 하나의 가까운 ORD 반응들. 전부 레코드값이고, 유사도만 코드 계산값이다.
+
+    인덱스가 없으면 available=false와 사유를 돌려준다 — 빈 리스트로 "선례 없음"처럼 보이게
+    하지 않는다. 둘은 다른 얘기다.
+    """
+    from chem.routes import ROUTES
+    from evidence import analogs
+
+    route = ROUTES.get(body.route_id)
+    if route is None:
+        raise HTTPException(404, f"No route {body.route_id!r} in this session — run /routes first.")
+    steps = route["steps"]
+    if not 0 <= body.step_index < len(steps):
+        raise HTTPException(422, f"step_index must be between 0 and {len(steps) - 1}")
+    if not analogs.available():
+        return {"available": False, "analogs": [],
+                "reason": "No analog index — run `python scripts/build_analog_index.py`."}
+    hits = analogs.search(steps[body.step_index]["rxn_smiles"], max(1, min(body.top_k, 25)))
+    return {"available": True, "analogs": hits, "index": analogs.stats()}
+
+
+@app.get("/analogs/metrics")
+def analog_metrics():
+    """유사 반응 수율이 고정 가정값을 이기는지 재본 수치. 구간별 오차까지 그대로 돌려준다."""
+    path = DATA / "analog_validation.json"
+    if not path.exists():
+        raise HTTPException(404, "No analog validation yet — run `python scripts/validate_analogs.py`.")
+    return json.loads(path.read_text())
+
+
 @app.get("/calibration")
 def calibration():
     """reliability diagram PNG. 학습 전이면 404 — 자리 채우는 그림을 돌려주지 않는다."""

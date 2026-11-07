@@ -121,7 +121,8 @@ export default function CostSheet({ cost, targetG, setTargetG, purification, set
 
       <p className="cost-foot muted small">
         Unit and pack prices are <Mock what="Prices" /> values {asOf && `(snapshot dated ${asOf})`}. Yield uses the
-        reported figure where there is one, otherwise an assumed 70%. Every equivalent is assumed to be 1.0.
+        figure reported for the step where there is one, else the median of its closest recorded reactions, else an
+        assumed 70% — each step says which. Every equivalent is assumed to be 1.0.
       </p>
     </section>
   )
