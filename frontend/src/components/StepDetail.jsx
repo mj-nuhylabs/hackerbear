@@ -217,10 +217,20 @@ export default function StepDetail({ route, stepIndex, onSelect, scale, targetG,
         </div>
 
         <div className="block">
-          <h3>Reaction plausibility {isMock('plausibility_calibrated') && <Mock what="Plausibility" />}</h3>
+          <h3>Structural plausibility {isMock('plausibility_calibrated') && <Mock what="Plausibility" />}</h3>
           <Bar label="Model raw score" value={s.plausibility_raw} />
           <Bar label="Calibrated" value={s.plausibility_calibrated} emphasize />
-          <p className="muted small">Judge by the calibrated probability.</p>
+          <p className="muted small">
+            How much this step looks like a real literature reaction rather than a template misapplied to
+            these reactants. A low score means the structure is doubtful, and that is what drops a step to
+            COMPUTED.
+          </p>
+          <p className="muted small">
+            <strong>It scores structure, not outcome.</strong> It was trained to tell real corpus reactions
+            apart from the products of other templates applied to these same reactants — never on whether a
+            reaction succeeded. How far that carries over to real laboratory results is measured against
+            reactions with recorded outcomes, in the model panel below.
+          </p>
         </div>
 
         <div className="block">

@@ -3,7 +3,7 @@ import { useState } from 'react'
 export const TIER_INFO = {
   REPORTED: { label: 'REPORTED', say: 'The corpus holds a record for this exact reaction.' },
   ANALOGOUS: { label: 'ANALOGOUS', say: 'The template applies, and it has enough precedent in the literature.' },
-  COMPUTED: { label: 'COMPUTED', say: 'The template applies, but precedent is thin or plausibility is low.' },
+  COMPUTED: { label: 'COMPUTED', say: 'The template applies, but precedent is thin or the step looks structurally doubtful.' },
 }
 
 export function TierBadge({ tier, size }) {

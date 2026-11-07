@@ -1,0 +1,16 @@
+{
+  "question": "does a model trained on template decoys also rank real literature failures below real successes?",
+  "source": "ORD non-USPTO records (HTE / literature / ELN)",
+  "failed_under_every_condition_pct": 5.0,
+  "worked_under_some_condition_pct": 20.0,
+  "n_failed": 248,
+  "n_worked": 2148,
+  "roc_auc": 0.4652874767225326,
+  "median_score_failed": 0.7982120051085568,
+  "median_score_worked": 0.7107438016528924,
+  "overlap_with_this_model_training": 8,
+  "overlap_with_next_run_candidates": {
+    "positives_all.parquet": 2149
+  },
+  "caveat": "The model never sees reaction conditions, so this only asks about reactions that failed under every condition on record, not condition-level failures."
+}
