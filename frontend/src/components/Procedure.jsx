@@ -72,16 +72,29 @@ function Reagents({ reagents }) {
   )
 }
 
-function Note() {
+// 시약 표가 있을 때만 해당하는 설명. 표가 없으면 할 말이 없다.
+function AmountsNote() {
   return (
     <p className="proc-note muted small">
       Amounts are as written in the record. Equivalents are worked out from those amounts, using molar masses computed
       from the structures — where the record gives only a volume, there is no density to go on and the column stays
-      empty. Records come from the{' '}
+      empty.
+    </p>
+  )
+}
+
+// 출처 표기는 시약 표와 무관하게 항상 띄운다.
+// 전에는 AmountsNote에 붙어 있어서 시약이 없는 레코드에서는 **원문을 인용하면서 출처를 안 밝혔다.**
+// 지금 데이터에서는 안 걸리지만(41/41, 라이브 2/2 모두 시약 있음) 조건이 틀린 모양이었다.
+// 남의 문장을 그대로 보여주면 출처를 밝힌다 — 시약 표가 우연히 있어서가 아니라.
+function SourceNote() {
+  return (
+    <p className="proc-note muted small">
+      Records come from the{' '}
       <a href="https://open-reaction-database.org/" target="_blank" rel="noreferrer">
         Open Reaction Database
       </a>{' '}
-      (CC BY-SA 4.0).
+      (CC BY-SA 4.0). Structures and molar masses are computed with RDKit.
     </p>
   )
 }
@@ -142,7 +155,7 @@ export default function Procedure({ procedure }) {
       )}
 
       <Reagents reagents={procedure.reagents} />
-      {procedure.reagents?.length > 0 && <Note />}
+      {procedure.reagents?.length > 0 && <AmountsNote />}
 
       {procedure.text && (
         <>
@@ -165,6 +178,8 @@ export default function Procedure({ procedure }) {
           </ol>
         </>
       )}
+
+      <SourceNote />
     </div>
   )
 }
