@@ -13,7 +13,10 @@ frontend/dist/
 
 # Large / downloaded data (re-fetch with scripts in README)
 backend/data/aizynth/
-backend/data/ord/
+# 디렉터리가 아니라 내용물을 무시한다 — 무시된 디렉터리 안의 파일은 !로 되살릴 수 없다
+backend/data/ord/*
+# 예외: projections 메타데이터에는 데이터셋 이름이 없다. 이 맵을 잃으면 복구할 데가 없다
+!backend/data/ord/dataset_names.json
 *.hdf5
 *.onnx
 
@@ -22,3 +25,15 @@ backend/data/ord/
 
 # Build output (artifact로 퍼블리시하므로 커밋하지 않음)
 frontend/dist/
+
+backend/data/uspto50k/
+backend/data/nicolit/
+backend/data/ord_flat.parquet
+backend/data/ml/
+# 학습 실험 보관함. data/의 현재 모델과 중복이고 실행할 때마다 늘어난다
+backend/data/runs/
+
+# model.pkl / calibrator.pkl / calibration.png / metrics.json은 **커밋한다** (합쳐서 ~1MB).
+# 학습에 3시간 넘게 걸려서, 이게 없으면 새로 clone한 사람은 데모에서 타당성 점수를 못 본다.
+# ord_hits.json을 커밋한 것과 같은 이유다. pkl은 lightgbm/sklearn 버전에 민감하지만,
+# 못 읽으면 predict.py가 (None, None)을 돌려주고 UI에 —로 뜰 뿐 앱은 돈다.
