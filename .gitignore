@@ -1,0 +1,21 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+
+# Env / secrets
+.env
+
+# Node
+node_modules/
+frontend/dist/
+
+# Large / downloaded data (re-fetch with scripts in README)
+backend/data/aizynth/
+backend/data/ord/
+*.hdf5
+*.onnx
+
+# OS
+.DS_Store

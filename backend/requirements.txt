@@ -1,0 +1,21 @@
+# Chemistry
+rdkit
+rdchiral
+aizynthfinder
+drfp
+# ML
+lightgbm
+scikit-learn
+matplotlib
+# Data
+pandas
+pyarrow
+huggingface_hub
+# Backend
+fastapi
+uvicorn[standard]
+pydantic>=2
+httpx
+python-dotenv
+# LLM (explanation text only — see guards.py)
+anthropic
