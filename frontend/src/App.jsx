@@ -10,6 +10,7 @@ import CostSheet from './components/CostSheet'
 import { ImageSquare, SidebarSimple } from '@phosphor-icons/react'
 import DrawPane, { sendToDraw } from './components/DrawPane'
 import ImagePanel from './components/ImagePanel'
+import { ModelPanel } from './components/ModelPanel'
 import { BAR_H, DRAW_MIN, STRIP, WIDE_MIN, drawMax } from './lib/layout'
 import { engineReady, nameOf, readText } from './octet/engine'
 
@@ -205,7 +206,7 @@ function Legend() {
           <span>
             {t === 'REPORTED' && 'Corpus holds this exact reaction'}
             {t === 'ANALOGOUS' && `Template has ${api.ANALOGOUS_MIN}+ precedents`}
-            {t === 'COMPUTED' && `Under ${api.ANALOGOUS_MIN} precedents, or low plausibility`}
+            {t === 'COMPUTED' && `Under ${api.ANALOGOUS_MIN} precedents, or structurally doubtful`}
           </span>
         </li>
       ))}
@@ -506,19 +507,7 @@ export default function App() {
                 setPurification={setPurification}
               />
 
-              <section className="panel calib" aria-labelledby="calib-title">
-                <div className="calib-text">
-                  <h2 id="calib-title">Plausibility model calibration</h2>
-                  <p className="muted">
-                    Once the plausibility classifier is trained, its reliability diagram on the holdout set shows up here:
-                    whether reactions the model scores at 0.7 really do work about 70% of the time.
-                  </p>
-                </div>
-                <div className="calib-frame">
-                  <span>not trained yet</span>
-                  <code>GET /calibration</code>
-                </div>
-              </section>
+              <ModelPanel />
             </div>
           )}
         </main>

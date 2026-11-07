@@ -573,24 +573,32 @@ button, input, select { font: inherit; color: inherit; }
 .total-v { font-family: var(--font-display); font-size: var(--fs-2xl); font-weight: 600; line-height: 1.15; }
 .cost-foot { margin-top: 12px; max-width: 80ch; }
 
-/* ── 캘리브레이션 ──────────────────── */
-.calib { display: grid; grid-template-columns: minmax(0, 1fr) 220px; gap: 20px; align-items: center; }
-.calib-text { display: flex; flex-direction: column; gap: 6px; }
-.calib-text p { font-size: var(--fs-sm); max-width: 68ch; }
-.calib-frame {
-  aspect-ratio: 1;
-  max-width: 100%;
+/* ── 모델 성능 패널 (수치는 백엔드에서 읽는다) ──── */
+.model-panel { display: flex; flex-direction: column; gap: 12px; }
+.model-panel h3 { font-size: var(--fs-sm); margin: 0 0 2px; }
+.model-panel p { max-width: 68ch; }
+.model-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
+.model-grid .kv { margin: 6px 0; }
+.model-figs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.model-fig { margin: 0; display: flex; flex-direction: column; gap: 6px; }
+.model-fig img {
+  width: 100%;
+  height: auto;
+  border: 1px solid var(--line);
+  border-radius: var(--r-ctl);
+  background: var(--paper);
+}
+.model-fig-empty {
   display: grid;
   place-content: center;
-  justify-items: center;
-  gap: 4px;
+  min-height: 140px;
+  padding: 16px;
+  text-align: center;
   border: 1px dashed var(--ink-3);
   border-radius: var(--r-ctl);
   color: var(--ink-3);
   font-size: var(--fs-sm);
-  background-image: linear-gradient(to top right, transparent calc(50% - 0.5px), var(--line) calc(50% - 0.5px), var(--line) calc(50% + 0.5px), transparent calc(50% + 0.5px));
 }
-.calib-frame code { font-size: var(--fs-xs); }
 
 /* ── 그리기 패널 (Octet Draw, 앱에 내장) ───────── */
 /* Pinned to the window's left edge at full height, so its top-left corner is the window's and Octet's pointer and
@@ -662,8 +670,7 @@ body:has(.draw-pane[data-mode='full']:not([hidden])) { overflow: hidden; }
 @container notebook (max-width: 700px) {
   .rail { grid-template-columns: minmax(0, 1fr); }
   .step-grid, .explain-cols, .totals { grid-template-columns: minmax(0, 1fr); }
-  .calib { grid-template-columns: minmax(0, 1fr); }
-  .calib-frame { width: 180px; }
+  .model-grid, .model-figs { grid-template-columns: minmax(0, 1fr); }
   .mol-md { width: 136px; }
 }
 @container notebook (max-width: 480px) {
