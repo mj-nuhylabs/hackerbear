@@ -62,7 +62,7 @@ function Reagents({ reagents }) {
               <td className="r">{amount(r)}</td>
               <td className="r">
                 {r.equiv != null ? r.equiv : DASH}
-                {r.is_limiting && <span className="limiting">limiting</span>}
+                {r.is_limiting && <span className="proc-limiting">limiting</span>}
               </td>
             </tr>
           ))}
@@ -112,7 +112,10 @@ export default function Procedure({ procedure }) {
     <div className="proc">
       <div className="proc-head">
         <h3>
-          Procedure <span className={`match match-${procedure.match}`} title={m.say}>{m.label}</span>
+          Procedure{' '}
+          <span className={`proc-match proc-match-${procedure.match}`} title={m.say}>
+            {m.label}
+          </span>
         </h3>
         <span className="proc-src">
           <code>{procedure.reaction_id}</code>

@@ -167,10 +167,15 @@ def _outcome_bits(outcomes) -> tuple[float | None, float | None]:
             time_h = round(secs / 3600, 2)
         for p in o.get("products") or []:
             for m in p.get("measurements") or []:
-                if m.get("type") == "YIELD" and (m.get("percentage") or {}).get("value") is not None:
-                    v = m["percentage"]["value"]
-                    if yield_pct is None or p.get("is_desired_product"):
-                        yield_pct = round(v, 1)
+                if m.get("type") != "YIELD":
+                    continue
+                v = (m.get("percentage") or {}).get("value")
+                # ORD USPTO 수율 중 37,578건이 0 이하이거나 100 초과다. 수율로 쓸 수 없는 값이고,
+                # 0은 비용 엔진에서 0으로 나누기가 된다. 고쳐 쓰지 말고 없는 값으로 둔다.
+                if v is None or not (0 < v <= 100):
+                    continue
+                if yield_pct is None or p.get("is_desired_product"):
+                    yield_pct = round(v, 1)
     return time_h, yield_pct
 
 

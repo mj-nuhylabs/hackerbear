@@ -7,8 +7,9 @@ import { CopyText, Mock, Mol, TIER_INFO, TierBadge } from './components/bits'
 import RouteScheme from './components/RouteScheme'
 import StepDetail from './components/StepDetail'
 import CostSheet from './components/CostSheet'
-import { SidebarSimple } from '@phosphor-icons/react'
+import { ImageSquare, SidebarSimple } from '@phosphor-icons/react'
 import DrawPane, { sendToDraw } from './components/DrawPane'
+import ImagePanel from './components/ImagePanel'
 import { BAR_H, DRAW_MIN, STRIP, WIDE_MIN, drawMax } from './lib/layout'
 import { engineReady, nameOf, readText } from './octet/engine'
 
@@ -246,6 +247,7 @@ export default function App() {
   // Octet Draw is open from the start where it fits beside the results.
   const [drawOpen, setDrawOpen] = useState(() => matchMedia(WIDE).matches)
   const [drawW, setDrawW] = useState(savedDrawWidth)
+  const [imageOpen, setImageOpen] = useState(false)
   const winW = useSyncExternalStore(subscribeResize, windowWidth)
   const wide = winW >= WIDE_MIN
   const paneW = Math.max(DRAW_MIN, Math.min(drawW, drawMax()))
@@ -404,6 +406,16 @@ export default function App() {
             />
             <QueryReading reading={shownReading} detected={detected} />
           </div>
+          <button
+            type="button"
+            className="btn image-btn"
+            aria-label="Read a structure from an image"
+            title="Read a structure from an image"
+            onClick={() => setImageOpen(true)}
+          >
+            <ImageSquare size={18} aria-hidden="true" />
+            <span aria-hidden="true">Image</span>
+          </button>
           <button type="submit" className="btn btn-primary" disabled={busy}>
             Find routes
           </button>
@@ -512,6 +524,16 @@ export default function App() {
         </main>
       </div>
 
+      <ImagePanel
+        open={imageOpen}
+        onClose={() => setImageOpen(false)}
+        busy={busy}
+        onSearch={({ smiles, inchikey }) => {
+          setImageOpen(false)
+          setQuery(smiles)
+          run(smiles, 'smiles', { inchikey, source: 'Read from an image by DECIMER, confirmed by you' })
+        }}
+      />
       <DrawPane
         open={drawOpen}
         side={wide}

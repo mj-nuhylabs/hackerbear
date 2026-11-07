@@ -19,3 +19,4 @@ httpx
 python-dotenv
 # LLM (explanation text only — see guards.py)
 anthropic
+python-multipart

@@ -230,6 +230,8 @@ button, input, select { font: inherit; color: inherit; }
 .query-read-mol { display: flex; flex: none; color: var(--ink); }
 .query-read-mol svg { height: 22px; width: auto; max-width: 84px; }
 .search .btn-primary { height: 36px; }
+.image-btn { display: inline-flex; align-items: center; gap: 6px; padding: 0 12px; color: var(--ink-2); }
+.image-btn:hover:not(:disabled) { color: var(--ink); }
 
 .btn {
   height: 36px;
@@ -671,6 +673,8 @@ body:has(.draw-pane[data-mode='full']:not([hidden])) { overflow: hidden; }
 @media (max-width: 760px) {
   .search select { display: none; }
   .pane-toggle span { display: none; }
+  .image-btn span { display: none; }
+  .image-btn { padding: 0 9px; }
 }
 @media (max-width: 480px) {
   .appbar-lead { padding-left: 12px; gap: 4px; }

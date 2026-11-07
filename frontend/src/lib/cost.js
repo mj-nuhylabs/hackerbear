@@ -18,9 +18,11 @@ export function computeCost(route, { targetG, purification, prices }) {
   const catalysts = []
   for (let i = steps.length - 1; i >= 0; i--) {
     const s = steps[i]
-    const y = s.reported_yield ?? s.assumed_yield
+    // 수율 0이나 음수가 들어오면 0으로 나누게 된다. 쓸 수 없는 값이면 가정값으로 물러선다.
+    const reported = s.reported_yield > 0 ? s.reported_yield : null
+    const y = reported ?? s.assumed_yield
     const nRxn = (need.get(s.product.smiles) ?? 0) / (y * purification)
-    stepScale[i] = { nRxn, yield: y, yieldSource: s.reported_yield != null ? 'reported' : 'assumed' }
+    stepScale[i] = { nRxn, yield: y, yieldSource: reported != null ? 'reported' : 'assumed' }
     for (const r of s.reactants) add(r.smiles, nRxn * DEFAULT_STOICH * DEFAULT_EQUIV)
     const loading = s.conditions?.catalyst_loading
     if (loading) catalysts.push({ step: i, name: s.conditions.catalyst, n: nRxn * loading })
