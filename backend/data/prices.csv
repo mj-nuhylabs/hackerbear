@@ -1,0 +1,50 @@
+smiles,name,price_per_g,pack_size_g,pack_price,currency,supplier,as_of_date,is_mock
+C=CC(=O)Cl,,13.16,5,65.8,USD,Example supplier,2026-11-01,true
+C=CC(=O)O,,21.86,100,1093.0,USD,Example supplier,2026-11-01,true
+CC#N,Acetonitrile,34.63,500,6060.25,USD,Example supplier,2026-11-01,true
+CC(=O)Cl,,13.09,25,229.07,USD,Example supplier,2026-11-01,true
+CC(=O)O,,2.86,100,143.0,USD,Example supplier,2026-11-01,true
+CC(=O)OC(C)=O,,0.8,5,4.0,USD,Example supplier,2026-11-01,true
+CC(=O)Oc1ccccc1C=O,,12.69,25,222.07,USD,Example supplier,2026-11-01,true
+CC(C)(C)OC(=O)OC(=O)OC(C)(C)C,Boc anhydride,10.1,100,505.0,USD,Example supplier,2026-11-01,true
+CCN(CC(=O)Nc1c(C)cccc1C)C(C)=O,,29.52,5,147.6,USD,Example supplier,2026-11-01,true
+CCN(CC)CC,Triethylamine,37.62,100,1881.0,USD,Example supplier,2026-11-01,true
+CCNCC,,37.52,5,187.6,USD,Example supplier,2026-11-01,true
+CCO,Ethanol,15.82,100,791.0,USD,Example supplier,2026-11-01,true
+CCOC(=O)CN(CC)CC,,23.93,25,418.77,USD,Example supplier,2026-11-01,true
+CCOC(OCC)OCC,,9.61,25,168.17,USD,Example supplier,2026-11-01,true
+CCOP(=O)(O)OCC,,14.62,100,731.0,USD,Example supplier,2026-11-01,true
+CCn1c(=O)n(C)c(=O)c2c1ncn2C,,4.57,25,79.97,USD,Example supplier,2026-11-01,true
+CN(C)C=O,,2.69,25,47.07,USD,Example supplier,2026-11-01,true
+CN1CCN(Cc2ccc(C(=O)O)cc2)CC1,,4.53,25,79.27,USD,Example supplier,2026-11-01,true
+CNCCN(C)C,,30.91,500,5409.25,USD,Example supplier,2026-11-01,true
+CNc1c(N)n(C)c(=O)n(C)c1=O,,33.8,5,169.0,USD,Example supplier,2026-11-01,true
+CO,Methanol,3.2,5,16.0,USD,Example supplier,2026-11-01,true
+COC(=O)c1ccc(CN2CCN(C)CC2)cc1,,15.58,100,779.0,USD,Example supplier,2026-11-01,true
+COP(=O)(O)OC,,5.63,500,985.25,USD,Example supplier,2026-11-01,true
+COS(=O)(=O)OC,,18.21,25,318.67,USD,Example supplier,2026-11-01,true
+COc1cc(F)c([N+](=O)[O-])cc1N,,4.94,100,247.0,USD,Example supplier,2026-11-01,true
+CS(=O)(=O)Cl,Methanesulfonyl chloride,23.92,5,119.6,USD,Example supplier,2026-11-01,true
+CS(=O)(=O)c1nccc(-c2cccnc2)n1,,22.98,100,1149.0,USD,Example supplier,2026-11-01,true
+CSc1nccc(-c2cccnc2)n1,,33.25,25,581.88,USD,Example supplier,2026-11-01,true
+Cc1ccc(N)cc1N,,31.03,500,5430.25,USD,Example supplier,2026-11-01,true
+Cc1cccc(C)c1N,,19.42,100,971.0,USD,Example supplier,2026-11-01,true
+Cc1cccc(C)c1NC(=O)CBr,,1.02,100,51.0,USD,Example supplier,2026-11-01,true
+Cc1cccc(C)c1NC(=O)CCl,,16.61,25,290.67,USD,Example supplier,2026-11-01,true
+ClCCl,Dichloromethane,10.5,100,525.0,USD,Example supplier,2026-11-01,true
+Clc1ccnc(Cl)n1,,34.4,5,172.0,USD,Example supplier,2026-11-01,true
+Clc1nccc(-c2cccnc2)n1,,27.45,25,480.37,USD,Example supplier,2026-11-01,true
+Cn1c(=O)c2[nH]cnc2n(C)c1=O,,33.08,5,165.4,USD,Example supplier,2026-11-01,true
+Cn1cc(-c2ccnc(Cl)n2)c2ccccc21,,34.28,5,171.4,USD,Example supplier,2026-11-01,true
+Cn1ccc2ccccc21,,20.1,100,1005.0,USD,Example supplier,2026-11-01,true
+Cn1cnc2c1c(=O)[nH]c(=O)n2C,,2.28,5,11.4,USD,Example supplier,2026-11-01,true
+O,Water,14.67,500,2567.25,USD,Example supplier,2026-11-01,true
+O=C(Cl)CCCl,,11.07,500,1937.25,USD,Example supplier,2026-11-01,true
+O=C(Cl)CCl,,13.24,5,66.2,USD,Example supplier,2026-11-01,true
+O=C(O)CCCl,,29.24,5,146.2,USD,Example supplier,2026-11-01,true
+O=C(O)c1ccccc1F,2-Fluorobenzoic acid,19.13,25,334.77,USD,Example supplier,2026-11-01,true
+O=C(O)c1ccccc1O,Salicylic acid,3.77,25,65.97,USD,Example supplier,2026-11-01,true
+O=C(OCc1ccccc1)c1ccccc1O,,13.73,25,240.27,USD,Example supplier,2026-11-01,true
+O=C(OO)c1cccc(Cl)c1,,25.41,25,444.67,USD,Example supplier,2026-11-01,true
+OCc1ccccc1,Benzyl alcohol,4.76,5,23.8,USD,Example supplier,2026-11-01,true
+c1ccncc1,Pyridine,14.7,100,735.0,USD,Example supplier,2026-11-01,true
