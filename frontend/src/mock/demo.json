@@ -59,15 +59,7 @@
               "reported_yield": null,
               "assumed_yield": 0.7,
               "plausibility_raw": 0.44602301485593615,
-              "plausibility_calibrated": 0.4775828460038987,
-              "gaps": [
-                "alpha-chiral carbonyl",
-                "electron-poor heteroaryl",
-                "pyridine N-oxide"
-              ],
-              "mock": [
-                "gaps"
-              ]
+              "plausibility_calibrated": 0.4775828460038987
             },
             {
               "rxn_smiles": "Cc1ccc(N)cc1N.COC(=O)c1ccc(CN2CCN(C)CC2)cc1>>Cc1ccc(NC(=O)c2ccc(CN3CCN(C)CC3)cc2)cc1N",
@@ -114,13 +106,6 @@
               "assumed_yield": 0.7,
               "plausibility_raw": 0.31769838853555304,
               "plausibility_calibrated": 0.2807811691670977,
-              "gaps": [
-                "alpha-chiral carbonyl",
-                "hindered secondary amine"
-              ],
-              "mock": [
-                "gaps"
-              ],
               "procedure": {
                 "reaction_id": "ord-54a829479e624900ba8b247e0bc5523d",
                 "rxn_smiles": "C[O:15][C:16](=O)[c:17]1[cH:18][cH:19][c:20]([CH2:23][N:24]2[CH2:25][CH2:26][N:27]([CH3:30])[CH2:28][CH2:29]2)[cH:21][cH:22]1.O=C([O-])C(O)C(O)C(=O)[O-].O=C([O-])O.[Al+3].[Cl-].[Cl-].[Cl-].[K+].[NH2:5][c:6]1[cH:7][c:8]([NH2:9])[cH:10][cH:11][c:12]1[CH3:13].[Na+].[Na+]>>[NH2:5][c:6]1[cH:7][c:8]([NH:9][C:16](=[O:15])[c:17]2[cH:18][cH:19][c:20]([CH2:23][N:24]3[CH2:25][CH2:26][N:27]([CH3:30])[CH2:28][CH2:29]3)[cH:21][cH:22]2)[cH:10][cH:11][c:12]1[CH3:13]",
@@ -306,12 +291,6 @@
               "assumed_yield": 0.7,
               "plausibility_raw": 0.7740944102499163,
               "plausibility_calibrated": 0.8822014805278403,
-              "gaps": [
-                "alkyne present"
-              ],
-              "mock": [
-                "gaps"
-              ],
               "procedure": {
                 "reaction_id": "ord-2f8b57f2f6fe431c921293ee0d3e78a5",
                 "rxn_smiles": "[CH3:1][c:2]1[cH:3][cH:4][c:5]([NH:21][C:22](=[O:23])[c:24]2[cH:25][cH:26][c:27]([CH2:30][N:31]3[CH2:32][CH2:33][N:34]([CH3:37])[CH2:35][CH2:36]3)[cH:28][cH:29]2)[cH:6][c:7]1[NH:8][c:9]1[n:10][cH:11][cH:12][c:13](-[c:15]2[cH:16][cH:17][cH:18][n:19][cH:20]2)[n:14]1.[CH3:38][S:39](=[O:40])(=[O:41])[OH:42]>>[CH3:1][c:2]1[cH:3][cH:4][c:5]([NH:21][C:22](=[O:23])[c:24]2[cH:25][cH:26][c:27]([CH2:30][N:31]3[CH2:32][CH2:33][N:34]([CH3:37])[CH2:35][CH2:36]3)[cH:28][cH:29]2)[cH:6][c:7]1[NH:8][c:9]1[n:10][cH:11][cH:12][c:13](-[c:15]2[cH:16][cH:17][cH:18][n:19][cH:20]2)[n:14]1.[CH3:38][S:39](=[O:40])(=[O:41])[OH:42]",
@@ -439,15 +418,7 @@
               "reported_yield": null,
               "assumed_yield": 0.7,
               "plausibility_raw": 0.44602301485593615,
-              "plausibility_calibrated": 0.4775828460038987,
-              "gaps": [
-                "alpha-chiral carbonyl",
-                "electron-poor heteroaryl",
-                "pyridine N-oxide"
-              ],
-              "mock": [
-                "gaps"
-              ]
+              "plausibility_calibrated": 0.4775828460038987
             },
             {
               "rxn_smiles": "Cc1ccc(N)cc1N.CN1CCN(Cc2ccc(C(=O)O)cc2)CC1>>Cc1ccc(NC(=O)c2ccc(CN3CCN(C)CC3)cc2)cc1N",
@@ -485,13 +456,6 @@
               "assumed_yield": 0.7,
               "plausibility_raw": 0.6327853713853692,
               "plausibility_calibrated": 0.7466380543633763,
-              "gaps": [
-                "electron-poor heteroaryl",
-                "pyridine N-oxide"
-              ],
-              "mock": [
-                "gaps"
-              ],
               "procedure": {
                 "reaction_id": "ord-54a829479e624900ba8b247e0bc5523d",
                 "rxn_smiles": "C[O:15][C:16](=O)[c:17]1[cH:18][cH:19][c:20]([CH2:23][N:24]2[CH2:25][CH2:26][N:27]([CH3:30])[CH2:28][CH2:29]2)[cH:21][cH:22]1.O=C([O-])C(O)C(O)C(=O)[O-].O=C([O-])O.[Al+3].[Cl-].[Cl-].[Cl-].[K+].[NH2:5][c:6]1[cH:7][c:8]([NH2:9])[cH:10][cH:11][c:12]1[CH3:13].[Na+].[Na+]>>[NH2:5][c:6]1[cH:7][c:8]([NH:9][C:16](=[O:15])[c:17]2[cH:18][cH:19][c:20]([CH2:23][N:24]3[CH2:25][CH2:26][N:27]([CH3:30])[CH2:28][CH2:29]3)[cH:21][cH:22]2)[cH:10][cH:11][c:12]1[CH3:13]",
@@ -677,12 +641,6 @@
               "assumed_yield": 0.7,
               "plausibility_raw": 0.7740944102499163,
               "plausibility_calibrated": 0.8822014805278403,
-              "gaps": [
-                "alkyne present"
-              ],
-              "mock": [
-                "gaps"
-              ],
               "procedure": {
                 "reaction_id": "ord-2f8b57f2f6fe431c921293ee0d3e78a5",
                 "rxn_smiles": "[CH3:1][c:2]1[cH:3][cH:4][c:5]([NH:21][C:22](=[O:23])[c:24]2[cH:25][cH:26][c:27]([CH2:30][N:31]3[CH2:32][CH2:33][N:34]([CH3:37])[CH2:35][CH2:36]3)[cH:28][cH:29]2)[cH:6][c:7]1[NH:8][c:9]1[n:10][cH:11][cH:12][c:13](-[c:15]2[cH:16][cH:17][cH:18][n:19][cH:20]2)[n:14]1.[CH3:38][S:39](=[O:40])(=[O:41])[OH:42]>>[CH3:1][c:2]1[cH:3][cH:4][c:5]([NH:21][C:22](=[O:23])[c:24]2[cH:25][cH:26][c:27]([CH2:30][N:31]3[CH2:32][CH2:33][N:34]([CH3:37])[CH2:35][CH2:36]3)[cH:28][cH:29]2)[cH:6][c:7]1[NH:8][c:9]1[n:10][cH:11][cH:12][c:13](-[c:15]2[cH:16][cH:17][cH:18][n:19][cH:20]2)[n:14]1.[CH3:38][S:39](=[O:40])(=[O:41])[OH:42]",
@@ -820,13 +778,6 @@
               "assumed_yield": 0.7,
               "plausibility_raw": 0.31769838853555304,
               "plausibility_calibrated": 0.2807811691670977,
-              "gaps": [
-                "alpha-chiral carbonyl",
-                "hindered secondary amine"
-              ],
-              "mock": [
-                "gaps"
-              ],
               "procedure": {
                 "reaction_id": "ord-54a829479e624900ba8b247e0bc5523d",
                 "rxn_smiles": "C[O:15][C:16](=O)[c:17]1[cH:18][cH:19][c:20]([CH2:23][N:24]2[CH2:25][CH2:26][N:27]([CH3:30])[CH2:28][CH2:29]2)[cH:21][cH:22]1.O=C([O-])C(O)C(O)C(=O)[O-].O=C([O-])O.[Al+3].[Cl-].[Cl-].[Cl-].[K+].[NH2:5][c:6]1[cH:7][c:8]([NH2:9])[cH:10][cH:11][c:12]1[CH3:13].[Na+].[Na+]>>[NH2:5][c:6]1[cH:7][c:8]([NH:9][C:16](=[O:15])[c:17]2[cH:18][cH:19][c:20]([CH2:23][N:24]3[CH2:25][CH2:26][N:27]([CH3:30])[CH2:28][CH2:29]3)[cH:21][cH:22]2)[cH:10][cH:11][c:12]1[CH3:13]",
@@ -1012,12 +963,6 @@
               "assumed_yield": 0.7,
               "plausibility_raw": 0.82111324771139,
               "plausibility_calibrated": 0.9152046783625731,
-              "gaps": [
-                "alpha-chiral carbonyl"
-              ],
-              "mock": [
-                "gaps"
-              ],
               "procedure": {
                 "reaction_id": "ord-2f8b57f2f6fe431c921293ee0d3e78a5",
                 "rxn_smiles": "[CH3:1][c:2]1[cH:3][cH:4][c:5]([NH:21][C:22](=[O:23])[c:24]2[cH:25][cH:26][c:27]([CH2:30][N:31]3[CH2:32][CH2:33][N:34]([CH3:37])[CH2:35][CH2:36]3)[cH:28][cH:29]2)[cH:6][c:7]1[NH:8][c:9]1[n:10][cH:11][cH:12][c:13](-[c:15]2[cH:16][cH:17][cH:18][n:19][cH:20]2)[n:14]1.[CH3:38][S:39](=[O:40])(=[O:41])[OH:42]>>[CH3:1][c:2]1[cH:3][cH:4][c:5]([NH:21][C:22](=[O:23])[c:24]2[cH:25][cH:26][c:27]([CH2:30][N:31]3[CH2:32][CH2:33][N:34]([CH3:37])[CH2:35][CH2:36]3)[cH:28][cH:29]2)[cH:6][c:7]1[NH:8][c:9]1[n:10][cH:11][cH:12][c:13](-[c:15]2[cH:16][cH:17][cH:18][n:19][cH:20]2)[n:14]1.[CH3:38][S:39](=[O:40])(=[O:41])[OH:42]",
@@ -1139,13 +1084,6 @@
               "assumed_yield": 0.7,
               "plausibility_raw": 0.6327853713853692,
               "plausibility_calibrated": 0.7466380543633763,
-              "gaps": [
-                "electron-poor heteroaryl",
-                "pyridine N-oxide"
-              ],
-              "mock": [
-                "gaps"
-              ],
               "procedure": {
                 "reaction_id": "ord-54a829479e624900ba8b247e0bc5523d",
                 "rxn_smiles": "C[O:15][C:16](=O)[c:17]1[cH:18][cH:19][c:20]([CH2:23][N:24]2[CH2:25][CH2:26][N:27]([CH3:30])[CH2:28][CH2:29]2)[cH:21][cH:22]1.O=C([O-])C(O)C(O)C(=O)[O-].O=C([O-])O.[Al+3].[Cl-].[Cl-].[Cl-].[K+].[NH2:5][c:6]1[cH:7][c:8]([NH2:9])[cH:10][cH:11][c:12]1[CH3:13].[Na+].[Na+]>>[NH2:5][c:6]1[cH:7][c:8]([NH:9][C:16](=[O:15])[c:17]2[cH:18][cH:19][c:20]([CH2:23][N:24]3[CH2:25][CH2:26][N:27]([CH3:30])[CH2:28][CH2:29]3)[cH:21][cH:22]2)[cH:10][cH:11][c:12]1[CH3:13]",
@@ -1331,12 +1269,6 @@
               "assumed_yield": 0.7,
               "plausibility_raw": 0.82111324771139,
               "plausibility_calibrated": 0.9152046783625731,
-              "gaps": [
-                "alpha-chiral carbonyl"
-              ],
-              "mock": [
-                "gaps"
-              ],
               "procedure": {
                 "reaction_id": "ord-2f8b57f2f6fe431c921293ee0d3e78a5",
                 "rxn_smiles": "[CH3:1][c:2]1[cH:3][cH:4][c:5]([NH:21][C:22](=[O:23])[c:24]2[cH:25][cH:26][c:27]([CH2:30][N:31]3[CH2:32][CH2:33][N:34]([CH3:37])[CH2:35][CH2:36]3)[cH:28][cH:29]2)[cH:6][c:7]1[NH:8][c:9]1[n:10][cH:11][cH:12][c:13](-[c:15]2[cH:16][cH:17][cH:18][n:19][cH:20]2)[n:14]1.[CH3:38][S:39](=[O:40])(=[O:41])[OH:42]>>[CH3:1][c:2]1[cH:3][cH:4][c:5]([NH:21][C:22](=[O:23])[c:24]2[cH:25][cH:26][c:27]([CH2:30][N:31]3[CH2:32][CH2:33][N:34]([CH3:37])[CH2:35][CH2:36]3)[cH:28][cH:29]2)[cH:6][c:7]1[NH:8][c:9]1[n:10][cH:11][cH:12][c:13](-[c:15]2[cH:16][cH:17][cH:18][n:19][cH:20]2)[n:14]1.[CH3:38][S:39](=[O:40])(=[O:41])[OH:42]",
@@ -1467,13 +1399,6 @@
               "assumed_yield": 0.7,
               "plausibility_raw": 0.31769838853555304,
               "plausibility_calibrated": 0.2807811691670977,
-              "gaps": [
-                "alpha-chiral carbonyl",
-                "hindered secondary amine"
-              ],
-              "mock": [
-                "gaps"
-              ],
               "procedure": {
                 "reaction_id": "ord-54a829479e624900ba8b247e0bc5523d",
                 "rxn_smiles": "C[O:15][C:16](=O)[c:17]1[cH:18][cH:19][c:20]([CH2:23][N:24]2[CH2:25][CH2:26][N:27]([CH3:30])[CH2:28][CH2:29]2)[cH:21][cH:22]1.O=C([O-])C(O)C(O)C(=O)[O-].O=C([O-])O.[Al+3].[Cl-].[Cl-].[Cl-].[K+].[NH2:5][c:6]1[cH:7][c:8]([NH2:9])[cH:10][cH:11][c:12]1[CH3:13].[Na+].[Na+]>>[NH2:5][c:6]1[cH:7][c:8]([NH:9][C:16](=[O:15])[c:17]2[cH:18][cH:19][c:20]([CH2:23][N:24]3[CH2:25][CH2:26][N:27]([CH3:30])[CH2:28][CH2:29]3)[cH:21][cH:22]2)[cH:10][cH:11][c:12]1[CH3:13]",
@@ -1659,13 +1584,6 @@
               "assumed_yield": 0.7,
               "plausibility_raw": 0.7250295621127593,
               "plausibility_calibrated": 0.8195862068965517,
-              "gaps": [
-                "hindered secondary amine",
-                "ortho,ortho-disubstituted aryl"
-              ],
-              "mock": [
-                "gaps"
-              ],
               "procedure": {
                 "reaction_id": "ord-2f8b57f2f6fe431c921293ee0d3e78a5",
                 "rxn_smiles": "[CH3:1][c:2]1[cH:3][cH:4][c:5]([NH:21][C:22](=[O:23])[c:24]2[cH:25][cH:26][c:27]([CH2:30][N:31]3[CH2:32][CH2:33][N:34]([CH3:37])[CH2:35][CH2:36]3)[cH:28][cH:29]2)[cH:6][c:7]1[NH:8][c:9]1[n:10][cH:11][cH:12][c:13](-[c:15]2[cH:16][cH:17][cH:18][n:19][cH:20]2)[n:14]1.[CH3:38][S:39](=[O:40])(=[O:41])[OH:42]>>[CH3:1][c:2]1[cH:3][cH:4][c:5]([NH:21][C:22](=[O:23])[c:24]2[cH:25][cH:26][c:27]([CH2:30][N:31]3[CH2:32][CH2:33][N:34]([CH3:37])[CH2:35][CH2:36]3)[cH:28][cH:29]2)[cH:6][c:7]1[NH:8][c:9]1[n:10][cH:11][cH:12][c:13](-[c:15]2[cH:16][cH:17][cH:18][n:19][cH:20]2)[n:14]1.[CH3:38][S:39](=[O:40])(=[O:41])[OH:42]",
@@ -1817,13 +1735,6 @@
               "assumed_yield": 0.7,
               "plausibility_raw": 0.7039857063870477,
               "plausibility_calibrated": 0.8040079277692137,
-              "gaps": [
-                "alkyne present",
-                "free phenolic OH present"
-              ],
-              "mock": [
-                "gaps"
-              ],
               "procedure": {
                 "reaction_id": "ord-b22d155d5842482db221a44171ad359a",
                 "rxn_smiles": "Cc1ccc(S(=O)(=O)O)cc1.Cl[c:14]1[n:15][cH:16][cH:17][c:18](-[c:20]2[cH:21][n:22]([CH3:29])[c:23]3[cH:24][cH:25][cH:26][cH:27][c:28]23)[n:19]1.O.[F:30][c:31]1[cH:32][c:33]([O:41][CH3:42])[c:34]([NH2:35])[cH:36][c:37]1[N+:38](=[O:39])[O-:40]>>[c:14]1([NH:35][c:34]2[c:33]([O:41][CH3:42])[cH:32][c:31]([F:30])[c:37]([N+:38](=[O:39])[O-:40])[cH:36]2)[n:15][cH:16][cH:17][c:18](-[c:20]2[cH:21][n:22]([CH3:29])[c:23]3[cH:24][cH:25][cH:26][cH:27][c:28]23)[n:19]1",
@@ -1963,14 +1874,6 @@
               "assumed_yield": 0.7,
               "plausibility_raw": 0.4260440840380508,
               "plausibility_calibrated": 0.4449811498586239,
-              "gaps": [
-                "free phenolic OH present",
-                "ortho,ortho-disubstituted aryl",
-                "unprotected primary alcohol"
-              ],
-              "mock": [
-                "gaps"
-              ],
               "procedure": {
                 "reaction_id": "ord-c8b55d4cf73e40bd86b235d5d0ac17d9",
                 "rxn_smiles": "CCN(C(C)C)C(C)C.COc1cc(F)c([N+](=O)[O-])cc1Nc1ncc(Cl)c(-c2cn(C)c3ccccc23)n1.F[c:9]1[cH:10][c:11]([O:35][CH3:36])[c:12]([NH:18][c:19]2[n:20][cH:21][cH:22][c:23](-[c:25]3[cH:26][n:27]([CH3:34])[c:28]4[cH:29][cH:30][cH:31][cH:32][c:33]34)[n:24]2)[cH:13][c:14]1[N+:15](=[O:16])[O-:17].[CH3:1][N:2]([CH2:3][CH2:4][NH:5][CH3:6])[CH3:7]>>[CH3:1][N:2]([CH2:3][CH2:4][N:5]([CH3:6])[c:9]1[cH:10][c:11]([O:35][CH3:36])[c:12]([NH:18][c:19]2[n:20][cH:21][cH:22][c:23](-[c:25]3[cH:26][n:27]([CH3:34])[c:28]4[cH:29][cH:30][cH:31][cH:32][c:33]34)[n:24]2)[cH:13][c:14]1[N+:15](=[O:16])[O-:17])[CH3:7]",
@@ -2104,14 +2007,6 @@
               "assumed_yield": 0.7,
               "plausibility_raw": 0.7306074774316684,
               "plausibility_calibrated": 0.8330322580645161,
-              "gaps": [
-                "alpha-chiral carbonyl",
-                "electron-poor heteroaryl",
-                "unprotected primary alcohol"
-              ],
-              "mock": [
-                "gaps"
-              ],
               "procedure": {
                 "reaction_id": "ord-0d3b14c7ba2b4ec4a14984501ac774e8",
                 "rxn_smiles": "O=[N+:12]([O-])[c:11]1[c:6]([N:5]([CH2:4][CH2:3][N:2]([CH3:1])[CH3:35])[CH3:34])[cH:7][c:8]([O:32][CH3:33])[c:9]([NH:15][c:16]2[n:17][cH:18][cH:19][c:20](-[c:22]3[cH:23][n:24]([CH3:31])[c:25]4[cH:26][cH:27][cH:28][cH:29][c:30]34)[n:21]2)[cH:10]1.[Cl-].[NH4+]>>[CH3:1][N:2]([CH2:3][CH2:4][N:5]([c:6]1[cH:7][c:8]([O:32][CH3:33])[c:9]([NH:15][c:16]2[n:17][cH:18][cH:19][c:20](-[c:22]3[cH:23][n:24]([CH3:31])[c:25]4[cH:26][cH:27][cH:28][cH:29][c:30]34)[n:21]2)[cH:10][c:11]1[NH2:12])[CH3:34])[CH3:35]",
@@ -2250,12 +2145,6 @@
               "assumed_yield": 0.7,
               "plausibility_raw": 0.8410652726517659,
               "plausibility_calibrated": 0.9351876147992653,
-              "gaps": [
-                "ortho,ortho-disubstituted aryl"
-              ],
-              "mock": [
-                "gaps"
-              ],
               "procedure": {
                 "reaction_id": "ord-1beb7b3a3f8b4fe1ba58ae7bd2bbc417",
                 "rxn_smiles": "CCN(C(C)C)C(C)C.Cl[C:1]([CH:2]=[CH2:3])=[O:4].[CH3:6][N:7]([CH2:8][CH2:9][N:10]([c:11]1[c:12]([NH2:36])[cH:13][c:14]([NH:19][c:20]2[n:21][cH:22][cH:23][c:24](-[c:26]3[cH:27][n:28]([CH3:35])[c:29]4[cH:30][cH:31][cH:32][cH:33][c:34]34)[n:25]2)[c:15]([O:17][CH3:18])[cH:16]1)[CH3:37])[CH3:38]>>[C:1]([CH:2]=[CH2:3])(=[O:4])[NH:36][c:12]1[c:11]([N:10]([CH2:9][CH2:8][N:7]([CH3:6])[CH3:38])[CH3:37])[cH:16][c:15]([O:17][CH3:18])[c:14]([NH:19][c:20]2[n:21][cH:22][cH:23][c:24](-[c:26]3[cH:27][n:28]([CH3:35])[c:29]4[cH:30][cH:31][cH:32][cH:33][c:34]34)[n:25]2)[cH:13]1",
@@ -2442,13 +2331,6 @@
               "assumed_yield": 0.7,
               "plausibility_raw": 0.7039857063870477,
               "plausibility_calibrated": 0.8040079277692137,
-              "gaps": [
-                "alkyne present",
-                "free phenolic OH present"
-              ],
-              "mock": [
-                "gaps"
-              ],
               "procedure": {
                 "reaction_id": "ord-b22d155d5842482db221a44171ad359a",
                 "rxn_smiles": "Cc1ccc(S(=O)(=O)O)cc1.Cl[c:14]1[n:15][cH:16][cH:17][c:18](-[c:20]2[cH:21][n:22]([CH3:29])[c:23]3[cH:24][cH:25][cH:26][cH:27][c:28]23)[n:19]1.O.[F:30][c:31]1[cH:32][c:33]([O:41][CH3:42])[c:34]([NH2:35])[cH:36][c:37]1[N+:38](=[O:39])[O-:40]>>[c:14]1([NH:35][c:34]2[c:33]([O:41][CH3:42])[cH:32][c:31]([F:30])[c:37]([N+:38](=[O:39])[O-:40])[cH:36]2)[n:15][cH:16][cH:17][c:18](-[c:20]2[cH:21][n:22]([CH3:29])[c:23]3[cH:24][cH:25][cH:26][cH:27][c:28]23)[n:19]1",
@@ -2588,14 +2470,6 @@
               "assumed_yield": 0.7,
               "plausibility_raw": 0.4260440840380508,
               "plausibility_calibrated": 0.4449811498586239,
-              "gaps": [
-                "free phenolic OH present",
-                "ortho,ortho-disubstituted aryl",
-                "unprotected primary alcohol"
-              ],
-              "mock": [
-                "gaps"
-              ],
               "procedure": {
                 "reaction_id": "ord-c8b55d4cf73e40bd86b235d5d0ac17d9",
                 "rxn_smiles": "CCN(C(C)C)C(C)C.COc1cc(F)c([N+](=O)[O-])cc1Nc1ncc(Cl)c(-c2cn(C)c3ccccc23)n1.F[c:9]1[cH:10][c:11]([O:35][CH3:36])[c:12]([NH:18][c:19]2[n:20][cH:21][cH:22][c:23](-[c:25]3[cH:26][n:27]([CH3:34])[c:28]4[cH:29][cH:30][cH:31][cH:32][c:33]34)[n:24]2)[cH:13][c:14]1[N+:15](=[O:16])[O-:17].[CH3:1][N:2]([CH2:3][CH2:4][NH:5][CH3:6])[CH3:7]>>[CH3:1][N:2]([CH2:3][CH2:4][N:5]([CH3:6])[c:9]1[cH:10][c:11]([O:35][CH3:36])[c:12]([NH:18][c:19]2[n:20][cH:21][cH:22][c:23](-[c:25]3[cH:26][n:27]([CH3:34])[c:28]4[cH:29][cH:30][cH:31][cH:32][c:33]34)[n:24]2)[cH:13][c:14]1[N+:15](=[O:16])[O-:17])[CH3:7]",
@@ -2729,14 +2603,6 @@
               "assumed_yield": 0.7,
               "plausibility_raw": 0.7306074774316684,
               "plausibility_calibrated": 0.8330322580645161,
-              "gaps": [
-                "alpha-chiral carbonyl",
-                "electron-poor heteroaryl",
-                "unprotected primary alcohol"
-              ],
-              "mock": [
-                "gaps"
-              ],
               "procedure": {
                 "reaction_id": "ord-0d3b14c7ba2b4ec4a14984501ac774e8",
                 "rxn_smiles": "O=[N+:12]([O-])[c:11]1[c:6]([N:5]([CH2:4][CH2:3][N:2]([CH3:1])[CH3:35])[CH3:34])[cH:7][c:8]([O:32][CH3:33])[c:9]([NH:15][c:16]2[n:17][cH:18][cH:19][c:20](-[c:22]3[cH:23][n:24]([CH3:31])[c:25]4[cH:26][cH:27][cH:28][cH:29][c:30]34)[n:21]2)[cH:10]1.[Cl-].[NH4+]>>[CH3:1][N:2]([CH2:3][CH2:4][N:5]([c:6]1[cH:7][c:8]([O:32][CH3:33])[c:9]([NH:15][c:16]2[n:17][cH:18][cH:19][c:20](-[c:22]3[cH:23][n:24]([CH3:31])[c:25]4[cH:26][cH:27][cH:28][cH:29][c:30]34)[n:21]2)[cH:10][c:11]1[NH2:12])[CH3:34])[CH3:35]",
@@ -2866,13 +2732,6 @@
               "assumed_yield": 0.7,
               "plausibility_raw": 0.7951891932888292,
               "plausibility_calibrated": 0.9005046863734679,
-              "gaps": [
-                "alpha-chiral carbonyl",
-                "free phenolic OH present"
-              ],
-              "mock": [
-                "gaps"
-              ],
               "procedure": {
                 "reaction_id": "ord-1beb7b3a3f8b4fe1ba58ae7bd2bbc417",
                 "rxn_smiles": "CCN(C(C)C)C(C)C.Cl[C:1]([CH:2]=[CH2:3])=[O:4].[CH3:6][N:7]([CH2:8][CH2:9][N:10]([c:11]1[c:12]([NH2:36])[cH:13][c:14]([NH:19][c:20]2[n:21][cH:22][cH:23][c:24](-[c:26]3[cH:27][n:28]([CH3:35])[c:29]4[cH:30][cH:31][cH:32][cH:33][c:34]34)[n:25]2)[c:15]([O:17][CH3:18])[cH:16]1)[CH3:37])[CH3:38]>>[C:1]([CH:2]=[CH2:3])(=[O:4])[NH:36][c:12]1[c:11]([N:10]([CH2:9][CH2:8][N:7]([CH3:6])[CH3:38])[CH3:37])[cH:16][c:15]([O:17][CH3:18])[c:14]([NH:19][c:20]2[n:21][cH:22][cH:23][c:24](-[c:26]3[cH:27][n:28]([CH3:35])[c:29]4[cH:30][cH:31][cH:32][cH:33][c:34]34)[n:25]2)[cH:13]1",
@@ -3059,13 +2918,6 @@
               "assumed_yield": 0.7,
               "plausibility_raw": 0.7039857063870477,
               "plausibility_calibrated": 0.8040079277692137,
-              "gaps": [
-                "alkyne present",
-                "free phenolic OH present"
-              ],
-              "mock": [
-                "gaps"
-              ],
               "procedure": {
                 "reaction_id": "ord-b22d155d5842482db221a44171ad359a",
                 "rxn_smiles": "Cc1ccc(S(=O)(=O)O)cc1.Cl[c:14]1[n:15][cH:16][cH:17][c:18](-[c:20]2[cH:21][n:22]([CH3:29])[c:23]3[cH:24][cH:25][cH:26][cH:27][c:28]23)[n:19]1.O.[F:30][c:31]1[cH:32][c:33]([O:41][CH3:42])[c:34]([NH2:35])[cH:36][c:37]1[N+:38](=[O:39])[O-:40]>>[c:14]1([NH:35][c:34]2[c:33]([O:41][CH3:42])[cH:32][c:31]([F:30])[c:37]([N+:38](=[O:39])[O-:40])[cH:36]2)[n:15][cH:16][cH:17][c:18](-[c:20]2[cH:21][n:22]([CH3:29])[c:23]3[cH:24][cH:25][cH:26][cH:27][c:28]23)[n:19]1",
@@ -3205,14 +3057,6 @@
               "assumed_yield": 0.7,
               "plausibility_raw": 0.4260440840380508,
               "plausibility_calibrated": 0.4449811498586239,
-              "gaps": [
-                "free phenolic OH present",
-                "ortho,ortho-disubstituted aryl",
-                "unprotected primary alcohol"
-              ],
-              "mock": [
-                "gaps"
-              ],
               "procedure": {
                 "reaction_id": "ord-c8b55d4cf73e40bd86b235d5d0ac17d9",
                 "rxn_smiles": "CCN(C(C)C)C(C)C.COc1cc(F)c([N+](=O)[O-])cc1Nc1ncc(Cl)c(-c2cn(C)c3ccccc23)n1.F[c:9]1[cH:10][c:11]([O:35][CH3:36])[c:12]([NH:18][c:19]2[n:20][cH:21][cH:22][c:23](-[c:25]3[cH:26][n:27]([CH3:34])[c:28]4[cH:29][cH:30][cH:31][cH:32][c:33]34)[n:24]2)[cH:13][c:14]1[N+:15](=[O:16])[O-:17].[CH3:1][N:2]([CH2:3][CH2:4][NH:5][CH3:6])[CH3:7]>>[CH3:1][N:2]([CH2:3][CH2:4][N:5]([CH3:6])[c:9]1[cH:10][c:11]([O:35][CH3:36])[c:12]([NH:18][c:19]2[n:20][cH:21][cH:22][c:23](-[c:25]3[cH:26][n:27]([CH3:34])[c:28]4[cH:29][cH:30][cH:31][cH:32][c:33]34)[n:24]2)[cH:13][c:14]1[N+:15](=[O:16])[O-:17])[CH3:7]",
@@ -3346,14 +3190,6 @@
               "assumed_yield": 0.7,
               "plausibility_raw": 0.7306074774316684,
               "plausibility_calibrated": 0.8330322580645161,
-              "gaps": [
-                "alpha-chiral carbonyl",
-                "electron-poor heteroaryl",
-                "unprotected primary alcohol"
-              ],
-              "mock": [
-                "gaps"
-              ],
               "procedure": {
                 "reaction_id": "ord-0d3b14c7ba2b4ec4a14984501ac774e8",
                 "rxn_smiles": "O=[N+:12]([O-])[c:11]1[c:6]([N:5]([CH2:4][CH2:3][N:2]([CH3:1])[CH3:35])[CH3:34])[cH:7][c:8]([O:32][CH3:33])[c:9]([NH:15][c:16]2[n:17][cH:18][cH:19][c:20](-[c:22]3[cH:23][n:24]([CH3:31])[c:25]4[cH:26][cH:27][cH:28][cH:29][c:30]34)[n:21]2)[cH:10]1.[Cl-].[NH4+]>>[CH3:1][N:2]([CH2:3][CH2:4][N:5]([c:6]1[cH:7][c:8]([O:32][CH3:33])[c:9]([NH:15][c:16]2[n:17][cH:18][cH:19][c:20](-[c:22]3[cH:23][n:24]([CH3:31])[c:25]4[cH:26][cH:27][cH:28][cH:29][c:30]34)[n:21]2)[cH:10][c:11]1[NH2:12])[CH3:34])[CH3:35]",
@@ -3492,13 +3328,6 @@
               "assumed_yield": 0.7,
               "plausibility_raw": 0.8206831251769287,
               "plausibility_calibrated": 0.9152046783625731,
-              "gaps": [
-                "electron-poor heteroaryl",
-                "unprotected primary alcohol"
-              ],
-              "mock": [
-                "gaps"
-              ],
               "procedure": {
                 "reaction_id": "ord-d6b440462eb649f58ef08047db1c4b22",
                 "rxn_smiles": "Cl[C:43]([CH2:42][CH2:41][Cl:40])=[O:44].O=C([O-])[O-].[CH3:1][N:2]([CH2:3][CH2:4][N:5]([c:6]1[c:7]([NH2:31])[cH:8][c:9]([NH:14][c:15]2[n:16][cH:17][cH:18][c:19](-[c:21]3[cH:22][n:23]([CH3:30])[c:24]4[cH:25][cH:26][cH:27][cH:28][c:29]34)[n:20]2)[c:10]([O:12][CH3:13])[cH:11]1)[CH3:32])[CH3:33].[K+].[K+].[Na+].[OH-]>>[CH3:1][N:2]([CH2:3][CH2:4][N:5]([c:6]1[c:7]([NH:31][C:43]([CH2:42][CH2:41][Cl:40])=[O:44])[cH:8][c:9]([NH:14][c:15]2[n:16][cH:17][cH:18][c:19](-[c:21]3[cH:22][n:23]([CH3:30])[c:24]4[cH:25][cH:26][cH:27][cH:28][c:29]34)[n:20]2)[c:10]([O:12][CH3:13])[cH:11]1)[CH3:32])[CH3:33]",
@@ -3647,12 +3476,6 @@
               "assumed_yield": 0.7,
               "plausibility_raw": 0.5388657188027662,
               "plausibility_calibrated": 0.6343494316124826,
-              "gaps": [
-                "alkyne present"
-              ],
-              "mock": [
-                "gaps"
-              ],
               "procedure": {
                 "reaction_id": "ord-c7a89d0abd9047459459ae5b0103fc41",
                 "rxn_smiles": "CCN(CC)CC.Cl[CH2:2][CH2:3][C:4](=[O:5])[NH:6][c:7]1[c:8]([N:32]([CH3:33])[CH2:34][CH2:35][N:36]([CH3:37])[CH3:38])[cH:9][c:10]([O:30][CH3:31])[c:11]([NH:13][c:14]2[n:15][cH:16][cH:17][c:18](-[c:20]3[cH:21][n:22]([CH3:29])[c:23]4[cH:24][cH:25][cH:26][cH:27][c:28]34)[n:19]2)[cH:12]1.O>>[CH2:2]=[CH:3][C:4](=[O:5])[NH:6][c:7]1[c:8]([N:32]([CH3:33])[CH2:34][CH2:35][N:36]([CH3:37])[CH3:38])[cH:9][c:10]([O:30][CH3:31])[c:11]([NH:13][c:14]2[n:15][cH:16][cH:17][c:18](-[c:20]3[cH:21][n:22]([CH3:29])[c:23]4[cH:24][cH:25][cH:26][cH:27][c:28]34)[n:19]2)[cH:12]1",
@@ -3815,13 +3638,6 @@
               "assumed_yield": 0.7,
               "plausibility_raw": 0.7039857063870477,
               "plausibility_calibrated": 0.8040079277692137,
-              "gaps": [
-                "alkyne present",
-                "free phenolic OH present"
-              ],
-              "mock": [
-                "gaps"
-              ],
               "procedure": {
                 "reaction_id": "ord-b22d155d5842482db221a44171ad359a",
                 "rxn_smiles": "Cc1ccc(S(=O)(=O)O)cc1.Cl[c:14]1[n:15][cH:16][cH:17][c:18](-[c:20]2[cH:21][n:22]([CH3:29])[c:23]3[cH:24][cH:25][cH:26][cH:27][c:28]23)[n:19]1.O.[F:30][c:31]1[cH:32][c:33]([O:41][CH3:42])[c:34]([NH2:35])[cH:36][c:37]1[N+:38](=[O:39])[O-:40]>>[c:14]1([NH:35][c:34]2[c:33]([O:41][CH3:42])[cH:32][c:31]([F:30])[c:37]([N+:38](=[O:39])[O-:40])[cH:36]2)[n:15][cH:16][cH:17][c:18](-[c:20]2[cH:21][n:22]([CH3:29])[c:23]3[cH:24][cH:25][cH:26][cH:27][c:28]23)[n:19]1",
@@ -3961,14 +3777,6 @@
               "assumed_yield": 0.7,
               "plausibility_raw": 0.4260440840380508,
               "plausibility_calibrated": 0.4449811498586239,
-              "gaps": [
-                "free phenolic OH present",
-                "ortho,ortho-disubstituted aryl",
-                "unprotected primary alcohol"
-              ],
-              "mock": [
-                "gaps"
-              ],
               "procedure": {
                 "reaction_id": "ord-c8b55d4cf73e40bd86b235d5d0ac17d9",
                 "rxn_smiles": "CCN(C(C)C)C(C)C.COc1cc(F)c([N+](=O)[O-])cc1Nc1ncc(Cl)c(-c2cn(C)c3ccccc23)n1.F[c:9]1[cH:10][c:11]([O:35][CH3:36])[c:12]([NH:18][c:19]2[n:20][cH:21][cH:22][c:23](-[c:25]3[cH:26][n:27]([CH3:34])[c:28]4[cH:29][cH:30][cH:31][cH:32][c:33]34)[n:24]2)[cH:13][c:14]1[N+:15](=[O:16])[O-:17].[CH3:1][N:2]([CH2:3][CH2:4][NH:5][CH3:6])[CH3:7]>>[CH3:1][N:2]([CH2:3][CH2:4][N:5]([CH3:6])[c:9]1[cH:10][c:11]([O:35][CH3:36])[c:12]([NH:18][c:19]2[n:20][cH:21][cH:22][c:23](-[c:25]3[cH:26][n:27]([CH3:34])[c:28]4[cH:29][cH:30][cH:31][cH:32][c:33]34)[n:24]2)[cH:13][c:14]1[N+:15](=[O:16])[O-:17])[CH3:7]",
@@ -4102,14 +3910,6 @@
               "assumed_yield": 0.7,
               "plausibility_raw": 0.7306074774316684,
               "plausibility_calibrated": 0.8330322580645161,
-              "gaps": [
-                "alpha-chiral carbonyl",
-                "electron-poor heteroaryl",
-                "unprotected primary alcohol"
-              ],
-              "mock": [
-                "gaps"
-              ],
               "procedure": {
                 "reaction_id": "ord-0d3b14c7ba2b4ec4a14984501ac774e8",
                 "rxn_smiles": "O=[N+:12]([O-])[c:11]1[c:6]([N:5]([CH2:4][CH2:3][N:2]([CH3:1])[CH3:35])[CH3:34])[cH:7][c:8]([O:32][CH3:33])[c:9]([NH:15][c:16]2[n:17][cH:18][cH:19][c:20](-[c:22]3[cH:23][n:24]([CH3:31])[c:25]4[cH:26][cH:27][cH:28][cH:29][c:30]34)[n:21]2)[cH:10]1.[Cl-].[NH4+]>>[CH3:1][N:2]([CH2:3][CH2:4][N:5]([c:6]1[cH:7][c:8]([O:32][CH3:33])[c:9]([NH:15][c:16]2[n:17][cH:18][cH:19][c:20](-[c:22]3[cH:23][n:24]([CH3:31])[c:25]4[cH:26][cH:27][cH:28][cH:29][c:30]34)[n:21]2)[cH:10][c:11]1[NH2:12])[CH3:34])[CH3:35]",
@@ -4239,13 +4039,6 @@
               "assumed_yield": 0.7,
               "plausibility_raw": 0.7061296399361834,
               "plausibility_calibrated": 0.8040079277692137,
-              "gaps": [
-                "free phenolic OH present",
-                "unprotected primary alcohol"
-              ],
-              "mock": [
-                "gaps"
-              ],
               "procedure": {
                 "reaction_id": "ord-d6b440462eb649f58ef08047db1c4b22",
                 "rxn_smiles": "Cl[C:43]([CH2:42][CH2:41][Cl:40])=[O:44].O=C([O-])[O-].[CH3:1][N:2]([CH2:3][CH2:4][N:5]([c:6]1[c:7]([NH2:31])[cH:8][c:9]([NH:14][c:15]2[n:16][cH:17][cH:18][c:19](-[c:21]3[cH:22][n:23]([CH3:30])[c:24]4[cH:25][cH:26][cH:27][cH:28][c:29]34)[n:20]2)[c:10]([O:12][CH3:13])[cH:11]1)[CH3:32])[CH3:33].[K+].[K+].[Na+].[OH-]>>[CH3:1][N:2]([CH2:3][CH2:4][N:5]([c:6]1[c:7]([NH:31][C:43]([CH2:42][CH2:41][Cl:40])=[O:44])[cH:8][c:9]([NH:14][c:15]2[n:16][cH:17][cH:18][c:19](-[c:21]3[cH:22][n:23]([CH3:30])[c:24]4[cH:25][cH:26][cH:27][cH:28][c:29]34)[n:20]2)[c:10]([O:12][CH3:13])[cH:11]1)[CH3:32])[CH3:33]",
@@ -4394,12 +4187,6 @@
               "assumed_yield": 0.7,
               "plausibility_raw": 0.5388657188027662,
               "plausibility_calibrated": 0.6343494316124826,
-              "gaps": [
-                "alkyne present"
-              ],
-              "mock": [
-                "gaps"
-              ],
               "procedure": {
                 "reaction_id": "ord-c7a89d0abd9047459459ae5b0103fc41",
                 "rxn_smiles": "CCN(CC)CC.Cl[CH2:2][CH2:3][C:4](=[O:5])[NH:6][c:7]1[c:8]([N:32]([CH3:33])[CH2:34][CH2:35][N:36]([CH3:37])[CH3:38])[cH:9][c:10]([O:30][CH3:31])[c:11]([NH:13][c:14]2[n:15][cH:16][cH:17][c:18](-[c:20]3[cH:21][n:22]([CH3:29])[c:23]4[cH:24][cH:25][cH:26][cH:27][c:28]34)[n:19]2)[cH:12]1.O>>[CH2:2]=[CH:3][C:4](=[O:5])[NH:6][c:7]1[c:8]([N:32]([CH3:33])[CH2:34][CH2:35][N:36]([CH3:37])[CH3:38])[cH:9][c:10]([O:30][CH3:31])[c:11]([NH:13][c:14]2[n:15][cH:16][cH:17][c:18](-[c:20]3[cH:21][n:22]([CH3:29])[c:23]4[cH:24][cH:25][cH:26][cH:27][c:28]34)[n:19]2)[cH:12]1",
@@ -4552,14 +4339,7 @@
               "reported_yield": null,
               "assumed_yield": 0.7,
               "plausibility_raw": 0.6327896341445041,
-              "plausibility_calibrated": 0.7466380543633763,
-              "gaps": [
-                "alkyne present",
-                "free phenolic OH present"
-              ],
-              "mock": [
-                "gaps"
-              ]
+              "plausibility_calibrated": 0.7466380543633763
             },
             {
               "rxn_smiles": "CNCCN(C)C.COc1cc(F)c([N+](=O)[O-])cc1Nc1nccc(Cl)n1>>COc1cc(N(C)CCN(C)C)c([N+](=O)[O-])cc1Nc1nccc(Cl)n1",
@@ -4596,15 +4376,7 @@
               "reported_yield": null,
               "assumed_yield": 0.7,
               "plausibility_raw": 0.4260440840380508,
-              "plausibility_calibrated": 0.4449811498586239,
-              "gaps": [
-                "free phenolic OH present",
-                "ortho,ortho-disubstituted aryl",
-                "unprotected primary alcohol"
-              ],
-              "mock": [
-                "gaps"
-              ]
+              "plausibility_calibrated": 0.4449811498586239
             },
             {
               "rxn_smiles": "COc1cc(N(C)CCN(C)C)c([N+](=O)[O-])cc1Nc1nccc(Cl)n1>>COc1cc(N(C)CCN(C)C)c(N)cc1Nc1nccc(Cl)n1",
@@ -4635,15 +4407,7 @@
               "reported_yield": null,
               "assumed_yield": 0.7,
               "plausibility_raw": 0.7306074774316684,
-              "plausibility_calibrated": 0.8330322580645161,
-              "gaps": [
-                "alpha-chiral carbonyl",
-                "electron-poor heteroaryl",
-                "unprotected primary alcohol"
-              ],
-              "mock": [
-                "gaps"
-              ]
+              "plausibility_calibrated": 0.8330322580645161
             },
             {
               "rxn_smiles": "C=CC(=O)Cl.COc1cc(N(C)CCN(C)C)c(N)cc1Nc1nccc(Cl)n1>>C=CC(=O)Nc1cc(Nc2nccc(Cl)n2)c(OC)cc1N(C)CCN(C)C",
@@ -4680,13 +4444,7 @@
               "reported_yield": null,
               "assumed_yield": 0.7,
               "plausibility_raw": 0.8679461807364591,
-              "plausibility_calibrated": 0.9443083092002673,
-              "gaps": [
-                "ortho,ortho-disubstituted aryl"
-              ],
-              "mock": [
-                "gaps"
-              ]
+              "plausibility_calibrated": 0.9443083092002673
             },
             {
               "rxn_smiles": "Cn1ccc2ccccc21.C=CC(=O)Nc1cc(Nc2nccc(Cl)n2)c(OC)cc1N(C)CCN(C)C>>C=CC(=O)Nc1cc(Nc2nccc(-c3cn(C)c4ccccc34)n2)c(OC)cc1N(C)CCN(C)C",
@@ -4724,13 +4482,6 @@
               "assumed_yield": 0.7,
               "plausibility_raw": 0.7262769862893932,
               "plausibility_calibrated": 0.8330322580645161,
-              "gaps": [
-                "alpha-chiral carbonyl",
-                "free phenolic OH present"
-              ],
-              "mock": [
-                "gaps"
-              ],
               "procedure": {
                 "reaction_id": "ord-1beb7b3a3f8b4fe1ba58ae7bd2bbc417",
                 "rxn_smiles": "CCN(C(C)C)C(C)C.Cl[C:1]([CH:2]=[CH2:3])=[O:4].[CH3:6][N:7]([CH2:8][CH2:9][N:10]([c:11]1[c:12]([NH2:36])[cH:13][c:14]([NH:19][c:20]2[n:21][cH:22][cH:23][c:24](-[c:26]3[cH:27][n:28]([CH3:35])[c:29]4[cH:30][cH:31][cH:32][cH:33][c:34]34)[n:25]2)[c:15]([O:17][CH3:18])[cH:16]1)[CH3:37])[CH3:38]>>[C:1]([CH:2]=[CH2:3])(=[O:4])[NH:36][c:12]1[c:11]([N:10]([CH2:9][CH2:8][N:7]([CH3:6])[CH3:38])[CH3:37])[cH:16][c:15]([O:17][CH3:18])[c:14]([NH:19][c:20]2[n:21][cH:22][cH:23][c:24](-[c:26]3[cH:27][n:28]([CH3:35])[c:29]4[cH:30][cH:31][cH:32][cH:33][c:34]34)[n:25]2)[cH:13]1",
@@ -4936,13 +4687,6 @@
               "assumed_yield": 0.7,
               "plausibility_raw": 0.7691128650677046,
               "plausibility_calibrated": 0.8822014805278403,
-              "gaps": [
-                "electron-poor heteroaryl",
-                "hindered secondary amine"
-              ],
-              "mock": [
-                "gaps"
-              ],
               "procedure": {
                 "reaction_id": "ord-f12dec3206154c40b4e08c7a1425794f",
                 "rxn_smiles": "Cl.Cl.[CH3:1][CH2:2][N:3]([CH2:4][CH3:5])[CH2:6][C:7](=[O:8])[NH:9][c:10]1[c:11]([CH3:17])[cH:12][cH:13][cH:14][c:15]1[CH3:16]>>[CH3:1][CH2:2][N:3]([CH2:4][CH3:5])[CH2:6][C:7](=[O:8])[NH:9][c:10]1[c:11]([CH3:17])[cH:12][cH:13][cH:14][c:15]1[CH3:16]",
@@ -5088,13 +4832,6 @@
               "assumed_yield": 0.7,
               "plausibility_raw": 0.8707803637846537,
               "plausibility_calibrated": 0.9443083092002673,
-              "gaps": [
-                "alkyne present",
-                "free phenolic OH present"
-              ],
-              "mock": [
-                "gaps"
-              ],
               "procedure": {
                 "reaction_id": "ord-f12dec3206154c40b4e08c7a1425794f",
                 "rxn_smiles": "Cl.Cl.[CH3:1][CH2:2][N:3]([CH2:4][CH3:5])[CH2:6][C:7](=[O:8])[NH:9][c:10]1[c:11]([CH3:17])[cH:12][cH:13][cH:14][c:15]1[CH3:16]>>[CH3:1][CH2:2][N:3]([CH2:4][CH3:5])[CH2:6][C:7](=[O:8])[NH:9][c:10]1[c:11]([CH3:17])[cH:12][cH:13][cH:14][c:15]1[CH3:16]",
@@ -5241,12 +4978,6 @@
               "assumed_yield": 0.7,
               "plausibility_raw": 0.662107066564004,
               "plausibility_calibrated": 0.7635755258126197,
-              "gaps": [
-                "alpha-chiral carbonyl"
-              ],
-              "mock": [
-                "gaps"
-              ],
               "procedure": {
                 "reaction_id": "ord-f12dec3206154c40b4e08c7a1425794f",
                 "rxn_smiles": "Cl.Cl.[CH3:1][CH2:2][N:3]([CH2:4][CH3:5])[CH2:6][C:7](=[O:8])[NH:9][c:10]1[c:11]([CH3:17])[cH:12][cH:13][cH:14][c:15]1[CH3:16]>>[CH3:1][CH2:2][N:3]([CH2:4][CH3:5])[CH2:6][C:7](=[O:8])[NH:9][c:10]1[c:11]([CH3:17])[cH:12][cH:13][cH:14][c:15]1[CH3:16]",
@@ -5386,12 +5117,6 @@
               "assumed_yield": 0.7,
               "plausibility_raw": 0.791116236683405,
               "plausibility_calibrated": 0.8878566688785667,
-              "gaps": [
-                "electron-poor heteroaryl"
-              ],
-              "mock": [
-                "gaps"
-              ],
               "procedure": {
                 "reaction_id": "ord-f12dec3206154c40b4e08c7a1425794f",
                 "rxn_smiles": "Cl.Cl.[CH3:1][CH2:2][N:3]([CH2:4][CH3:5])[CH2:6][C:7](=[O:8])[NH:9][c:10]1[c:11]([CH3:17])[cH:12][cH:13][cH:14][c:15]1[CH3:16]>>[CH3:1][CH2:2][N:3]([CH2:4][CH3:5])[CH2:6][C:7](=[O:8])[NH:9][c:10]1[c:11]([CH3:17])[cH:12][cH:13][cH:14][c:15]1[CH3:16]",
@@ -5525,12 +5250,6 @@
               "assumed_yield": 0.7,
               "plausibility_raw": 0.43863818283933925,
               "plausibility_calibrated": 0.4532338308457711,
-              "gaps": [
-                "alkyne present"
-              ],
-              "mock": [
-                "gaps"
-              ],
               "procedure": {
                 "reaction_id": "ord-f12dec3206154c40b4e08c7a1425794f",
                 "rxn_smiles": "Cl.Cl.[CH3:1][CH2:2][N:3]([CH2:4][CH3:5])[CH2:6][C:7](=[O:8])[NH:9][c:10]1[c:11]([CH3:17])[cH:12][cH:13][cH:14][c:15]1[CH3:16]>>[CH3:1][CH2:2][N:3]([CH2:4][CH3:5])[CH2:6][C:7](=[O:8])[NH:9][c:10]1[c:11]([CH3:17])[cH:12][cH:13][cH:14][c:15]1[CH3:16]",
@@ -5683,14 +5402,7 @@
               "reported_yield": null,
               "assumed_yield": 0.7,
               "plausibility_raw": 0.5506967580785513,
-              "plausibility_calibrated": 0.6343494316124826,
-              "gaps": [
-                "free phenolic OH present",
-                "hindered secondary amine"
-              ],
-              "mock": [
-                "gaps"
-              ]
+              "plausibility_calibrated": 0.6343494316124826
             },
             {
               "rxn_smiles": "CC(=O)Oc1ccccc1C(=O)OCc1ccccc1>>CC(=O)Oc1ccccc1C(=O)O",
@@ -5722,13 +5434,6 @@
               "assumed_yield": 0.7,
               "plausibility_raw": 0.5463197261254331,
               "plausibility_calibrated": 0.6343494316124826,
-              "gaps": [
-                "electron-poor heteroaryl",
-                "ortho,ortho-disubstituted aryl"
-              ],
-              "mock": [
-                "gaps"
-              ],
               "procedure": {
                 "reaction_id": "ord-6fa966d02ab2465797ec74c11b537563",
                 "rxn_smiles": "Cl[C:7]([c:6]1[c:5]([O:4][C:1]([CH3:2])=[O:3])[cH:13][cH:12][cH:11][cH:10]1)=[O:8].[OH2:14]>>[C:1]([CH3:2])(=[O:3])[O:4][c:5]1[c:6]([C:7](=[O:8])[OH:14])[cH:10][cH:11][cH:12][cH:13]1",
@@ -5842,13 +5547,7 @@
               "reported_yield": null,
               "assumed_yield": 0.7,
               "plausibility_raw": 0.6929673916954836,
-              "plausibility_calibrated": 0.800477580260016,
-              "gaps": [
-                "electron-poor heteroaryl"
-              ],
-              "mock": [
-                "gaps"
-              ]
+              "plausibility_calibrated": 0.800477580260016
             },
             {
               "rxn_smiles": "CC(=O)Oc1ccccc1C(=O)OCc1ccccc1>>CC(=O)Oc1ccccc1C(=O)O",
@@ -5880,13 +5579,6 @@
               "assumed_yield": 0.7,
               "plausibility_raw": 0.5463197261254331,
               "plausibility_calibrated": 0.6343494316124826,
-              "gaps": [
-                "electron-poor heteroaryl",
-                "ortho,ortho-disubstituted aryl"
-              ],
-              "mock": [
-                "gaps"
-              ],
               "procedure": {
                 "reaction_id": "ord-6fa966d02ab2465797ec74c11b537563",
                 "rxn_smiles": "Cl[C:7]([c:6]1[c:5]([O:4][C:1]([CH3:2])=[O:3])[cH:13][cH:12][cH:11][cH:10]1)=[O:8].[OH2:14]>>[C:1]([CH3:2])(=[O:3])[O:4][c:5]1[c:6]([C:7](=[O:8])[OH:14])[cH:10][cH:11][cH:12][cH:13]1",
@@ -6000,14 +5692,7 @@
               "reported_yield": null,
               "assumed_yield": 0.7,
               "plausibility_raw": 0.5071678751686857,
-              "plausibility_calibrated": 0.566017699115044,
-              "gaps": [
-                "electron-poor heteroaryl",
-                "free phenolic OH present"
-              ],
-              "mock": [
-                "gaps"
-              ]
+              "plausibility_calibrated": 0.566017699115044
             },
             {
               "rxn_smiles": "CC(=O)Oc1ccccc1C(=O)OCc1ccccc1>>CC(=O)Oc1ccccc1C(=O)O",
@@ -6039,13 +5724,6 @@
               "assumed_yield": 0.7,
               "plausibility_raw": 0.5463197261254331,
               "plausibility_calibrated": 0.6343494316124826,
-              "gaps": [
-                "electron-poor heteroaryl",
-                "ortho,ortho-disubstituted aryl"
-              ],
-              "mock": [
-                "gaps"
-              ],
               "procedure": {
                 "reaction_id": "ord-6fa966d02ab2465797ec74c11b537563",
                 "rxn_smiles": "Cl[C:7]([c:6]1[c:5]([O:4][C:1]([CH3:2])=[O:3])[cH:13][cH:12][cH:11][cH:10]1)=[O:8].[OH2:14]>>[C:1]([CH3:2])(=[O:3])[O:4][c:5]1[c:6]([C:7](=[O:8])[OH:14])[cH:10][cH:11][cH:12][cH:13]1",
@@ -6154,12 +5832,6 @@
               "assumed_yield": 0.7,
               "plausibility_raw": 0.38094778967965415,
               "plausibility_calibrated": 0.36440030557677616,
-              "gaps": [
-                "alkyne present"
-              ],
-              "mock": [
-                "gaps"
-              ],
               "procedure": {
                 "reaction_id": "ord-3fd040315898434889cda66ed29904bf",
                 "rxn_smiles": "[P:24]([OH:25])([OH:26])([OH:27])=[O:28].[n:1]1[cH:2][n:3][c:4](-[c:10]2[cH:11][n:12][n:13]([C@H:15]([CH2:16][C:17]#[N:18])[CH:19]3[CH2:20][CH2:21][CH2:22][CH2:23]3)[cH:14]2)[c:5]2[c:6]1[nH:7][cH:8][cH:9]2>>[P:24](=[O:25])([OH:26])([OH:27])[OH:28].[n:1]1[cH:2][n:3][c:4](-[c:10]2[cH:11][n:12][n:13]([C@H:15]([CH2:16][C:17]#[N:18])[CH:19]3[CH2:20][CH2:21][CH2:22][CH2:23]3)[cH:14]2)[c:5]2[c:6]1[nH:7][cH:8][cH:9]2",
@@ -6276,14 +5948,6 @@
               "assumed_yield": 0.7,
               "plausibility_raw": 0.4663983712374464,
               "plausibility_calibrated": 0.49578610868933454,
-              "gaps": [
-                "alpha-chiral carbonyl",
-                "hindered secondary amine",
-                "unprotected primary alcohol"
-              ],
-              "mock": [
-                "gaps"
-              ],
               "procedure": {
                 "reaction_id": "ord-6fa966d02ab2465797ec74c11b537563",
                 "rxn_smiles": "Cl[C:7]([c:6]1[c:5]([O:4][C:1]([CH3:2])=[O:3])[cH:13][cH:12][cH:11][cH:10]1)=[O:8].[OH2:14]>>[C:1]([CH3:2])(=[O:3])[O:4][c:5]1[c:6]([C:7](=[O:8])[OH:14])[cH:10][cH:11][cH:12][cH:13]1",
@@ -6392,13 +6056,6 @@
               "assumed_yield": 0.7,
               "plausibility_raw": 0.3611555587651211,
               "plausibility_calibrated": 0.34776192818494833,
-              "gaps": [
-                "free phenolic OH present",
-                "hindered secondary amine"
-              ],
-              "mock": [
-                "gaps"
-              ],
               "procedure": {
                 "reaction_id": "ord-3fd040315898434889cda66ed29904bf",
                 "rxn_smiles": "[P:24]([OH:25])([OH:26])([OH:27])=[O:28].[n:1]1[cH:2][n:3][c:4](-[c:10]2[cH:11][n:12][n:13]([C@H:15]([CH2:16][C:17]#[N:18])[CH:19]3[CH2:20][CH2:21][CH2:22][CH2:23]3)[cH:14]2)[c:5]2[c:6]1[nH:7][cH:8][cH:9]2>>[P:24](=[O:25])([OH:26])([OH:27])[OH:28].[n:1]1[cH:2][n:3][c:4](-[c:10]2[cH:11][n:12][n:13]([C@H:15]([CH2:16][C:17]#[N:18])[CH:19]3[CH2:20][CH2:21][CH2:22][CH2:23]3)[cH:14]2)[c:5]2[c:6]1[nH:7][cH:8][cH:9]2",
@@ -6515,14 +6172,6 @@
               "assumed_yield": 0.7,
               "plausibility_raw": 0.4663983712374464,
               "plausibility_calibrated": 0.49578610868933454,
-              "gaps": [
-                "alpha-chiral carbonyl",
-                "hindered secondary amine",
-                "unprotected primary alcohol"
-              ],
-              "mock": [
-                "gaps"
-              ],
               "procedure": {
                 "reaction_id": "ord-6fa966d02ab2465797ec74c11b537563",
                 "rxn_smiles": "Cl[C:7]([c:6]1[c:5]([O:4][C:1]([CH3:2])=[O:3])[cH:13][cH:12][cH:11][cH:10]1)=[O:8].[OH2:14]>>[C:1]([CH3:2])(=[O:3])[O:4][c:5]1[c:6]([C:7](=[O:8])[OH:14])[cH:10][cH:11][cH:12][cH:13]1",
@@ -6657,14 +6306,7 @@
               "reported_yield": null,
               "assumed_yield": 0.7,
               "plausibility_raw": 0.7190283953739063,
-              "plausibility_calibrated": 0.8195862068965517,
-              "gaps": [
-                "alpha-chiral carbonyl",
-                "free phenolic OH present"
-              ],
-              "mock": [
-                "gaps"
-              ]
+              "plausibility_calibrated": 0.8195862068965517
             }
           ],
           "leaf_materials": [
@@ -6723,14 +6365,7 @@
               "reported_yield": null,
               "assumed_yield": 0.7,
               "plausibility_raw": 0.7495096724153901,
-              "plausibility_calibrated": 0.8633824276282377,
-              "gaps": [
-                "free phenolic OH present",
-                "ortho,ortho-disubstituted aryl"
-              ],
-              "mock": [
-                "gaps"
-              ]
+              "plausibility_calibrated": 0.8633824276282377
             }
           ],
           "leaf_materials": [
@@ -6789,14 +6424,7 @@
               "reported_yield": null,
               "assumed_yield": 0.7,
               "plausibility_raw": 0.27989279678544526,
-              "plausibility_calibrated": 0.21684134441633537,
-              "gaps": [
-                "alpha-chiral carbonyl",
-                "hindered secondary amine"
-              ],
-              "mock": [
-                "gaps"
-              ]
+              "plausibility_calibrated": 0.21684134441633537
             }
           ],
           "leaf_materials": [
@@ -6855,13 +6483,7 @@
               "reported_yield": null,
               "assumed_yield": 0.7,
               "plausibility_raw": 0.5367432949728921,
-              "plausibility_calibrated": 0.6343494316124826,
-              "gaps": [
-                "alpha-chiral carbonyl"
-              ],
-              "mock": [
-                "gaps"
-              ]
+              "plausibility_calibrated": 0.6343494316124826
             }
           ],
           "leaf_materials": [
@@ -6914,14 +6536,7 @@
               "reported_yield": null,
               "assumed_yield": 0.7,
               "plausibility_raw": 0.46794303614980437,
-              "plausibility_calibrated": 0.5108997225525169,
-              "gaps": [
-                "ortho,ortho-disubstituted aryl",
-                "unprotected primary alcohol"
-              ],
-              "mock": [
-                "gaps"
-              ]
+              "plausibility_calibrated": 0.5108997225525169
             }
           ],
           "leaf_materials": [

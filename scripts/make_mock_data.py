@@ -101,10 +101,15 @@ def mock_price(smiles: str) -> dict:
     }
 
 
-GAP_POOL = [
-    "ortho,ortho-disubstituted aryl", "electron-poor heteroaryl", "hindered secondary amine", "free phenolic OH present",
-    "unprotected primary alcohol", "alpha-chiral carbonyl", "pyridine N-oxide", "alkyne present",
-]
+# gaps(이 템플릿이 시도되지 않은 기질 클래스)는 여기서 만들지 않는다.
+#
+# 전에는 GAP_POOL에서 템플릿 해시로 골라 넣었다. 숫자가 아니라 **문헌에 대한 주장**이라
+# 더 나빴다 — "이 템플릿은 ortho,ortho-이치환 아릴에 시도된 적이 없다"는 코퍼스를 세어 봐야
+# 알 수 있는 사실인데 해시로 뽑고 있었다 (절대 규칙 1·2).
+#
+# 라이브 /routes는 gaps를 아예 내보내지 않고, UI는 없으면 "— Not computed for this step yet."을
+# 띄운다. 그 정직한 빈 상태가 이미 있으므로 여기서도 비워 두는 것이 맞다.
+# 진짜로 채우려면 코퍼스에서 템플릿별 기질 클래스를 세야 한다 (GET /gaps, 미구현).
 
 
 def walk(node: dict, steps: list, leaves: dict):
@@ -123,8 +128,6 @@ def walk(node: dict, steps: list, leaves: dict):
     product = compound(node["smiles"])
     occ = int(md.get("library_occurence") or 0)
     tier = "ANALOGOUS" if occ >= ANALOGOUS_MIN_PRECEDENTS else "COMPUTED"
-    seed = h(md.get("template_hash", product["smiles"]))
-    raw = round(0.55 + (seed % 40) / 100, 2)
     steps.append({
         "rxn_smiles": ".".join(r["smiles"] for r in reactants) + ">>" + product["smiles"],
         "template_id": md.get("template_hash"),
@@ -144,10 +147,12 @@ def walk(node: dict, steps: list, leaves: dict):
         "conditions": None,
         "reported_yield": None,
         "assumed_yield": 0.7,
-        "plausibility_raw": raw,
-        "plausibility_calibrated": round(raw * 0.82, 2),
-        "gaps": sorted({GAP_POOL[(seed >> i) % len(GAP_POOL)] for i in (0, 5, 11)})[: 1 + seed % 3],
-        "mock": ["plausibility_raw", "plausibility_calibrated", "gaps"],
+        # 타당성 점수는 여기서 만들지 않는다. scripts/bake_plausibility.py가 학습된 모델로 채운다.
+        # (절차·출처가 scripts/attach_procedures.py로 붙는 것과 같은 구조다.)
+        # 비어 있으면 UI는 "—"를 띄운다. 채워질 때까지는 그게 맞는 표시다.
+        "plausibility_raw": None,
+        "plausibility_calibrated": None,
+        "mock": [],
     })
 
 
