@@ -2,6 +2,7 @@
 // top-left corner, in the user's unit, with a mark where the pointer is and a band across the selection. They are
 // window chrome over the canvas, so they are never exported or printed.
 import { useMemo } from "react";
+import { frameHeight, frameWidth } from "./synthpath"; // SynthPath: the editor's width is its pane's, not the window's
 import { rulerTicks } from "./grid";
 import type { RulerUnit } from "./settings";
 
@@ -22,7 +23,7 @@ export function Rulers({ view, scale, mm, origin, unit, pointer, extent, onUnit 
   // The scales change only as the view does: the pointer moving draws its mark alone.
   const [x0, y0] = [sx(origin[0]), sy(origin[1])];
   const scales = useMemo(() => {
-    const across = rulerTicks((RULER - x0) / per, (innerWidth - x0) / per, per, unit === "in"), down = rulerTicks((RULER - y0) / per, (innerHeight - y0) / per, per, unit === "in");
+    const across = rulerTicks((RULER - x0) / per, (frameWidth() - x0) / per, per, unit === "in"), down = rulerTicks((RULER - y0) / per, (frameHeight() - y0) / per, per, unit === "in");
     const len = [5, 8, RULER], ux = (u: number) => Math.round(x0 + u * per), uy = (u: number) => Math.round(y0 + u * per);
     return [
       <g key="across">
@@ -34,7 +35,7 @@ export function Rulers({ view, scale, mm, origin, unit, pointer, extent, onUnit 
         {down.filter((t) => t.label).map((t) => <text key={t.at} transform={`translate(11 ${uy(t.at) + 3}) rotate(-90)`} textAnchor="end">{t.label}</text>)}
       </g>,
     ];
-  }, [x0, y0, per, unit, innerWidth, innerHeight]); // a larger window shows more of each ruler
+  }, [x0, y0, per, unit, frameWidth(), frameHeight()]); // a larger window shows more of each ruler
   const marks = (horizontal: boolean) => {
     const at = pointer && (horizontal ? sx(pointer[0]) : sy(pointer[1])), lo = extent && (horizontal ? view.x + extent[0] * view.zoom : view.y + extent[1] * view.zoom);
     const hi = extent && (horizontal ? view.x + extent[2] * view.zoom : view.y + extent[3] * view.zoom);

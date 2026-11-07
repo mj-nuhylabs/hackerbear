@@ -94,13 +94,13 @@ function Explain({ route, stepIndex }) {
 
 export default function StepDetail({ route, stepIndex, onSelect, scale, targetG, onOpenInDraw }) {
   const s = route.steps[stepIndex]
-  // A compound's molar mass, and a button that opens it in the Draw panel (Octet Draw).
+  // A compound's molar mass, and a button that adds it to the drawing (Octet Draw).
   const caption = (c) => (
     <>
       {`${c.mw.toFixed(2)} g/mol`}
       {onOpenInDraw && (
         <button type="button" className="ghost-btn draw-open" onClick={() => onOpenInDraw(c.smiles)}>
-          Open in Draw
+          Add to drawing
         </button>
       )}
     </>

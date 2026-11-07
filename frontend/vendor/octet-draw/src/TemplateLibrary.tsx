@@ -12,6 +12,7 @@
 // set's button, or a set's menu) tears a set off into a floating palette (FloatingTemplates, below). The library and
 // each palette have a template size (SizeChoice), and a set's menu saves it as a ChemDraw template file.
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { frameHeight, frameTop, frameWidth } from "./synthpath"; // SynthPath: the editor's width is its pane's, not the window's
 import { ArrowLineDownRight, ArrowLineUpLeft, ArrowSquareOut, BookmarkSimple, Copy, FileArrowUp, Folders, FolderSimple, FolderSimplePlus, FolderSimpleUser, MagnifyingGlass, NotePencil, PencilSimple, Plus, PushPin, Trash, X } from "@phosphor-icons/react";
 import { ContextMenu, menuAt, menuKey, type MenuItem } from "./Menu";
 import { commonKey } from "./common";
@@ -480,7 +481,7 @@ export function FloatingTemplates({ palette, items, current, actions, z, onChoos
   // It stays on the screen: a window made smaller brings it back in, and a tall set scrolls inside the room below it.
   const [, resized] = useState(0);
   useEffect(() => { const r = () => resized((n) => n + 1); addEventListener("resize", r); return () => removeEventListener("resize", r); }, []);
-  const x = Math.max(0, Math.min(live?.x ?? palette.x, innerWidth - width)), y = Math.max(0, Math.min(live?.y ?? palette.y, innerHeight - 40));
+  const x = Math.max(0, Math.min(live?.x ?? palette.x, frameWidth() - width)), y = Math.max(frameTop(), Math.min(live?.y ?? palette.y, frameHeight() - 40));
   const drag = (e: React.PointerEvent, how: "move" | "size") => {
     if (e.button !== 0 || (e.target as Element).closest("button")) return;
     e.preventDefault();
@@ -497,7 +498,7 @@ export function FloatingTemplates({ palette, items, current, actions, z, onChoos
       removeEventListener("pointermove", move);
       removeEventListener("pointerup", up);
       setLive(undefined);
-      if (how === "move" && (now.x !== x0 || now.y !== y0)) onMove(Math.max(0, Math.min(now.x, innerWidth - width)), Math.max(0, Math.min(now.y, innerHeight - 40)));
+      if (how === "move" && (now.x !== x0 || now.y !== y0)) onMove(Math.max(0, Math.min(now.x, frameWidth() - width)), Math.max(frameTop(), Math.min(now.y, frameHeight() - 40)));
       if (how === "size" && now.columns !== c0) onColumns(now.columns);
     };
     addEventListener("pointermove", move);
@@ -506,7 +507,7 @@ export function FloatingTemplates({ palette, items, current, actions, z, onChoos
   const item = menu && items.find((t) => t.kind === menu.kind);
   return (
     <section ref={box} className={leaving ? "floating-templates leaving" : "floating-templates"} role="dialog" aria-label={palette.set} inert={leaving}
-      style={{ left: x, top: y, width, zIndex: z, maxHeight: Math.max(120, innerHeight - y - 8), "--thumb": `${thumb}px` } as React.CSSProperties} onPointerDownCapture={onFront}>
+      style={{ left: x, top: y, width, zIndex: z, maxHeight: Math.max(120, frameHeight() - y - 8), "--thumb": `${thumb}px` } as React.CSSProperties} onPointerDownCapture={onFront}>
       <header className="floating-head" onPointerDown={(e) => drag(e, "move")}
         onContextMenu={(e) => { e.preventDefault(); if (actions.onSaveSet && items.length) setSetMenuAt({ x: e.clientX, y: e.clientY }); }}>
         <h3 className="floating-title">{palette.set}</h3>

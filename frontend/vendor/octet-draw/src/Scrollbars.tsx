@@ -4,6 +4,7 @@
 // The thumbs follow the view from its store, as the camera does: a pan or zoom draws no React render here, so the
 // canvas draws again no slower than with no bars.
 import { useLayoutEffect, useRef, useState } from "react";
+import { frameHeight, frameWidth } from "./synthpath"; // SynthPath: the editor's width is its pane's, not the window's
 import { bar, dragShift, pageShift, type Bar } from "./scroll";
 import type { Store } from "./store";
 
@@ -16,7 +17,7 @@ type Axis = { track: number; content: [number, number]; seen: [number, number]; 
 
 // One axis of the bars for a view: x across, y down.
 function axisOf(x: boolean, view: View, box: Span, ruler: number): Axis {
-  const size = x ? innerWidth : innerHeight, track = size - ruler - BAR, seen: [number, number] = [ruler, size];
+  const size = x ? frameWidth() : frameHeight(), track = size - ruler - BAR, seen: [number, number] = [ruler, size];
   const content: [number, number] = x ? [view.x + box[0] * view.zoom, view.x + box[2] * view.zoom] : [view.y + box[1] * view.zoom, view.y + box[3] * view.zoom];
   return { track, content, seen, b: bar(content, seen, track) };
 }

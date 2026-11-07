@@ -79,7 +79,7 @@ import { StructureThumb, type TemplateTool } from "./TemplateLibrary";
 import { cleanUpReaction, cleanUpReactions, findReaction, gapFor, layoutRow, reactionClean, roleOf, rowOf, withStructure, type Layout, type Reaction } from "./reaction";
 import { alignByMap, clearScheme, interpret, mapScheme, rolesOf, type Part, type Role, type RoleStep } from "./interpret";
 import { SEARCHES, searchNow, searchQuery } from "./search";
-import { synthpath } from "./synthpath"; // SynthPath
+import { frameHeight, frameMidY, frameSpan, frameWidth, synthpath } from "./synthpath"; // SynthPath: the editor's width is its pane's, not the window's
 import { moduleOf, SettingsWindow, type ModuleId } from "./SettingsWindow";
 import { addBranch, addSide, addStop, angleAbout, attachBeside, branchFor, branchHeads, branchOf, breakAt, clearAt, cycleAtoms, dragEnd, dragMeet, dropOnCycle, followArcs, isSide, labelEnd, layoutCycles, orderAround, pullBranch, removeEnd, removeStop, resizeCycle, setBranch, setEnd, setEnds, setStep, sideChoices, sideFor, spreadCycle, stepAt, stepFor, structureMeet, swapBranch, textOn, withEnd, type Cycle, type CycleBranch, type CycleLayout, type CycleText } from "./cycle";
 import { LIBRARY, libraryItem, type LibraryItem } from "./library";
@@ -515,7 +515,7 @@ export default function Editor() {
   const [spring, setSpring] = useState<Tool>();
   // The view and the thing under the pointer change on each pan, zoom and pointer move. They live in stores: only the
   // parts that show them draw again (Live), and handlers read them as they run.
-  const [views] = useState(() => { const s = loadSettings(); return store<View>({ x: innerWidth / 2, y: innerHeight / 2, zoom: Math.min(8, Math.max(0.25, openZoom(styleFor(s, s.purpose)))) }); });
+  const [views] = useState(() => { const s = loadSettings(); return store<View>({ x: frameWidth() / 2, y: frameMidY(), zoom: Math.min(8, Math.max(0.25, openZoom(styleFor(s, s.purpose)))) }); });
   const setView = (next: View | ((v: View) => View)) => views.set(typeof next === "function" ? next(views.get()) : next);
   // A window made larger shows more of the grid and the rulers, which are drawn for the window alone.
   useEffect(() => { const grow = () => views.set({ ...views.get() }); addEventListener("resize", grow); return () => removeEventListener("resize", grow); }, [views]);
@@ -635,7 +635,7 @@ export default function Editor() {
     if (!mol) return;
     // The template fills a good part of the window (templates are small): up to three times the open zoom.
     const start: Mol = { ...mol, style: newStyle }, b = bounds(start) ?? extent(start), open = openZoom(newStyle);
-    const fit = b ? 0.6 * Math.min((innerWidth - 160) / ((b[2] - b[0] + 1) * L), (innerHeight - 120) / ((b[3] - b[1] + 1) * L)) : open, zoom = Math.min(3 * open, Math.max(open, fit));
+    const fit = b ? 0.6 * Math.min((frameWidth() - 160) / ((b[2] - b[0] + 1) * L), (frameSpan() - 120) / ((b[3] - b[1] + 1) * L)) : open, zoom = Math.min(3 * open, Math.max(open, fit));
     setTemplateEdit({ id: own?.id, name: own?.name ?? libraryItem(kind)?.name ?? kindName(kind) ?? "Template", tool, saved: start,
       back: { h, file, view: views.get(), guides, selection, picked } });
     dispatch({ type: "reset", h: { stack: [start], at: 0 } });
@@ -644,7 +644,7 @@ export default function Editor() {
     setPicked(new Set());
     setGuides(freshGuides([0, 0], newStyle));
     setTemplatePick(undefined);
-    setView({ x: innerWidth / 2 - (b ? (b[0] + b[2]) / 2 : 0) * zoom * L, y: innerHeight / 2 + (b ? (b[1] + b[3]) / 2 : 0) * zoom * L, zoom });
+    setView({ x: frameWidth() / 2 - (b ? (b[0] + b[2]) / 2 : 0) * zoom * L, y: frameMidY() + (b ? (b[1] + b[3]) / 2 : 0) * zoom * L, zoom });
   }
   function endTemplateEdit() {
     const e = templateEdit;
@@ -1461,7 +1461,7 @@ export default function Editor() {
   });
   // The open view for a new drawing in a style: the page's middle in the window's middle, at the open zoom. The page
   // outlines do not grow into place.
-  const openView = (d: DocStyle) => { lastK.current = frameStyle(d, L).k * d.scale; outlineFrom.current = undefined; setView({ x: innerWidth / 2, y: innerHeight / 2, zoom: openZoom(d) }); };
+  const openView = (d: DocStyle) => { lastK.current = frameStyle(d, L).k * d.scale; outlineFrom.current = undefined; setView({ x: frameWidth() / 2, y: frameMidY(), zoom: openZoom(d) }); };
   // File > Apply Settings From File… (ChemDraw's Apply Document Settings from > Other…): the open drawing takes the
   // whole style of another drawing (.oct or ChemDraw's CDXML): its lengths, text, labels, page and background, with
   // one undo step. Its purpose stays, so its outlines do too.
@@ -1717,7 +1717,7 @@ export default function Editor() {
       const left = Object.keys(lost).length > 0;
       if (read.resaved) setNotice(`ChemDraw saved this file last and did not keep Octet's own extras.${left ? ` Octet left out ${lostText(lost)}.` : ""}`, left ? "error" : "info");
       else sayLost(lost);
-      if (b) setView((v) => ({ ...v, x: innerWidth / 2 - ((b[0] + b[2]) / 2) * v.zoom * L, y: innerHeight / 2 + ((b[1] + b[3]) / 2) * v.zoom * L }));
+      if (b) setView((v) => ({ ...v, x: frameWidth() / 2 - ((b[0] + b[2]) / 2) * v.zoom * L, y: frameMidY() + ((b[1] + b[3]) / 2) * v.zoom * L }));
     } catch (e) {
       setNotice(failure("Octet cannot open this file.", e));
     }
@@ -1845,7 +1845,7 @@ export default function Editor() {
       ...(doc.shapes ?? []).map((sh) => ({ x: shapeBounds(sh)[2], level: (sh.from[1] + sh.to[1]) / 2, arrow: false })),
       ...placed.filter((c) => c.id !== DRAFT).map((c) => ({ x: c.box[2] / L, level: -(c.box[1] + c.box[3]) / 2 / L, arrow: false })),
     ];
-    if (!ends.length) { const c = toDoc(innerWidth / 2, innerHeight / 2); return [c[0] - (f[0] + f[2]) / 2, c[1] - (f[1] + f[3]) / 2]; }
+    if (!ends.length) { const c = toDoc(frameWidth() / 2, frameMidY()); return [c[0] - (f[0] + f[2]) / 2, c[1] - (f[1] + f[3]) / 2]; }
     const last = ends.reduce((p, q) => (q.x > p.x + 1e-6 || (Math.abs(q.x - p.x) < 1e-6 && q.arrow) ? q : p));
     const level = last.arrow ? last.level : d ? (d[1] + d[3]) / 2 : last.level;
     return [last.x + (last.arrow ? reactionGap : 1.5) - f[0], level - (f[1] + f[3]) / 2];
@@ -1880,10 +1880,18 @@ export default function Editor() {
     set(merge(base, frag, land(frag, at)), false, undefined, drop);
     setSelection(new Set(frag.atoms.map((_, i) => base.atoms.length + i)));
   }
-  // SynthPath: what SynthPath's search reads (the selection, or the whole drawing, as Search PubChem takes it), and a
-  // structure SynthPath sends, placed as a pasted SMILES is (to the right of the drawing, selected) once Indigo has
-  // loaded. See synthpath.ts.
-  synthpath.part = () => (!selection.size && !picked.size ? doc : extractSelection(doc, selection, picked));
+  // SynthPath: what SynthPath's search reads (each structure the selection touches, whole, as Bring to Front takes
+  // them, so one picked atom searches its molecule; the whole drawing when nothing is selected), and a structure
+  // SynthPath sends, placed as a pasted SMILES is (to the right of the drawing, selected). See synthpath.ts.
+  synthpath.part = () => {
+    if (!selection.size && !picked.size) return doc;
+    const touched = fragments(doc).filter((g) => g.some((i) => selection.has(i))).flat();
+    return touched.length ? extractSelection(doc, new Set(touched), new Set()) : extractSelection(doc, selection, picked);
+  };
+  synthpath.load = (smiles: string) => {
+    if (!loaded) { synthpath.inbox = smiles; return; }
+    try { place(asOpened(importStructure(smiles), smiles)); } catch { setNotice("Octet cannot draw this structure."); }
+  };
   useEffect(() => {
     synthpath.state = { loaded, atoms: doc.atoms.length, selected: selection.size > 0 || picked.size > 0 };
     if (loaded && synthpath.inbox) {
@@ -1893,7 +1901,7 @@ export default function Editor() {
     }
     synthpath.changed?.();
   });
-  useEffect(() => () => { synthpath.part = undefined; synthpath.state = undefined; }, []);
+  useEffect(() => () => { synthpath.part = undefined; synthpath.load = undefined; synthpath.state = undefined; }, []);
   // A reaction that came in (a file or text with arrows) laid out as Clean Up Reaction lays it out, measured as it will
   // be drawn. arrowIds: its arrows.
   function laidOut(m: Mol, arrowIds: number[]): Mol {
@@ -2320,7 +2328,7 @@ export default function Editor() {
         setFile({ saved: EMPTY });
         if (total > MOST) setNotice(`Octet made the first ${MOST} of ${total.toLocaleString("en-GB")} structures.`, "info");
         const b = bounds(grid);
-        if (b) setView((v) => ({ ...v, x: innerWidth / 2 - ((b[0] + b[2]) / 2) * v.zoom * L, y: innerHeight / 2 + ((b[1] + b[3]) / 2) * v.zoom * L }));
+        if (b) setView((v) => ({ ...v, x: frameWidth() / 2 - ((b[0] + b[2]) / 2) * v.zoom * L, y: frameMidY() + ((b[1] + b[3]) / 2) * v.zoom * L }));
       });
     },
     // Show Atom Number (Object menu): each atom's number beside it, for the selected atoms or the whole drawing.
@@ -2528,10 +2536,10 @@ export default function Editor() {
     zoom_fit: () => {
       // Everything drawn (text, arrows and shapes too), or the atoms when the canvas is not there.
       const ink = svg.current ? canvasInk(svg.current) : undefined, b = ink ? [ink[0] / L, -ink[3] / L, ink[2] / L, -ink[1] / L] : bounds(doc);
-      if (!b) return moveView({ x: innerWidth / 2, y: innerHeight / 2, zoom: openZoom(style) });
-      const free = [innerWidth - 160, innerHeight - 120], size = [(b[2] - b[0] + 1) * L, (b[3] - b[1] + 1) * L];
+      if (!b) return moveView({ x: frameWidth() / 2, y: frameMidY(), zoom: openZoom(style) });
+      const free = [frameWidth() - 160, frameSpan() - 120], size = [(b[2] - b[0] + 1) * L, (b[3] - b[1] + 1) * L];
       const zoom = clampZoom(Math.min(free[0] / size[0], free[1] / size[1]));
-      moveView({ zoom, x: innerWidth / 2 - ((b[0] + b[2]) / 2) * L * zoom, y: innerHeight / 2 + ((b[1] + b[3]) / 2) * L * zoom });
+      moveView({ zoom, x: frameWidth() / 2 - ((b[0] + b[2]) / 2) * L * zoom, y: frameMidY() + ((b[1] + b[3]) / 2) * L * zoom });
     },
     // View > Centre in Window (⌥⌘/): the selection, or else the whole drawing (else the page), in the middle of the room
     // the panels leave, at the same zoom. From a key the view moves at once; from the pointer (the menu, Actions) it glides.
@@ -2561,7 +2569,7 @@ export default function Editor() {
     else if (r?.scale !== undefined) scaleBy(r.scale);
   }
   function zoomTo(target: number) {
-    const view = views.get(), zoom = clampZoom(target), k = zoom / view.zoom, cx = innerWidth / 2, cy = innerHeight / 2;
+    const view = views.get(), zoom = clampZoom(target), k = zoom / view.zoom, cx = frameWidth() / 2, cy = frameMidY();
     moveView({ zoom, x: cx - (cx - view.x) * k, y: cy - (cy - view.y) * k });
   }
   // Keep the setting on disk and the View menu ticks in step with it.
@@ -2772,7 +2780,7 @@ export default function Editor() {
   const lastK = useRef(frame.k * style.scale);
   // A zoom past the limits comes back inside them about the window's middle, so the next pinch does not jump.
   useEffect(() => {
-    const r = lastK.current / (frame.k * style.scale), cx = innerWidth / 2, cy = innerHeight / 2;
+    const r = lastK.current / (frame.k * style.scale), cx = frameWidth() / 2, cy = frameMidY();
     lastK.current = frame.k * style.scale;
     if (Math.abs(r - 1) < 1e-3) return;
     setView((v) => { const zoom = clampZoom(v.zoom * r), q = zoom / (v.zoom * r); return { zoom, x: cx - (cx - v.x) * q, y: cy - (cy - v.y) * q }; });
@@ -2848,7 +2856,7 @@ export default function Editor() {
   // it takes.
   const crosshairHome = (at?: P, d?: DocStyle): [number, number] => {
     const k = d ? ((72 / 25.4) * (4 / 3) * frameStyle(d, L).k) / L : mm, [, w, h] = d ? pageOutlines(d, purposeOf(settings, d.purpose)?.kind)[0] : pages[0];
-    const o: P = [-(w / 2) * k, (h / 2) * k], g = d ? gridOf(d.grid, k, o) : grid, step = g.minor * g.every, c = at ?? toDoc(innerWidth / 2, innerHeight / 2);
+    const o: P = [-(w / 2) * k, (h / 2) * k], g = d ? gridOf(d.grid, k, o) : grid, step = g.minor * g.every, c = at ?? toDoc(frameWidth() / 2, frameMidY());
     return [0, 1].map((i) => o[i] + Math.round((c[i] - o[i]) / step) * step) as [number, number];
   };
   // New drawings, and drawings saved without them, show what the user last chose in the View menu.
@@ -2988,8 +2996,8 @@ export default function Editor() {
     g.animate([at(from), at(to)], timing());
   }
   // A click on a page's edge (edgePage) fits that page in the window, centred.
-  const fitZoom = ([, w, h]: [string, number, number]) => Math.min((innerWidth - 160) / (w * mm * L), (innerHeight - 48) / (h * mm * L));
-  const fitPage = (page: [string, number, number]) => moveView({ x: innerWidth / 2, y: innerHeight / 2, zoom: fitZoom(page) });
+  const fitZoom = ([, w, h]: [string, number, number]) => Math.min((frameWidth() - 160) / (w * mm * L), (frameSpan() - 48) / (h * mm * L));
+  const fitPage = (page: [string, number, number]) => moveView({ x: frameWidth() / 2, y: frameMidY(), zoom: fitZoom(page) });
   // The zoom limits: a bond drawn 0.25 to 8 times its size, widened so that every page outline can be fitted. At
   // any document scale the page never stops a zoom, and no zoom jumps (decision 0007).
   zoomLimits.current = [Math.min(0.25, ...pages.map(fitZoom)), Math.max(8, ...pages.map(fitZoom))];
@@ -7371,7 +7379,7 @@ export default function Editor() {
       // Deltas in lines or pages (Firefox, some Linux mice) as pixels. A mouse wheel's notch is 100 px on Windows: each
       // zoom step is at most 1.25 times, as Magnify's, so Ctrl and the wheel zoom in steps (a pinch's steps are smaller).
       // Shift and a mouse wheel scroll across: the Mac turns the wheel's delta itself; Windows and Linux may not.
-      const unit = e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? innerHeight : 1, across = e.shiftKey && !zooming && !e.deltaX;
+      const unit = e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? frameHeight() : 1, across = e.shiftKey && !zooming && !e.deltaX;
       const dx = (across ? e.deltaY : e.deltaX) * unit, dy = across ? 0 : e.deltaY * unit;
       setView((v) => {
         if (!zooming) return { ...v, x: v.x - dx, y: v.y - dy };
@@ -7459,7 +7467,7 @@ export default function Editor() {
       if (e.key === "ContextMenu" || (e.key === "F10" && e.shiftKey)) {
         e.preventDefault();
         const view = views.get(), c = selection.size || picked.size ? selectionMiddle() : undefined;
-        return setMenuAt(c ? { x: view.x + c[0] * L * view.zoom, y: view.y - c[1] * L * view.zoom, keyboard: true } : { x: innerWidth / 2, y: innerHeight / 2, keyboard: true });
+        return setMenuAt(c ? { x: view.x + c[0] * L * view.zoom, y: view.y - c[1] * L * view.zoom, keyboard: true } : { x: frameWidth() / 2, y: frameMidY(), keyboard: true });
       }
       // ChemDraw's reaction shortcut (⌘ + an arrow key, Ctrl + an arrow key elsewhere).
       if (bound?.startsWith("reaction.")) { if (reactionShortcut(bound.slice(9) as "left" | "right" | "up" | "down")) e.preventDefault(); return; }
@@ -7553,7 +7561,7 @@ export default function Editor() {
     const pastePicture = async (bytes: Uint8Array) => {
       const m = await pictureDrawing(bytes, style.bond, MAX_PICTURE - pictureBytes(now.current), "Octet cannot paste this picture.");
       if (!m) return;
-      const r = insertMol(now.current, m, toDoc(innerWidth / 2, innerHeight / 2));
+      const r = insertMol(now.current, m, toDoc(frameWidth() / 2, frameMidY()));
       set(r.mol, true);
       revealNext.current = true;
       setSelection(r.atoms);
@@ -7889,7 +7897,7 @@ export default function Editor() {
   // ChemDraw's. Drawn for the window alone, so it costs the same at every zoom. Never exported or printed.
   const gridMarks = (view: { x: number; y: number; zoom: number }) => {
     if (!gridShown && !cross) return null;
-    const scale = view.zoom * L, box: [number, number, number, number] = [-view.x / scale, (view.y - innerHeight) / scale, (innerWidth - view.x) / scale, view.y / scale];
+    const scale = view.zoom * L, box: [number, number, number, number] = [-view.x / scale, (view.y - frameHeight()) / scale, (frameWidth() - view.x) / scale, view.y / scale];
     const [top, bottom, left, right] = [-box[3] * L, -box[1] * L, box[0] * L, box[2] * L], lines = gridLines(gridShown ? grid : heavy, box, scale);
     const path = (major: boolean) => [...lines.x.filter(([, m]) => m === major).map(([x]) => `M${x * L} ${top}V${bottom}`), ...lines.y.filter(([, m]) => m === major).map(([y]) => `M${left} ${-y * L}H${right}`)].join("");
     const ticks = cross && !gridShown && shownStep(grid, scale) === grid.minor ? gridLines(grid, box, scale) : undefined, t = 5 / view.zoom;

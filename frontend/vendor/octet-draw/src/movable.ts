@@ -1,6 +1,7 @@
 // A floating panel (Properties, the Spectrum) the user moves by its header: a press on the header's empty part drags
 // it, kept inside the window. Where each panel was moved to is kept while the app is open, so it reopens there.
 import { useState } from "react";
+import { frameHeight, frameTop, frameWidth } from "./synthpath"; // SynthPath: the editor's width is its pane's, not the window's
 import { dragCursor } from "./cursor";
 
 const kept = new Map<string, [number, number]>();
@@ -17,7 +18,7 @@ export function useMovable(key: string, off = false) {
     dragCursor("grabbing");
     const move = (ev: PointerEvent) => {
       // The whole panel stays in the window.
-      const dx = Math.min(innerWidth - r.right, Math.max(-r.left, ev.clientX - start[0])), dy = Math.min(innerHeight - r.bottom, Math.max(-r.top, ev.clientY - start[1]));
+      const dx = Math.min(frameWidth() - r.right, Math.max(-r.left, ev.clientX - start[0])), dy = Math.min(frameHeight() - r.bottom, Math.max(frameTop() - r.top, ev.clientY - start[1]));
       const next: [number, number] = [from[0] + dx, from[1] + dy];
       kept.set(key, next);
       setAt(next);

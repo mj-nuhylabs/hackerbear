@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react'
 import * as api from './api'
 import { computeCost } from './lib/cost'
 import { usd } from './lib/format'
@@ -7,10 +7,41 @@ import { CopyText, Mock, Mol, TIER_INFO, TierBadge } from './components/bits'
 import RouteScheme from './components/RouteScheme'
 import StepDetail from './components/StepDetail'
 import CostSheet from './components/CostSheet'
-import DrawPanel, { sendToDraw } from './components/DrawPanel'
+import { SidebarSimple } from '@phosphor-icons/react'
+import DrawPane, { sendToDraw } from './components/DrawPane'
+import { BAR_H, DRAW_MIN, STRIP, WIDE_MIN, drawMax } from './lib/layout'
 import { engineReady, nameOf, readText } from './octet/engine'
 
-const KIND_LABEL = { name: 'a name', cas: 'a CAS number', smiles: 'SMILES' }
+const KIND_TAG = { name: 'Name', cas: 'CAS number', smiles: 'SMILES' }
+// Octet's kinds of name (web/namedemo.ts kindOf), short enough to sit inside the search field; the full one is its title.
+const OCTET_KIND = {
+  'Common or trade name': 'Trade name',
+  'Drug name': 'Drug',
+  'IUPAC name': 'IUPAC',
+  'Trivial name': 'Trivial name',
+  'CAS number': 'CAS',
+  'Salt or hydrate': 'Salt',
+  'Condensed formula': 'Formula',
+  Abbreviation: 'Abbreviation',
+}
+
+// Wide enough for Octet Draw and SynthPath side by side; narrower, the drawing pane covers the results while open.
+const WIDE = `(min-width: ${WIDE_MIN}px)`
+const DRAW_W_KEY = 'synthpath.drawWidth'
+const subscribeResize = (f) => {
+  addEventListener('resize', f)
+  return () => removeEventListener('resize', f)
+}
+const windowWidth = () => innerWidth
+function savedDrawWidth() {
+  try {
+    const w = Number(localStorage.getItem(DRAW_W_KEY))
+    if (w >= DRAW_MIN) return w
+  } catch {
+    /* no storage: the default */
+  }
+  return Math.round(innerWidth * 0.42)
+}
 
 // Octet's name for the structure: its IUPAC namer, checked by reading the name back. Code, not a model; '—' when it
 // has none.
@@ -30,6 +61,29 @@ function OctetName({ smiles }) {
   return name ?? '—'
 }
 
+// What the search field holds, as Octet's offline reader sees it: a thumbnail and the kind of name, the name it
+// corrected a misspelling to, or that it has no match (Find routes then sends the text to the resolver as typed).
+function QueryReading({ reading, detected }) {
+  if (reading?.smiles)
+    return (
+      <span className="query-read" title={`Octet reads this ${reading.kind.toLowerCase()} as ${reading.smiles}`}>
+        <span className="query-read-mol" aria-hidden="true" dangerouslySetInnerHTML={{ __html: reading.svg }} />
+        <span>{reading.corrected ? `Read as ${reading.shown}` : (OCTET_KIND[reading.kind] ?? reading.kind)}</span>
+      </span>
+    )
+  if (reading?.problem)
+    return (
+      <span
+        className="query-read is-faint"
+        title="Octet's offline name reader can't read this. Find routes sends it to the resolver as typed."
+      >
+        No offline match
+      </span>
+    )
+  if (detected) return <span className="query-read is-faint">{KIND_TAG[detected]}</span>
+  return null
+}
+
 function TargetCard({ target, onDraw }) {
   return (
     <section className="panel target" aria-labelledby="target-title">
@@ -39,7 +93,7 @@ function TargetCard({ target, onDraw }) {
           {target.name ?? 'Unnamed structure'}
         </h2>
         <button type="button" className="ghost-btn" onClick={onDraw}>
-          Open in Draw
+          Add to drawing
         </button>
       </div>
       <dl className="kv">
@@ -189,7 +243,12 @@ export default function App() {
   const [stepIdx, setStepIdx] = useState(0)
   const [targetG, setTargetG] = useState(1)
   const [purification, setPurification] = useState(0.9)
-  const [drawOpen, setDrawOpen] = useState(false)
+  // Octet Draw is open from the start where it fits beside the results.
+  const [drawOpen, setDrawOpen] = useState(() => matchMedia(WIDE).matches)
+  const [drawW, setDrawW] = useState(savedDrawWidth)
+  const winW = useSyncExternalStore(subscribeResize, windowWidth)
+  const wide = winW >= WIDE_MIN
+  const paneW = Math.max(DRAW_MIN, Math.min(drawW, drawMax()))
   const [runKind, setRunKind] = useState(kind)
   const [reading, setReading] = useState(null) // Octet's reading of the typed text: { text, ...readText() }
   const runId = useRef(0)
@@ -240,7 +299,16 @@ export default function App() {
     }
   }
 
-  // Opens the Draw panel, with a structure added to the canvas (to the right of the drawing, selected) if given.
+  function resizeDraw(w) {
+    setDrawW(w)
+    try {
+      localStorage.setItem(DRAW_W_KEY, String(w))
+    } catch {
+      /* the width just is not kept */
+    }
+  }
+
+  // Opens the drawing pane, with a structure added to the canvas (to the right of the drawing, selected) if given.
   function openDraw(smiles) {
     if (smiles) sendToDraw(smiles)
     setDrawOpen(true)
@@ -284,31 +352,45 @@ export default function App() {
     }
   }, [query, readsNames])
   const shownReading = readsNames && reading?.text === query ? reading : null
+  const toggleLabel = drawOpen ? (wide ? 'Hide drawing' : 'Back to results') : 'Draw'
 
   return (
-    <div className="app">
-      <header className="topbar">
-        <div className="wrap topbar-inner">
-          <div className="brand">
-            <span className="wordmark">SynthPath</span>
-            <span className="tagline">Literature-grounded synthesis planner</span>
-          </div>
-          <form
-            className="search"
-            onSubmit={(e) => {
-              e.preventDefault()
-              if (query.trim()) run(query)
-            }}
+    <div
+      className={`app ${drawOpen && wide ? 'with-draw' : ''}`}
+      style={{ '--draw-w': `${paneW}px`, '--bar-h': `${BAR_H}px`, '--strip': `${STRIP}px` }}
+    >
+      <header className="appbar">
+        <div className="appbar-lead">
+          <span className="wordmark">SynthPath</span>
+          <button
+            type="button"
+            className="pane-toggle"
+            aria-pressed={drawOpen}
+            aria-label={toggleLabel}
+            title={toggleLabel}
+            onClick={() => (drawOpen ? setDrawOpen(false) : openDraw())}
           >
-            <label className="sr-only" htmlFor="kind">
-              Input type
-            </label>
-            <select id="kind" value={kind} onChange={(e) => setKind(e.target.value)}>
-              <option value="auto">Auto-detect</option>
-              <option value="name">Name</option>
-              <option value="cas">CAS number</option>
-              <option value="smiles">SMILES</option>
-            </select>
+            <SidebarSimple size={18} weight={drawOpen ? 'fill' : 'regular'} aria-hidden="true" />
+            <span aria-hidden="true">{toggleLabel}</span>
+          </button>
+        </div>
+        <form
+          className="search"
+          onSubmit={(e) => {
+            e.preventDefault()
+            if (query.trim()) run(query)
+          }}
+        >
+          <label className="sr-only" htmlFor="kind">
+            Input type
+          </label>
+          <select id="kind" value={kind} onChange={(e) => setKind(e.target.value)}>
+            <option value="auto">Auto-detect</option>
+            <option value="name">Name</option>
+            <option value="cas">CAS number</option>
+            <option value="smiles">SMILES</option>
+          </select>
+          <div className="query">
             <label className="sr-only" htmlFor="q">
               Target molecule
             </label>
@@ -320,28 +402,18 @@ export default function App() {
               autoComplete="off"
               spellCheck="false"
             />
-            <button type="button" className="btn draw-btn" onClick={() => openDraw()}>
-              Draw
-            </button>
-            <button type="submit" className="btn btn-primary" disabled={busy}>
-              Find routes
-            </button>
-          </form>
-          <div className="demos">
-            {shownReading?.smiles ? (
-              <span className="octet-read" title={shownReading.smiles}>
-                <span className="octet-read-mol" aria-hidden="true" dangerouslySetInnerHTML={{ __html: shownReading.svg }} />
-                <span className="small">
-                  {shownReading.corrected
-                    ? `Octet reads “${shownReading.shown}” (spelling fixed)`
-                    : `Octet reads it as: ${shownReading.kind}`}
-                </span>
-              </span>
-            ) : shownReading?.problem ? (
-              <span className="muted small">{shownReading.problem}</span>
-            ) : (
-              <span className="muted small">{detected ? `Read as ${KIND_LABEL[detected]}` : 'Try'}</span>
-            )}
+            <QueryReading reading={shownReading} detected={detected} />
+          </div>
+          <button type="submit" className="btn btn-primary" disabled={busy}>
+            Find routes
+          </button>
+        </form>
+      </header>
+
+      <div className="notebook">
+        <div className="wrap context">
+          <div className="examples" role="group" aria-label="Example targets">
+            <span className="muted small">Examples</span>
             {api.DEMO_TARGETS.map((t) => (
               <button
                 key={t.name}
@@ -356,107 +428,99 @@ export default function App() {
               </button>
             ))}
           </div>
-        </div>
-      </header>
-
-      <div className="notice">
-        <div className="wrap notice-inner">
-          <p>
-            <strong>This is a UI mockup.</strong> Structures, molar masses, routes and precedent counts are computed for
-            real with RDKit and AiZynthFinder. Anything tagged <Mock /> stands in to show the flow.
+          <p className="mock-note small">
+            Mockup. Structures, masses, routes and precedent counts are computed with RDKit and AiZynthFinder; values
+            tagged <Mock /> are placeholders.
           </p>
-          <ol className="flow" aria-label="How it goes">
-            <li>Enter a target</li>
-            <li>Compare routes</li>
-            <li>Check the evidence</li>
-            <li>Price the batch</li>
-          </ol>
         </div>
+
+        <main className="wrap bench">
+          {phase === 'error' && (
+            <div className="panel error" role="alert">
+              <p className="loading-title">No match for &ldquo;{query}&rdquo;</p>
+              <p className="muted">{error}</p>
+            </div>
+          )}
+          {busy && <Loading phase={phase} kind={runKind} />}
+
+          {target && (
+            <aside className="rail">
+              <TargetCard target={target} onDraw={() => openDraw(target.smiles)} />
+              {phase === 'ready' && (
+                <RouteList
+                  routes={routes}
+                  costs={costs}
+                  routeId={routeId}
+                  onPick={pick}
+                  targetG={targetG}
+                  search={target.search}
+                />
+              )}
+            </aside>
+          )}
+
+          {phase === 'ready' && route && (
+            <div className="work">
+              <section className="panel scheme-panel" aria-labelledby="scheme-title">
+                <div className="panel-head scheme-head">
+                  <div>
+                    <h2 id="scheme-title">
+                      Route {routeIndex + 1}{' '}
+                      <span className="of">
+                        {route.steps.length} step{route.steps.length > 1 ? 's' : ''}
+                      </span>
+                    </h2>
+                    <p className="muted small">Click an arrow to see that step&rsquo;s evidence and conditions.</p>
+                  </div>
+                  <Legend />
+                </div>
+                <RouteScheme route={route} targetName={target.name} selectedStep={stepIdx} onSelect={setStepIdx} />
+              </section>
+
+              <StepDetail
+                route={route}
+                stepIndex={stepIdx}
+                onSelect={setStepIdx}
+                scale={costs[route.id]?.stepScale[stepIdx]}
+                targetG={targetG}
+                onOpenInDraw={openDraw}
+              />
+
+              <CostSheet
+                cost={costs[route.id]}
+                targetG={targetG}
+                setTargetG={setTargetG}
+                purification={purification}
+                setPurification={setPurification}
+              />
+
+              <section className="panel calib" aria-labelledby="calib-title">
+                <div className="calib-text">
+                  <h2 id="calib-title">Plausibility model calibration</h2>
+                  <p className="muted">
+                    Once the plausibility classifier is trained, its reliability diagram on the holdout set shows up here:
+                    whether reactions the model scores at 0.7 really do work about 70% of the time.
+                  </p>
+                </div>
+                <div className="calib-frame">
+                  <span>not trained yet</span>
+                  <code>GET /calibration</code>
+                </div>
+              </section>
+            </div>
+          )}
+        </main>
       </div>
 
-      <main className="wrap bench">
-        {phase === 'error' && (
-          <div className="panel error" role="alert">
-            <p className="loading-title">No match for &ldquo;{query}&rdquo;</p>
-            <p className="muted">{error}</p>
-          </div>
-        )}
-        {busy && <Loading phase={phase} kind={runKind} />}
-
-        {target && (
-          <aside className="rail">
-            <TargetCard target={target} onDraw={() => openDraw(target.smiles)} />
-            {phase === 'ready' && (
-              <RouteList
-                routes={routes}
-                costs={costs}
-                routeId={routeId}
-                onPick={pick}
-                targetG={targetG}
-                search={target.search}
-              />
-            )}
-          </aside>
-        )}
-
-        {phase === 'ready' && route && (
-          <div className="work">
-            <section className="panel scheme-panel" aria-labelledby="scheme-title">
-              <div className="panel-head scheme-head">
-                <div>
-                  <h2 id="scheme-title">
-                    Route {routeIndex + 1}{' '}
-                    <span className="of">
-                      {route.steps.length} step{route.steps.length > 1 ? 's' : ''}
-                    </span>
-                  </h2>
-                  <p className="muted small">Click an arrow to see that step&rsquo;s evidence and conditions.</p>
-                </div>
-                <Legend />
-              </div>
-              <RouteScheme route={route} targetName={target.name} selectedStep={stepIdx} onSelect={setStepIdx} />
-            </section>
-
-            <StepDetail
-              route={route}
-              stepIndex={stepIdx}
-              onSelect={setStepIdx}
-              scale={costs[route.id]?.stepScale[stepIdx]}
-              targetG={targetG}
-              onOpenInDraw={openDraw}
-            />
-
-            <CostSheet
-              cost={costs[route.id]}
-              targetG={targetG}
-              setTargetG={setTargetG}
-              purification={purification}
-              setPurification={setPurification}
-            />
-
-            <section className="panel calib" aria-labelledby="calib-title">
-              <div className="calib-text">
-                <h2 id="calib-title">Plausibility model calibration</h2>
-                <p className="muted">
-                  Once the plausibility classifier is trained, its reliability diagram on the holdout set shows up here:
-                  whether reactions the model scores at 0.7 really do work about 70% of the time.
-                </p>
-              </div>
-              <div className="calib-frame">
-                <span>not trained yet</span>
-                <code>GET /calibration</code>
-              </div>
-            </section>
-          </div>
-        )}
-      </main>
-
-      <DrawPanel
+      <DrawPane
         open={drawOpen}
-        onClose={() => setDrawOpen(false)}
+        side={wide}
+        width={paneW}
+        onWidth={resizeDraw}
         busy={busy}
         onSearch={({ smiles, inchikey }) => {
-          setDrawOpen(false)
+          // Beside the results the drawing stays open; covering the window, it gets out of the way.
+          if (!wide) setDrawOpen(false)
           setQuery(smiles)
           run(smiles, 'smiles', { inchikey, source: 'Drawn in Octet Draw' })
         }}

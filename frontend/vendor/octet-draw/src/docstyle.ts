@@ -90,7 +90,9 @@ export const PRESETS: Record<string, Drawn> = {
   "New Document (ChemDraw)": { bond: 30, line: 1, bold: 4, margin: 2, hash: 2.7, spacing: 12, labelFont: "Arial", labelSize: 10, captionFont: "Arial", captionSize: 12 },
   "New Slide (ChemDraw)": { bond: 30, line: 1.6, bold: 4, margin: 2, hash: 2.7, spacing: 15, labelFont: "Arial", labelSize: 12, captionFont: "Arial", captionSize: 16 },
 };
-export const DEFAULT_STYLE: DocStyle = { preset: "ACS Document 1996", page: "A4", custom: [180, 120], landscape: false, edges: true, grid: "bond", background: "white", colour: "#000000", terminalLabels: false, carbonLabels: false, hideH: false, interpret: true, chainAngle: 120, scale: 1, ...PRESETS["ACS Document 1996"] };
+// SynthPath: new drawings follow the system's light or dark ("system", one of Octet's own backgrounds), so the
+// drawing sheet matches SynthPath's theme. Exports are drawn on white whatever the page (export.ts).
+export const DEFAULT_STYLE: DocStyle = { preset: "ACS Document 1996", page: "A4", custom: [180, 120], landscape: false, edges: true, grid: "bond", background: "system", colour: "#000000", terminalLabels: false, carbonLabels: false, hideH: false, interpret: true, chainAngle: 120, scale: 1, ...PRESETS["ACS Document 1996"] };
 // The lengths and sizes a document scale multiplies (bond spacing is a percent, so it stays).
 export const SCALED = ["bond", "line", "bold", "margin", "hash", "labelSize", "captionSize"] as const;
 // The values readStyle keeps for each of them (pt); anything else falls back to the default. Lengths reach 10 times

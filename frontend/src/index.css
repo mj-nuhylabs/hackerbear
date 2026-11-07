@@ -130,31 +130,106 @@ button, input, select { font: inherit; color: inherit; }
   padding-right: max(16px, env(safe-area-inset-right, 0px));
 }
 
-/* ── 상단 ───────────────────────────── */
-.topbar { background: var(--surface); border-bottom: 1px solid var(--line); }
-.topbar-inner {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  grid-template-areas: 'brand search' '. demos';
-  gap: 8px 32px;
+/* ── 앱 바: 창 전체에 걸친 한 줄 (그리기 패널과 결과 위) ───────── */
+/* Fixed, the full width of the window, over both the drawing pane and the results. Its lead cell is as wide as the
+   drawing pane when that is open, so the pane's edge runs on up through the bar as one line. */
+.app { padding-top: var(--bar-h); }
+.appbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 40;
+  height: var(--bar-h);
+  display: flex;
   align-items: center;
-  padding-block: 14px 12px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--line);
 }
-.brand { grid-area: brand; display: flex; flex-direction: column; }
-.wordmark { font-family: var(--font-display); font-size: var(--fs-xl); font-weight: 600; letter-spacing: -0.01em; line-height: 1.1; }
-.tagline { font-size: var(--fs-xs); color: var(--ink-2); }
-.search { grid-area: search; display: flex; gap: 8px; min-width: 0; }
-.search select, .search input {
-  height: 40px;
+.appbar-lead {
+  flex: none;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 0 10px 0 18px;
+  border-right: 1px solid var(--line);
+}
+.app.with-draw .appbar-lead { width: var(--draw-w); }
+.wordmark { font-family: var(--font-display); font-size: 1.25rem; font-weight: 600; letter-spacing: -0.01em; line-height: 1; }
+.pane-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 10px;
+  border: 1px solid transparent;
+  border-radius: var(--r-ctl);
+  background: none;
+  color: var(--ink-2);
+  font-size: var(--fs-sm);
+  font-weight: 500;
+  cursor: pointer;
+}
+.pane-toggle:hover { background: var(--sunk); color: var(--ink); }
+.pane-toggle[aria-pressed='true'] { color: var(--accent); }
+.search { flex: 1; min-width: 0; max-width: 960px; display: flex; align-items: center; gap: 8px; padding: 0 16px; }
+.search select {
+  height: 36px;
+  padding: 0 8px;
   border: 1px solid var(--line);
   border-radius: var(--r-ctl);
   background: var(--sunk);
-  padding: 0 12px;
+  font-size: var(--fs-sm);
 }
-.search input { flex: 1; min-width: 0; font-family: var(--font-mono); font-size: var(--fs-sm); }
-.search input::placeholder { font-family: var(--font-body); color: var(--ink-3); }
-.demos { grid-area: demos; display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
-.demos .muted { margin-right: 4px; }
+/* The query field and Octet's reading of it are one control. */
+.query {
+  flex: 1;
+  min-width: 0;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 4px 0 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-ctl);
+  background: var(--sunk);
+}
+.query:focus-within { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+.query input {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+}
+.query input:focus-visible { outline: none; }
+.query input::placeholder { font-family: var(--font-body); color: var(--ink-3); }
+.query-read {
+  flex: none;
+  max-width: 45%;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 8px 0 4px;
+  border-radius: var(--r-tag);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  color: var(--ink-2);
+  font-size: var(--fs-xs);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.query-read.is-faint { padding-left: 8px; background: none; border-color: transparent; color: var(--ink-3); }
+.query-read-mol { display: flex; flex: none; color: var(--ink); }
+.query-read-mol svg { height: 22px; width: auto; max-width: 84px; }
+.search .btn-primary { height: 36px; }
 
 .btn {
   height: 36px;
@@ -167,8 +242,8 @@ button, input, select { font: inherit; color: inherit; }
   white-space: nowrap;
 }
 .btn:hover:not(:disabled) { border-color: var(--ink-3); }
-.btn:disabled { opacity: 0.6; cursor: progress; }
-.btn-primary { height: 40px; background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.btn:disabled { opacity: 0.55; cursor: default; }
+.btn-primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
 .btn-primary:hover:not(:disabled) { filter: brightness(1.08); border-color: var(--accent); }
 .ghost-btn {
   border: 1px solid transparent;
@@ -191,32 +266,19 @@ button, input, select { font: inherit; color: inherit; }
 }
 .chip-btn:hover { border-color: var(--accent); color: var(--accent); }
 
-/* 목업 안내 */
-.notice { border-bottom: 1px dashed var(--line); background: var(--sunk); }
-.notice-inner {
+/* The results' first row: example targets, and what in this mockup is real. */
+.notebook { container: notebook / inline-size; }
+.context {
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
   justify-content: space-between;
   gap: 8px 24px;
-  padding-block: 10px;
-  font-size: var(--fs-sm);
-  color: var(--ink-2);
+  padding-top: 16px;
 }
-.notice-inner p { max-width: 72ch; }
-.notice strong { color: var(--ink); }
-.flow { display: flex; flex-wrap: wrap; gap: 4px; margin: 0; padding: 0; list-style: none; counter-reset: flow; }
-.flow li { counter-increment: flow; display: flex; align-items: center; gap: 4px; }
-.flow li::before {
-  content: counter(flow);
-  display: inline-grid;
-  place-items: center;
-  width: 18px; height: 18px;
-  border-radius: 50%;
-  border: 1px solid var(--ink-3);
-  font-size: 11px;
-  font-variant-numeric: tabular-nums;
-}
-.flow li + li::before { margin-left: 10px; }
+.examples { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.examples > .muted { margin-right: 4px; }
+.mock-note { max-width: 68ch; color: var(--ink-3); }
 
 /* ── 벤치 레이아웃 ─────────────────── */
 .bench {
@@ -224,11 +286,11 @@ button, input, select { font: inherit; color: inherit; }
   grid-template-columns: 340px minmax(0, 1fr);
   gap: 20px;
   align-items: start;
-  padding-block: 20px 48px;
+  padding-block: 16px 48px;
 }
 .bench > .error, .bench > .loading { grid-column: 1 / -1; }
 .rail, .work { display: flex; flex-direction: column; gap: 20px; min-width: 0; }
-.rail { position: sticky; top: 16px; }
+.rail { position: sticky; top: calc(var(--bar-h) + 16px); }
 
 .panel {
   background: var(--surface);
@@ -528,75 +590,95 @@ button, input, select { font: inherit; color: inherit; }
 }
 .calib-frame code { font-size: var(--fs-xs); }
 
-/* ── 그리기 (Octet Draw, 이 페이지 안에서 렌더) ───── */
-/* Octet's editor fills the window (position: fixed, inset 0, and it measures innerWidth/innerHeight), so the panel
-   is the whole viewport and SynthPath's controls float over the bottom-left corner, clear of Octet's own panels. */
-.draw-btn { height: 40px; }
-.draw {
+/* ── 그리기 패널 (Octet Draw, 앱에 내장) ───────── */
+/* Pinned to the window's left edge at full height, so its top-left corner is the window's and Octet's pointer and
+   overlay maths hold (DrawPane.jsx). The app bar lies over its top; its status bar (--strip) sits under the editor. */
+.app.with-draw { margin-left: var(--draw-w); }
+.draw-pane {
   position: fixed;
-  inset: 0;
-  width: 100vw;
-  height: 100dvh;
-  max-width: none;
-  max-height: none;
-  margin: 0;
-  padding: 0;
-  border: 0;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: var(--draw-w);
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
   background: var(--surface);
-  color: var(--ink);
+  border-right: 1px solid var(--line);
   overflow: hidden;
 }
-.draw::backdrop { background: rgb(16 21 25 / 0.5); }
-.draw-loading { position: absolute; inset: 0; display: grid; place-items: center; align-content: center; gap: 8px; text-align: center; padding: 24px; }
-.draw-bar {
-  position: fixed;
-  left: 16px;
-  bottom: 16px;
-  z-index: 5;
+.draw-pane[data-mode='full'] { width: 100vw; border-right: 0; }
+.draw-pane[hidden] { display: none; }
+.draw-stage { position: relative; flex: 1; min-height: 0; }
+.draw-loading {
+  position: absolute;
+  inset: var(--bar-h) 0 0;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 8px;
+  text-align: center;
+  padding: 24px;
+}
+.draw-strip {
+  flex: none;
+  height: var(--strip);
   display: flex;
   align-items: center;
-  gap: 10px;
-  max-width: min(560px, calc(100vw - 32px));
-  padding: 8px 8px 8px 14px;
+  gap: 12px;
+  padding: 0 8px 0 16px;
+  border-top: 1px solid var(--line);
   background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: var(--r-panel);
-  box-shadow: 0 6px 24px rgb(16 21 25 / 0.18);
-  font-family: var(--font-body);
-  font-size: var(--fs-sm);
-  line-height: 1.4;
+  font-size: var(--fs-xs);
+  line-height: 1.35;
 }
-.draw-bar .btn { height: 34px; }
-.draw-bar .btn-primary { height: 34px; }
-.draw-status { flex: 1; min-width: 0; color: var(--ink-2); }
+.draw-strip .btn-primary { height: 32px; font-size: var(--fs-sm); }
+.draw-status {
+  flex: 1;
+  min-width: 0;
+  color: var(--ink-3);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
 .draw-problem { color: var(--bad); font-weight: 500; }
+.draw-resize { position: absolute; top: var(--bar-h); right: 0; bottom: 0; width: 6px; cursor: col-resize; z-index: 5; touch-action: none; }
+.draw-resize:hover, body.draw-resizing .draw-resize { background: var(--accent); opacity: 0.45; }
+body.draw-resizing { cursor: col-resize; user-select: none; }
+/* While the drawing covers the window, the results behind it do not scroll (nor show a scrollbar over it). */
+body:has(.draw-pane[data-mode='full']:not([hidden])) { overflow: hidden; }
 .draw-open { display: block; margin: 2px auto 0; }
 .target-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
 .octet-name { overflow-wrap: anywhere; }
-.octet-read { display: inline-flex; align-items: center; gap: 6px; margin-right: 4px; color: var(--ink-2); }
-.octet-read-mol { display: flex; height: 34px; color: var(--ink); }
-.octet-read-mol svg { height: 34px; width: auto; max-width: 150px; }
 
 /* ── 반응형 ───────────────────────── */
-@media (max-width: 1080px) {
+@container notebook (max-width: 1000px) {
   .bench { grid-template-columns: minmax(0, 1fr); }
   .rail { position: static; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr); align-items: start; }
 }
-@media (max-width: 760px) {
-  .topbar-inner { grid-template-columns: minmax(0, 1fr); grid-template-areas: 'brand' 'search' 'demos'; }
-  .search select { width: auto; min-width: 124px; }
+@container notebook (max-width: 700px) {
   .rail { grid-template-columns: minmax(0, 1fr); }
   .step-grid, .explain-cols, .totals { grid-template-columns: minmax(0, 1fr); }
   .calib { grid-template-columns: minmax(0, 1fr); }
   .calib-frame { width: 180px; }
   .mol-md { width: 136px; }
 }
-@media (max-width: 480px) {
-  .search { flex-wrap: wrap; }
-  .search input { flex-basis: calc(100% - 136px); }
-  .search .btn-primary, .search .draw-btn { width: 100%; }
+@container notebook (max-width: 480px) {
   .panel { padding: 14px; }
-  .draw-bar { right: 16px; flex-wrap: wrap; }
+}
+/* The bar stays one row at every width: the drawing pane and Octet lay out from its fixed height. */
+@media (max-width: 760px) {
+  .search select { display: none; }
+  .pane-toggle span { display: none; }
+}
+@media (max-width: 480px) {
+  .appbar-lead { padding-left: 12px; gap: 4px; }
+  .wordmark { font-size: 1.05rem; }
+  .search { padding: 0 8px 0 10px; gap: 6px; }
+  .query-read { display: none; }
+  .search .btn-primary { padding: 0 10px; }
+  .draw-strip { gap: 8px; padding: 0 8px 0 12px; }
 }
 @media (prefers-reduced-motion: reduce) {
   .spinner { animation-duration: 2.4s; }
@@ -612,4 +694,81 @@ button, input, select { font: inherit; color: inherit; }
   color: CanvasText;
   text-wrap: initial;
   -webkit-font-smoothing: auto;
+}
+
+/* In SynthPath's pane, Octet's editor fills the pane above the strip instead of the window (Octet's own CSS has
+   position: fixed; inset: 0). Outside the @scope above, which stops at .octet-host. */
+.draw-pane .octet-host .editor { position: absolute; }
+
+/* ── Octet Draw in SynthPath's skin ───────────────────────────────────────────────────────────────────────────
+   One app, not two: Octet's chrome takes SynthPath's palette, accent (the KMnO4 purple), radii and type. Its tokens
+   (brand/tokens.css) are re-pointed here; the drawing's own atom colours and label font (ACS, Arial) are document
+   content and stay Octet's. Higher specificity than Octet's .octet-host and dark-theme rules, which load later. */
+.draw-pane .draw-stage .octet-host,
+.draw-pane .draw-stage .octet-host [data-theme='light'] {
+  --brand: #7a2c8f;
+  --brand-hover: #66237a;
+  --brand-bright: #9446ad;
+  --brand-mist: #f4eaf7;
+  --link: #7a2c8f;
+  --on-brand: #ffffff;
+  --canvas: #ffffff;
+  --surface: #f6f8f9;
+  --surface-raised: #ffffff;
+  --surface-sunken: #eef1f3;
+  --hairline: #d9dfe4;
+  --outline: #7c8893;
+  --ink: #16202a;
+  --ink-muted: #4b5966;
+  --ink-faint: #7c8893;
+  --tooltip: #16202a;
+  --on-tooltip: #ffffff;
+  --selection: rgb(122 44 143 / 0.14);
+  --backdrop: rgb(22 32 42 / 0.18);
+  --shadow-float: 0 1px 2px rgb(22 32 42 / 0.05), 0 4px 16px rgb(22 32 42 / 0.08);
+  --shadow-focus: 0 0 0 2px #7a2c8f;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 10px;
+  --font-sans: 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  .draw-pane .draw-stage .octet-host:not([data-theme='light']) {
+    --brand: #c98bdb;
+    --brand-hover: #d7a6e6;
+    --brand-bright: #b46fcb;
+    --brand-mist: #2c2133;
+    --link: #c98bdb;
+    --on-brand: #1a0f1f;
+    --canvas: #12181d;
+    --surface: #171e24;
+    --surface-raised: #1c242b;
+    --surface-sunken: #131a1f;
+    --hairline: #2a343d;
+    --outline: #56636f;
+    --ink: #e4e9ed;
+    --ink-muted: #a9b4be;
+    --ink-faint: #7a8691;
+    --tooltip: #2a343d;
+    --selection: rgb(201 139 219 / 0.24);
+    --backdrop: rgb(0 0 0 / 0.45);
+    --shadow-float: 0 1px 2px rgb(0 0 0 / 0.35), 0 6px 20px rgb(0 0 0 / 0.35);
+    --shadow-focus: 0 0 0 2px #c98bdb;
+  }
+}
+/* The drawing sheet when the page is dark (new drawings follow the system: docstyle.ts): a shade under the panels. */
+.draw-pane .draw-stage .octet-host [data-theme='dark'] {
+  --canvas: #12181d;
+  --ink: #e4e9ed;
+  --selection: rgb(201 139 219 / 0.24);
+}
+/* Octet's panels that hang from the top of its window start below SynthPath's app bar; the canvas runs on under it,
+   so drawing coordinates stay the window's. A panel anchored top and bottom gets shorter by as much. */
+.draw-pane .octet-host .editor > :is(.palette, .export, .feedback-link, .name-field, .name-suggestion, .name-options, .name-history, .template-bar, .coach) {
+  margin-top: var(--bar-h);
+}
+/* The Actions panel is docked at the bottom; its height cap (under the Export button) leaves room for the bar too. */
+.draw-pane .octet-host .editor > .actions {
+  max-height: calc(100% - 3 * var(--space-4) - 32px - var(--ruler, 0px) - var(--bar-h));
 }
