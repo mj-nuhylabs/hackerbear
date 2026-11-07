@@ -5,10 +5,10 @@
   "worked_under_some_condition_pct": 20.0,
   "n_failed": 248,
   "n_worked": 2148,
-  "roc_auc": 0.4652874767225326,
-  "median_score_failed": 0.7982120051085568,
-  "median_score_worked": 0.7107438016528924,
-  "overlap_with_this_model_training": 8,
+  "roc_auc": 0.47431500420496187,
+  "median_score_failed": 0.7784997046662729,
+  "median_score_worked": 0.6994658420016866,
+  "overlap_with_this_model_training": 0,
   "overlap_with_next_run_candidates": {
     "positives_all.parquet": 2149
   },
