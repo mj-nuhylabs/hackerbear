@@ -6,6 +6,7 @@ real model's 0.939, the fingerprint model is adding little and the AUC is mostly
 artifact of how decoys are built.
 """
 import sys
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -14,7 +15,7 @@ from rdkit.Chem import Descriptors
 
 RDLogger.DisableLog("rdApp.*")
 N_GROUPS = int(sys.argv[1]) if len(sys.argv) > 1 else 6000
-DS = "/Users/mj/Desktop/HackFM/backend/data/ml/dataset.parquet"
+DS = Path(__file__).resolve().parents[1] / "backend/data/ml/dataset.parquet"
 
 
 def feats(rxn: str):

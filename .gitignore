@@ -75,3 +75,13 @@ backend/data/scifinder/
 
 # PubChem compound-name cache (chem/names.py refills it)
 backend/data/pubchem_titles.json
+
+# Presentation material (slides, demo script, screenshots) — kept locally, not part of the submission
+demo_assets/
+
+# Local agent and editor config, scratch notes, second-machine setup
+CLAUDE.md
+.claude/
+IDEAS.md
+scripts/WINDOWS_WORKER.md
+scripts/worker_setup.sh

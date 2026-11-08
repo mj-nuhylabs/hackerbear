@@ -6,13 +6,15 @@ the big model and the archived 50k baseline.
 """
 import pickle
 import sys
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
 import scipy.sparse as sp
 
-sys.path.insert(0, "/Users/mj/Desktop/HackFM/backend")
-D = "/Users/mj/Desktop/HackFM/backend/data"
+BACKEND = Path(__file__).resolve().parents[1] / "backend"
+sys.path.insert(0, str(BACKEND))
+D = BACKEND / "data"
 
 ds = pd.read_parquet(f"{D}/ml/dataset.parquet", columns=["rxn", "label", "group", "rxn_class"])
 X = sp.load_npz(f"{D}/ml/X_drfp.npz")
