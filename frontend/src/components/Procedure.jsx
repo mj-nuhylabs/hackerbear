@@ -115,6 +115,26 @@ export default function Procedure({ procedure }) {
     )
   }
 
+  // backend/evidence/procedures.py: the record's text is not always a preparation. USPTO mining
+  // pulls whatever sat in procedure_details, and that can be a patent's background section or an
+  // HPLC assay method. Say which it is rather than head it "Procedure" and let a chemist act on it.
+  if (procedure.experimental === false) {
+    return (
+      <div className="proc">
+        <div className="proc-head">
+          <h3>Recorded text</h3>
+          <span className="proc-match proc-match-partial">NOT A PROCEDURE</span>
+        </div>
+        <p className="proc-none">
+          The record for this step carries text, but it {procedure.not_experimental_reason}. It is shown as the
+          record wrote it, and it is not a procedure to run. The adapted procedures below come from recorded
+          reactions that are.
+        </p>
+        <blockquote className="proc-text">{procedure.text}</blockquote>
+      </div>
+    )
+  }
+
   const m = MATCH[procedure.match] ?? MATCH.product
   const facts = [
     ['Temperature', procedure.temperature_c != null ? `${procedure.temperature_c} °C` : null],

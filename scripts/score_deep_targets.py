@@ -62,6 +62,7 @@ def main():
     from cost import rank as cost_rank
     from evidence import analogs
     from evidence.adapt import adapt
+    from evidence.procedures import score as proc_score
     from evidence.recorded_routes import flat
     from model import route_ranker, transfer_ranker
     from model.featurize import normalize_rxn
@@ -124,6 +125,14 @@ def main():
             })
         # the shape the existing step panel reads (evidence/analogs._row), in the order shown
         shown = [analogs._row(meta.iloc[rows[j]], sims[j]) for j in order[:5]]
+        # A real preparation first, whatever Model A thought of it: an analog whose recorded text is
+        # a patent's background section cannot be run, and the panel offers these to be run. Model A's
+        # order is kept within each group (sorted is stable), and every entry says which it is.
+        for entry in adapted:
+            sc = proc_score((entry.get("table") or {}).get("text"))
+            entry["experimental"] = sc["experimental"]
+            entry["not_experimental_reason"] = sc["reason"] or None
+        adapted.sort(key=lambda e: not e["experimental"])
         step_out[rxn] = {"recorded_records": recorded, "adapted_procedures": adapted, "analogs": shown,
                          "adapted_order": "model_a" if scores is not None else "similarity"}
         if n % 200 == 0:
@@ -324,14 +333,23 @@ def main():
 
 
 def _first_procedure(recs: list[dict]) -> dict | None:
+    """The record's text to show. A real preparation beats a fuller record that is only prose:
+    aspirin's best-looking record offered its patent's background section, and lidocaine's offered
+    an HPLC assay method (evidence/procedures.py)."""
+    from evidence.procedures import score as proc_score
+
     with_text = [r for r in recs if r.get("procedure") and r["procedure"].get("text")]
     if not with_text:
         return None
-    best = max(with_text, key=lambda r: (r["procedure"].get("yield_pct") is not None,
+    best = max(with_text, key=lambda r: (proc_score(r["procedure"]["text"])["experimental"],
+                                         r["procedure"].get("yield_pct") is not None,
                                          r["procedure"].get("temperature_c") is not None,
                                          len(r["procedure"].get("reagents") or [])))
     p = best["procedure"]
-    return {**p, "match": "covered", "url": p.get("url") or best.get("url"), "patent": best.get("patent")}
+    s = proc_score(p["text"])
+    return {**p, "match": "covered", "url": p.get("url") or best.get("url"), "patent": best.get("patent"),
+            # the UI must not head prose with "Procedure"
+            "experimental": s["experimental"], "not_experimental_reason": s["reason"] or None}
 
 
 def _conditions(recs: list[dict]) -> dict | None:

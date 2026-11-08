@@ -114,6 +114,9 @@ export default function Adapted({ step, scaleMol }) {
               <summary>
                 <Source item={r} />
                 {r.yield_pct != null && <span className="muted small"> · recorded yield {r.yield_pct}%</span>}
+                {r.procedure?.text && r.experimental === false && (
+                  <span className="muted small"> · text is not a procedure</span>
+                )}
               </summary>
               <Table table={r.table} factor={factor} />
               {r.procedure?.text && <blockquote className="proc-text">{r.procedure.text}</blockquote>}
@@ -146,6 +149,12 @@ export default function Adapted({ step, scaleMol }) {
                   · similarity {a.similarity}
                   {byModel && a.similarity_rank !== i ? ` (was #${a.similarity_rank + 1} by similarity)` : ''}
                 </span>
+                {/* backend/evidence/procedures.py — prose and assay methods are sorted last and said so */}
+                {a.experimental === false && (
+                  <span className="proc-match proc-match-partial" title={a.not_experimental_reason ?? undefined}>
+                    NOT A PROCEDURE
+                  </span>
+                )}
               </summary>
               <p className="muted small">
                 Recorded reaction: <code className="proc-smiles">{a.analog_rxn}</code>
