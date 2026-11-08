@@ -50,15 +50,20 @@ def priced() -> frozenset[str]:
 
 
 def label(smiles: str, in_stock: bool | None) -> dict:
-    """Leaf fields for the UI: stock_status ('priced' / 'commodity' / 'zinc' / None) and, for a
-    common reagent, how many ORD records use it. in_stock is what the search said."""
+    """Leaf fields for the UI: stock_status ('priced' / 'commodity' / 'zinc' / None), the supplier's
+    name for it where one was priced, and for a common reagent how many ORD records use it.
+    in_stock is what the search said."""
+    from .names import name_for
+
     k = inchikey(smiles)
+    nm = {"name": name_for(smiles)}
     if k in priced():
-        return {"stock_status": "priced"}
+        return {**nm, "stock_status": "priced"}
     c = commodity().get(k)
     if c is not None:
-        return {"stock_status": "commodity", "ord_records": c["ord_records"], "ord_sources": c["ord_sources"]}
-    return {"stock_status": "zinc" if in_stock else None}
+        return {**nm, "stock_status": "commodity", "ord_records": c["ord_records"],
+                "ord_sources": c["ord_sources"]}
+    return {**nm, "stock_status": "zinc" if in_stock else None}
 
 
 def extra_keys() -> frozenset[str]:

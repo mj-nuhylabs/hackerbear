@@ -158,7 +158,8 @@ def bom(steps: list[dict], leaf_materials: list[dict], target_g: float,
             unpriced += 1
         lines.append({
             "smiles": smi,
-            "name": mat.get("name"),
+            # 화면에 SMILES 대신 띄울 이름. 레코드/카탈로그가 준 것만 쓴다 (chem/names.py)
+            "name": mat.get("name") or (p or {}).get("name"),
             "mw": mw,
             "moles": moles,
             "mass_g": mass_g,

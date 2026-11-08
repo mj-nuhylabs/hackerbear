@@ -1,5 +1,6 @@
 import { DASH, grams, hours, mmol, usd } from '../lib/format'
 import { Mock, Mol } from './bits'
+import CompoundName from './CompoundName'
 import BuyVsMake from './BuyVsMake'
 import './cost.css'
 
@@ -79,8 +80,7 @@ function ReagentTable({ cost }) {
             {rows.map((l) => (
               <tr key={`${l.smiles}-${l.role}`}>
                 <td>
-                  <div className="reag-name">{l.name || l.smiles}</div>
-                  <code className="bom-smiles">{l.smiles}</code>
+                  <CompoundName name={l.name} smiles={l.smiles} className="reag-name" />
                 </td>
                 <td className="reag-role">{(l.role || '').toLowerCase()}</td>
                 <td className="r num">{l.equiv != null ? l.equiv : DASH}</td>
@@ -228,7 +228,7 @@ export default function CostSheet({ cost, targetG, setTargetG, purification, set
                 <td>
                   <div className="bom-mat">
                     <Mol compound={l.compound} size="xs" />
-                    <code className="bom-smiles">{l.compound.smiles}</code>
+                    <CompoundName compound={l.compound} />
                   </div>
                   {/* backend/chem/stock.py: ZINC에 없는 흔한 시약. 구매 가능의 근거이지 가격이 아니다 */}
                   {l.compound.stock_status === 'commodity' && (

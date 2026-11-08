@@ -187,3 +187,13 @@
 
 /* 레코드가 돌린 규모 → 우리 규모 (backend/evidence/adapt.py limiting_recorded_mmol) */
 .proc-scale { margin: 6px 0 8px; }
+
+/* 이름을 앞에, SMILES를 밑에 작게 (frontend/src/components/CompoundName.jsx) */
+.cmpd { display: inline-flex; flex-direction: column; gap: 1px; min-width: 0; }
+.cmpd-name { font-weight: 500; overflow-wrap: anywhere; }
+.cmpd-smiles {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--ink-3);
+  overflow-wrap: anywhere;
+}

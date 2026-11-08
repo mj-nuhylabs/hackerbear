@@ -1,4 +1,5 @@
 import { DASH, sig } from '../lib/format'
+import CompoundName from './CompoundName'
 import './procedure.css'
 
 // Recorded procedures rescaled to this step. Every number in the table is either written in the
@@ -13,6 +14,9 @@ function qty(row, k) {
   if (k === 'volume_ml') return `${sig(v)} mL`
   return sig(v)
 }
+
+// 1 mL 미만이면 µL로. 0.0007 L짜리를 "0.0007 mL"로 적어 두면 피펫을 못 든다
+const mL = (v) => (v == null ? DASH : v < 1 ? `${sig(v * 1000)} µL` : `${sig(v)} mL`)
 
 // What the record was run at, against what this step needs. Without it the verbatim text ("0.0072
 // moles of salicylic acid") sits beside a table saying 8.11 mmol and nothing connects the two, so
@@ -49,8 +53,9 @@ function Table({ table, factor }) {
             <tr key={i}>
               <td>
                 <div className="proc-mat">
+                  {/* 이 줄은 "어느 쪽 것인가"만 말한다. 이름과 구조는 아래 CompoundName이 한 번만 쓴다 */}
                   <span className="proc-name">
-                    {r.is_substrate ? 'Your substrate' : (r.recorded_name ?? r.label ?? DASH)}
+                    {r.is_substrate ? 'Your substrate' : ''}
                     {r.is_substrate && r.pair_similarity != null && (
                       <span className="muted small"> (recorded one: Tanimoto {r.pair_similarity} to yours)</span>
                     )}
@@ -62,18 +67,32 @@ function Table({ table, factor }) {
                     )}
                   </span>
                   {(r.is_substrate ? r.our_smiles : r.recorded_smiles) && (
-                    <code className="proc-smiles">{r.is_substrate ? r.our_smiles : r.recorded_smiles}</code>
+                    // 기질 행의 구조는 **우리 것**이다. 레코드가 적어 둔 이름은 레코드의 화합물
+                    // 이름이므로 그 행에 붙이면 안 된다 — 거기서는 네이머가 우리 구조를 읽는다
+                    <CompoundName
+                      name={r.is_substrate ? null : r.recorded_name}
+                      smiles={r.is_substrate ? r.our_smiles : r.recorded_smiles}
+                    />
                   )}
                 </div>
               </td>
               <td className="r">{r.equiv != null ? sig(r.equiv) : DASH}</td>
               <td className="r">{r.mmol != null ? sig(scaled(r, 'mmol')) : DASH}</td>
+              {/* 액체는 재서 넣는다 — 밀도가 레코드/제품 페이지에 있으면 mL을 앞에 두고 질량을
+                  괄호로 붙인다 (backend/chem/density.py). 고체는 질량 그대로. */}
               <td className="r">
-                {r.mass_mg != null
-                  ? qty({ mass_mg: scaled(r, 'mass_mg') }, 'mass_mg')
-                  : r.volume_ml != null
-                    ? qty({ volume_ml: scaled(r, 'volume_ml') }, 'volume_ml')
-                    : DASH}
+                {r.measure_ml != null && r.mass_mg != null ? (
+                  <>
+                    <span className="num">{mL(scaled(r, 'measure_ml'))}</span>
+                    <span className="muted small"> ({qty({ mass_mg: scaled(r, 'mass_mg') }, 'mass_mg')})</span>
+                  </>
+                ) : r.mass_mg != null ? (
+                  qty({ mass_mg: scaled(r, 'mass_mg') }, 'mass_mg')
+                ) : r.volume_ml != null ? (
+                  qty({ volume_ml: scaled(r, 'volume_ml') }, 'volume_ml')
+                ) : (
+                  DASH
+                )}
               </td>
             </tr>
           ))}

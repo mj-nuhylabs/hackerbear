@@ -1,4 +1,5 @@
 import { DASH, sig } from '../lib/format'
+import CompoundName from './CompoundName'
 import './procedure.css'
 
 // 이 패널의 값은 전부 ORD 레코드에 적힌 것이거나 그것으로 계산한 것이다.
@@ -53,9 +54,14 @@ function Reagents({ reagents }) {
           {reagents.map((r, i) => (
             <tr key={`${r.smiles ?? r.label}-${i}`}>
               <td>
+                {/* 레코드가 이름을 줬으면 그걸 쓰고, 없으면 네이머가 구조를 읽는다. label은
+                    ORD의 역할명("Base")이라 이름이 아니므로 둘 다 없을 때만 쓴다 */}
                 <div className="proc-mat">
-                  <span className="proc-name">{r.name ?? r.label}</span>
-                  {r.smiles && <code className="proc-smiles">{r.smiles}</code>}
+                  {r.smiles ? (
+                    <CompoundName name={r.name} smiles={r.smiles} />
+                  ) : (
+                    <span className="proc-name">{r.name ?? r.label}</span>
+                  )}
                 </div>
               </td>
               <td className="proc-role">{r.role ? r.role.toLowerCase().replace(/_/g, ' ') : DASH}</td>

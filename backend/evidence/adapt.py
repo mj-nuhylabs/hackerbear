@@ -32,6 +32,18 @@ def _mw(smiles: str | None) -> float | None:
     return Descriptors.MolWt(m) if m is not None else None
 
 
+def _measure(smiles: str | None, mass_mg: float | None) -> dict:
+    """How this one is actually measured out: millilitres when a density is on record, else mass."""
+    from chem.density import of as density_of
+
+    d = density_of(smiles)
+    if d is None or mass_mg is None:
+        return {"density_g_per_ml": None, "measure_ml": None, "density_source": None}
+    return {"density_g_per_ml": d["g_per_ml"],
+            "measure_ml": round(mass_mg / 1000.0 / d["g_per_ml"], 4),
+            "density_source": d.get("href")}
+
+
 def _fp(smiles: str):
     m = Chem.MolFromSmiles(smiles)
     return _gen.GetFingerprint(m) if m is not None else None
@@ -116,6 +128,9 @@ def adapt(procedure: dict, our_substrates: list[str], our_product: str, our_limi
             "mmol": mmol,
             "mass_mg": round(mmol * mw, 2) if mmol is not None and mw else None,
             "volume_ml": vol_ml,
+            # 액체는 달지 않고 재서 넣는다. 밀도는 가격을 읽어 온 제품 페이지에 적혀 있던 값만 쓴다
+            # (chem/density.py). 밀도가 없으면 None이고 표는 질량만 보여준다
+            **_measure(our_smiles, round(mmol * mw, 2) if mmol is not None and mw else None),
         })
     # Our own substrates the record has no counterpart for. Without a row the chemist would not
     # see how much of their own material to weigh out, so the row exists and says it is unscaled.
