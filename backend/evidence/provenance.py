@@ -93,19 +93,37 @@ def evidence_from(records: list[dict], precedent_count: int, tier: str) -> dict:
 
 
 def conditions_from(records: list[dict]) -> dict | None:
-    """가장 완전한 레코드의 조건. 없는 항목은 None이고, 전부 비면 None을 돌려준다."""
-    for r in records:
-        c = {
-            "solvent": None,            # ORD는 용매를 역할로만 적는다 — 여기서 단정하지 않는다
-            "temperature_c": r.get("temperature_c"),
-            "time_h": r.get("time_h"),
-            "catalyst": None,
-            "catalyst_loading": None,
-            "source_id": r.get("reaction_id"),
-        }
-        if c["temperature_c"] is not None or c["time_h"] is not None:
-            return c
-    return None
+    """이 반응의 조건. 항목마다 그 값을 적어 둔 첫 레코드에서 가져오고, 출처도 항목별로 단다.
+
+    예전에는 온도나 시간 중 **하나라도** 있는 첫 레코드를 통째로 돌려줬다. 그래서 온도만 적힌
+    레코드가 앞에 오면 뒤에 시간이 적힌 레코드가 있어도 시간이 —로 떴다. 아스피린 아세틸화가
+    그 경우다: 90–120 °C짜리 레코드가 6건, 시간(5분)이 적힌 레코드가 1건인데 시간이 안 나왔다.
+
+    항목을 따로 채우면 한 화면의 값들이 서로 다른 실험에서 올 수 있다 (같은 반응의 다른 기록이다).
+    그래서 항목마다 source_id를 달고 mixed=True로 표시한다 — UI가 값 옆에 출처를 보여줘야 한다.
+    한 실험의 조건인 척하면 안 된다.
+    """
+    fields = {"temperature_c": "temperature_c", "time_h": "time_h",
+              "solvent": "solvents", "catalyst": "catalysts"}
+    out: dict = {"catalyst_loading": None}
+    sources: dict[str, str] = {}
+    for key, col in fields.items():
+        out[key] = None
+        for r in records:
+            v = r.get(col) if col in r else r.get(key)
+            if v is not None and v != "":
+                out[key] = v
+                if r.get("reaction_id"):
+                    sources[key] = r["reaction_id"]
+                break
+    if all(out[k] is None for k in fields):
+        return None
+    ids = set(sources.values())
+    out["sources"] = sources
+    out["source_id"] = next(iter(ids)) if len(ids) == 1 else None
+    # 값들이 한 레코드에서 온 게 아니다 — UI가 반드시 구분해 보여줘야 한다
+    out["mixed"] = len(ids) > 1
+    return out
 
 
 def reported_yield(records: list[dict]) -> float | None:

@@ -1,4 +1,4 @@
-import { DASH, grams, mmol, usd } from '../lib/format'
+import { DASH, grams, hours, mmol, usd } from '../lib/format'
 import { Mock, Mol } from './bits'
 import BuyVsMake from './BuyVsMake'
 import './cost.css'
@@ -277,14 +277,23 @@ export default function CostSheet({ cost, targetG, setTargetG, purification, set
           <span className="muted small">What you pay buying whole packs</span>
           {gap && <span className="total-gap small">{gap}</span>}
         </div>
+        {/* 기록된 반응 시간의 합. 후처리·정제 시간은 레코드에 없으므로 들어가 있지 않다.
+            시간이 적힌 스텝이 하나도 없으면 0 h가 아니라 —다 (절대 규칙 3) */}
         <div className="total">
-          <span className="total-k">Estimated time</span>
-          <span className="total-v num">{totals.timeH != null ? `${totals.timeH} h` : DASH}</span>
-          <span className="muted small">
-            {totals.untimedSteps > 0
-              ? `${totals.untimedSteps} step${totals.untimedSteps > 1 ? 's' : ''} with no time on record`
-              : 'Every step has a time on record'}
+          <span className="total-k">Recorded reaction time</span>
+          <span className="total-v num">
+            {totals.timeH != null ? `${totals.untimedSteps > 0 ? '≥ ' : ''}${hours(totals.timeH)}` : DASH}
           </span>
+          <span className="muted small">
+            {totals.timeH == null
+              ? `No step on this route has a reaction time on record${
+                  totals.untimedSteps > 1 ? ` — all ${totals.untimedSteps} are missing one` : ''
+                }`
+              : totals.untimedSteps > 0
+                ? `Adds up the ${totals.stepsTotal - totals.untimedSteps} of ${totals.stepsTotal} steps that have a time on record`
+                : 'Every step has a time on record'}
+          </span>
+          <span className="total-gap small">Reaction time only — no record states workup or purification time</span>
         </div>
       </div>
 

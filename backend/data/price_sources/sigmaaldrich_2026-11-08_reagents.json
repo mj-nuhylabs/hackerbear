@@ -1,0 +1,122 @@
+{
+  "retrieved": "2026-11-08",
+  "site": "https://www.sigmaaldrich.com",
+  "country": "US",
+  "currency": "USD",
+  "note": "Reagents, catalysts and route materials that the cost sheet showed with no unit price after cost/inputs.py started scaling the recorded amounts. Same rules as the earlier files: list prices read from each product page (no account, no contract pricing, sale prices ignored), the supplier recorded is the brand selling on the page, multipack SKUs (4X100ML, 6X500G, 4X2.5KG, -CS cases) not used, analytical standards, pharmacopoeia reference standards and certified reference materials excluded. Product chosen per CAS search: the first listing in the site's relevance order that is not excluded and shows a price. Solvents are deliberately not here - a solvent is recorded as a volume and ORD carries no density for it, so cost/inputs.py cannot cost one whatever its price.",
+  "sale_note": "Pd2(dba)3 328774-100G showed a struck-through $3,660.00 beside a sale price of $3,111.00. The list price is recorded, as the earlier files do.",
+  "products": {
+    "6192-52-5": {
+      "href": "/US/en/product/sial/402885",
+      "brand": "Sigma-Aldrich",
+      "name": "p-Toluenesulfonic acid monohydrate, ACS reagent, >=98.5%, solid",
+      "packs": [
+        { "qty": 5, "unit": "g", "usd": 38.6, "sku": "402885-5G" },
+        { "qty": 100, "unit": "g", "usd": 49.1, "sku": "402885-100G" },
+        { "qty": 500, "unit": "g", "usd": 116.0, "sku": "402885-500G" },
+        { "qty": 2.5, "unit": "kg", "usd": 493.0, "sku": "402885-2.5KG" }
+      ]
+    },
+    "603-76-9": {
+      "href": "/US/en/product/aldrich/193984",
+      "brand": "Sigma-Aldrich",
+      "name": "1-Methylindole, >=97%",
+      "packs": [
+        { "qty": 5, "unit": "g", "usd": 52.0, "sku": "193984-5G" },
+        { "qty": 25, "unit": "g", "usd": 106.0, "sku": "193984-25G" }
+      ]
+    },
+    "7087-68-5": {
+      "href": "/US/en/product/sial/d125806",
+      "brand": "Sigma-Aldrich",
+      "name": "N,N-Diisopropylethylamine, ReagentPlus, >=99%, liquid",
+      "density_g_per_ml": 0.742,
+      "packs": [
+        { "qty": 100, "unit": "mL", "usd": 61.3, "sku": "D125806-100ML" },
+        { "qty": 500, "unit": "mL", "usd": 169.0, "sku": "D125806-500ML" },
+        { "qty": 2.5, "unit": "L", "usd": 802.0, "sku": "D125806-2.5L" },
+        { "qty": 10, "unit": "L", "usd": 2550.0, "sku": "D125806-10L" }
+      ]
+    },
+    "12125-02-9": {
+      "href": "/US/en/product/sigald/213330",
+      "brand": "Sigma-Aldrich",
+      "name": "Ammonium chloride, ACS reagent, >=99.5%",
+      "packs": [
+        { "qty": 25, "unit": "g", "usd": 59.6, "sku": "213330-25G" },
+        { "qty": 500, "unit": "g", "usd": 84.2, "sku": "213330-500G" },
+        { "qty": 2.5, "unit": "kg", "usd": 231.0, "sku": "213330-2.5KG" },
+        { "qty": 12, "unit": "kg", "usd": 566.0, "sku": "213330-12KG" },
+        { "qty": 50, "unit": "kg", "usd": 1170.0, "sku": "213330-50KG" }
+      ]
+    },
+    "584-08-7": {
+      "href": "/US/en/product/sigald/209619",
+      "brand": "Sigma-Aldrich",
+      "name": "Potassium carbonate, ACS reagent, >=99.0%",
+      "packs": [
+        { "qty": 100, "unit": "g", "usd": 66.0, "sku": "209619-100G" },
+        { "qty": 500, "unit": "g", "usd": 119.0, "sku": "209619-500G" },
+        { "qty": 2.5, "unit": "kg", "usd": 411.0, "sku": "209619-2.5KG" },
+        { "qty": 12, "unit": "kg", "usd": 1090.0, "sku": "209619-12KG" }
+      ]
+    },
+    "121-44-8": {
+      "href": "/US/en/product/sial/471283",
+      "brand": "Sigma-Aldrich",
+      "name": "Triethylamine, >=99.5%, liquid",
+      "density_g_per_ml": 0.726,
+      "packs": [
+        { "qty": 100, "unit": "mL", "usd": 42.2, "sku": "471283-100ML" },
+        { "qty": 500, "unit": "mL", "usd": 78.7, "sku": "471283-500ML" },
+        { "qty": 2, "unit": "L", "usd": 218.0, "sku": "471283-2L" },
+        { "qty": 4, "unit": "L", "usd": 378.0, "sku": "471283-4L" },
+        { "qty": 18, "unit": "L", "usd": 1060.0, "sku": "471283-18L" }
+      ]
+    },
+    "7439-89-6": {
+      "href": "/US/en/product/sial/12310",
+      "brand": "Sigma-Aldrich",
+      "name": "Iron, >=99%, powder (fine), reduced",
+      "packs": [
+        { "qty": 500, "unit": "g", "usd": 71.6, "sku": "12310-500G-R" },
+        { "qty": 1, "unit": "kg", "usd": 132.0, "sku": "12310-1KG-R" },
+        { "qty": 2.5, "unit": "kg", "usd": 312.0, "sku": "12310-2.5KG-R" }
+      ]
+    },
+    "98327-87-8": {
+      "href": "/US/en/product/aldrich/481084",
+      "brand": "Sigma-Aldrich",
+      "name": "rac-BINAP, 97%",
+      "packs": [
+        { "qty": 5, "unit": "g", "usd": 141.0, "sku": "481084-5G" },
+        { "qty": 25, "unit": "g", "usd": 307.5, "sku": "481084-25G" },
+        { "qty": 100, "unit": "g", "usd": 1177.5, "sku": "481084-100G" },
+        { "qty": 500, "unit": "g", "usd": 7440.0, "sku": "481084-500G" }
+      ]
+    },
+    "51364-51-3": {
+      "href": "/US/en/product/aldrich/328774",
+      "brand": "Sigma-Aldrich",
+      "name": "Tris(dibenzylideneacetone)dipalladium(0), 97%, powder",
+      "packs": [
+        { "qty": 500, "unit": "mg", "usd": 47.6, "sku": "328774-500MG" },
+        { "qty": 1, "unit": "g", "usd": 78.4, "sku": "328774-1G" },
+        { "qty": 5, "unit": "g", "usd": 287.0, "sku": "328774-5G" },
+        { "qty": 25, "unit": "g", "usd": 1090.0, "sku": "328774-25G" },
+        { "qty": 50, "unit": "g", "usd": 2040.0, "sku": "328774-50G" },
+        { "qty": 100, "unit": "g", "usd": 3660.0, "sku": "328774-100G" },
+        { "qty": 500, "unit": "g", "usd": 16410.0, "sku": "328774-500G" }
+      ]
+    },
+    "22459-72-9": {
+      "href": "/US/en/product/aifchemanxtalpicompany/XPIH9BD0767A",
+      "brand": "AiFChem (an XtalPi company)",
+      "name": "4-Chloro-2-methoxy-5-nitroaniline",
+      "packs": [{ "qty": 1, "unit": "g", "usd": 87.0, "sku": "XPIH9BD0767A-1G" }]
+    }
+  },
+  "not_priced": {
+    "1075705-01-9": "4-Fluoro-2-methoxy-5-nitroaniline, the osimertinib aniline. Both listings (Synthonix SY3H3D67E3DE and ChemScene CIAH987EDEED) say 'Pricing and availability is not currently available. Contact Technical Service'."
+  }
+}

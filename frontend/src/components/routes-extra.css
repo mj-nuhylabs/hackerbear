@@ -42,3 +42,16 @@
 
 /* Why a material counts as buyable when it is not in ZINC (backend/chem/stock.py) */
 .bom-stock { margin-top: 2px; font-size: var(--fs-xs); }
+
+/* Which record a condition came from, when the step's values are from different runs
+   (backend/evidence/provenance.py conditions_from) */
+.cond-src {
+  margin-left: 6px;
+  padding: 0 4px;
+  border-radius: var(--r-tag);
+  background: var(--sunk);
+  color: var(--ink-3);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  vertical-align: 1px;
+}

@@ -158,7 +158,10 @@ def main():
             "recorded_records": recs,
             # the procedure panel shows the most complete recorded record of this very reaction
             "procedure": _first_procedure(recs),
-            "conditions": _conditions(recs),
+            # Same order as chem/routes.py: this reaction's own records, then the closest recorded
+            # analog (flagged from_analog so the UI never passes it off as this reaction's own).
+            # Without the fallback the precomputed demo showed fewer conditions than a live search.
+            "conditions": _conditions(recs) or analogs.conditions_from(ev["analogs"]),
             "analogs": ev["analogs"],
             "adapted_procedures": ev["adapted_procedures"],
             "adapted_order": ev["adapted_order"],
@@ -305,12 +308,9 @@ def _first_procedure(recs: list[dict]) -> dict | None:
 
 
 def _conditions(recs: list[dict]) -> dict | None:
-    for r in recs:
-        if r.get("temperature_c") is not None or r.get("time_h") is not None:
-            return {"solvent": r.get("solvents"), "temperature_c": r.get("temperature_c"),
-                    "time_h": r.get("time_h"), "catalyst": r.get("catalysts"), "catalyst_loading": None,
-                    "source_id": r.get("reaction_id")}
-    return None
+    """Per-field, from the first record stating each — evidence/provenance.conditions_from."""
+    from evidence.provenance import conditions_from
+    return conditions_from(recs)
 
 
 def _recorded_leaf(smiles: str, status: str | None) -> dict:

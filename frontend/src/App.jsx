@@ -205,7 +205,9 @@ function RouteList({ routes, costs, routeId, onPick, targetG, search }) {
         {/* 순서는 backend/cost/rank.py가 정한다: g당 재료비(수율을 경로 끝까지 반영), 비용을 다 아는 경로 먼저 */}
         <p className="muted small">
           Cheapest to make first: material cost per gram of target, with every step’s yield carried back through the
-          route. Routes with every material priced come first; a “≥” total is missing prices. Fewer steps break ties.{' '}
+          route. A “≥” total leaves out a material with no price; where that is more than half of what the route buys
+          by mass, or a record omits a reactant, the route drops below the ones whose cost is known. Fewer steps break
+          ties.{' '}
           {search?.precomputed
             ? `${search.candidates_costed ?? '—'} candidates costed — ${search.recorded_routes_found} recorded routes (every step an ORD record) and ${search.aizynth_routes_searched} from AiZynthFinder — one shown per final disconnection.`
             : `AiZynthFinder searched for ${search?.search_time_s ?? '—'} s.`}
@@ -266,7 +268,13 @@ function RouteList({ routes, costs, routeId, onPick, targetG, search }) {
                     </strong>
                     /g of materials used
                     {r.rank.unpriced_materials > 0 && (
-                      <span className="rc-warn"> · {r.rank.unpriced_materials} unpriced</span>
+                      <span
+                        className="rc-warn"
+                        title={`${r.rank.unpriced_materials} of ${r.rank.materials} materials have no price. By mass, ${Math.round((r.rank.mass_covered ?? 0) * 100)}% of what this route buys is priced — the rest is not in the figure.`}
+                      >
+                        {' '}
+                        · {Math.round((r.rank.mass_covered ?? 0) * 100)}% of mass priced
+                      </span>
                     )}
                     {r.rank.steps_missing_reactant?.length > 0 && (
                       <span

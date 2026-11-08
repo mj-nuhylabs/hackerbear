@@ -31,14 +31,14 @@ function Structure({ smiles }) {
 // 벤치에서 바로 필요한 조건 칸들. 값이 없으면 — 로 남긴다.
 function Conditions({ c }) {
   const rows = [
-    ['Temperature', c?.temperature_c != null ? `${sig(c.temperature_c)} °C` : null, false],
-    ['Time', c?.time_h != null ? `${sig(c.time_h)} h` : null, false],
-    ['Solvent', c?.solvent, true],
-    ['Catalyst', c?.catalyst, true],
+    ['Temperature', c?.temperature_c != null ? `${sig(c.temperature_c)} °C` : null, false, 'temperature_c'],
+    ['Time', c?.time_h != null ? `${sig(c.time_h)} h` : null, false, 'time_h'],
+    ['Solvent', c?.solvent, true, 'solvent'],
+    ['Catalyst', c?.catalyst, true, 'catalyst'],
   ]
   return (
     <>
-      {rows.map(([k, v, isStructure]) => (
+      {rows.map(([k, v, isStructure, key]) => (
         <div className="bench-cell" key={k}>
           <dt>{k}</dt>
           <dd>
@@ -48,6 +48,15 @@ function Conditions({ c }) {
             {v != null && c?.from_analog && (
               <span className="ana-basis ana-basis-analogs" title={`Tanimoto ${c.similarity}`}>
                 from analog
+              </span>
+            )}
+            {/* 항목마다 출처가 다르면 한 실험의 조건이 아니다 — 어느 레코드에서 왔는지 값 옆에 붙인다 */}
+            {v != null && c?.mixed && c?.sources?.[key] && (
+              <span
+                className="cond-src"
+                title={`From record ${c.sources[key]}. This step's records state the conditions separately, so these values are from different runs of the same reaction — not one procedure.`}
+              >
+                {c.sources[key].replace(/^ord-/, '').slice(0, 6)}
               </span>
             )}
           </dd>

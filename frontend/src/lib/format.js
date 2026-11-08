@@ -13,4 +13,6 @@ export const grams = (g) => (g == null ? DASH : g < 1 ? `${sig(g * 1000)} mg` : 
 export const usd = (x) =>
   x == null ? DASH : '$' + x.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 export const pct = (x) => (x == null ? DASH : `${Math.round(x * 100)}%`)
+// 시간. 1시간 미만은 분으로 — 기록된 5분 반응이 "0.0833 h"로 뜨면 읽을 수가 없다
+export const hours = (h) => (h == null ? DASH : h < 1 ? `${sig(h * 60)} min` : `${sig(h)} h`)
 export const shortHash = (h) => (h ? h.slice(0, 10) : DASH)

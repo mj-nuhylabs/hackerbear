@@ -10,21 +10,22 @@ Model B (trained to imitate patents) for the rest — none of which ever looked 
 
 Sort key, in order:
   1. complete before incomplete — a route that does not reach buyable materials cannot be run
-  2. how much of the cost is known
-       full         every material has a price and every step's reactants supply its product
-       lower_bound  a material has no price, or a step's record is missing a reactant
-                    (chem/balance.py) — the true cost is higher than the number shown
-       none         nothing on the route has a price
-  3. a lower bound that covers less than half the route's materials goes last among the bounds.
-     An unpriced material adds nothing to the total, so a route missing most of its prices
-     always looks cheapest — osimertinib has a 5-step route at "$1.56/g" with 4 of 6 materials
-     unpriced. Comparing bounds by unknown count instead was worse: it let one missing price
-     outrank a 2.6x cost difference and pushed AstraZeneca's own route off the list. So a bound
-     built on most of its materials competes on cost, and one built on a minority does not
+  2. a route with no price at all on any material goes last; there is nothing to compare
+  3. a cost that covers less than COVERAGE_MIN of what the route buys, by mass, goes after the
+     ones that do. An unpriced material adds nothing to the total, so a route missing most of
+     its prices always looks cheapest — osimertinib has a 5-step route at "$1.56/g" with four
+     of six materials unpriced. Mass, not count: counting treats a 41 mg catalyst and a 3 kg
+     starting material alike, and that is what demoted AstraZeneca's own route (US08946235B2,
+     $49.68/g, every yield recorded) below a fully priced route at $275/g over a single
+     unpriced aniline. A cost built on most of the route's mass competes on cost
   4. material cost per gram of target, consumption basis. Consumption is linear in the amount
      made, so this order is the same at 1 g and at 1 kg (pack-size purchase totals are not)
   5. fewer steps
   6. fewer unknowns, then Model B score — only ever break exact ties
+
+A fully priced route has mass_covered 1.0, so it is never demoted by rule 3; it simply competes
+on its real cost. "full" and "lower_bound" stay on the route for the UI's "≥", which marks a
+total that leaves something out, but they no longer decide the order on their own.
 
 Not in the cost (yet): reagents, solvents and catalysts that do not end up in the product,
 equivalents above 1, labour. Steps count only as a tie-break; their cost shows up through yield.
@@ -36,6 +37,10 @@ from . import prices, stoich
 RANK_BASIS = ("material cost per gram of target, yields pushed back through the route; "
               "fully costed routes first, then fewer steps")
 KNOWN_ORDER = {"full": 0, "lower_bound": 1, "none": 2}
+# Share of the route's bought mass that has to be priced before its cost is worth comparing.
+# Half: below that the number is built on a minority of the route and says more about what is
+# missing than about the chemistry.
+COVERAGE_MIN = 0.5
 
 
 def summary(route: dict, table: dict[str, dict] | None = None,
@@ -52,13 +57,25 @@ def summary(route: dict, table: dict[str, dict] | None = None,
     unpriced = sum(1 for l in b["bom"] if l["consumption_cost"] is None)
     known = "none" if cost is None else ("lower_bound" if unpriced or gaps else "full")
     n_mat = len(b["bom"])
+    # How much of what the route buys the cost actually covers, by mass rather than by count.
+    # Counting materials treats a 41 mg catalyst and a 3 kg starting material alike; mass says
+    # how much of the route a bound really accounts for.
+    mass_all = sum(l["mass_g"] or 0.0 for l in b["bom"])
+    mass_priced = sum(l["mass_g"] or 0.0 for l in b["bom"] if l["consumption_cost"] is not None)
+    covered = (mass_priced / mass_all) if mass_all else 0.0
+    # A step whose record omits a reactant leaves that material off the bill altogether, so the
+    # mass share above cannot see the hole — aspirin's recorded acetylation reads "100 % priced"
+    # at $0.62/g precisely because the acetic anhydride it needs was never listed. Treat the gap
+    # as uncovered, or the records with the worst mining win on a cost they never paid.
+    covers_most = covered >= COVERAGE_MIN and not gaps
     return {
         "cost_per_g": round(cost, 4) if cost is not None else None,
         "currency": t["currency"],
         "cost_known": known,
         "unpriced_materials": unpriced,
-        # does the bound rest on most of the route's materials? (see the sort key)
-        "bound_covers_most": (n_mat - unpriced) * 2 > n_mat,
+        "mass_covered": round(covered, 4),
+        # a bound built on most of the route's mass is worth comparing on cost (see the sort key)
+        "bound_covers_most": covers_most,
         "materials": n_mat,
         "steps_missing_reactant": gaps,
         "n_steps": len(route["steps"]),
@@ -68,7 +85,7 @@ def summary(route: dict, table: dict[str, dict] | None = None,
 
 def key(route: dict, s: dict) -> tuple:
     return (route.get("complete") is False,
-            KNOWN_ORDER[s["cost_known"]],
+            s["cost_per_g"] is None,
             not s["bound_covers_most"],
             s["cost_per_g"] if s["cost_per_g"] is not None else float("inf"),
             s["n_steps"],
