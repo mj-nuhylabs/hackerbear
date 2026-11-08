@@ -29,6 +29,47 @@ function Structure({ smiles }) {
 }
 
 // 벤치에서 바로 필요한 조건 칸들. 값이 없으면 — 로 남긴다.
+// 이 반응을 실제로 돌린 **출처**들이 각각 뭐라고 적었는가. 한 특허가 표 하나로 6건을 올리면
+// 레코드 수로는 압도하지만 독립된 근거는 하나다 — 아스피린에서 그 6건이 설퍼이트 지르코니아
+// 스크리닝 표였고, 그게 "아스피린의 촉매"처럼 떴다.
+function SourceSpread({ by }) {
+  if (!by?.length) return null
+  const span = (s, unit) =>
+    s == null ? null : s.min === s.max ? `${sig(s.min)}${unit}` : `${sig(s.min)}–${sig(s.max)}${unit}`
+  return (
+    <div className="cond-sources">
+      <p className="muted small">
+        {by.length} independent {by.length === 1 ? 'source has' : 'sources have'} run this reaction. Each row is one
+        patent or paper, however many entries it contributed — the conditions above are from the one that reports a
+        yield.
+      </p>
+      <ul>
+        {by.map((g) => (
+          <li key={g.source}>
+            <span className="cond-src-name">
+              {g.url ? (
+                <a href={g.url} target="_blank" rel="noreferrer noopener">
+                  {g.source}
+                </a>
+              ) : (
+                g.source
+              )}
+            </span>
+            <span className="muted small">
+              {' '}
+              {g.records} record{g.records > 1 ? 's' : ''}
+              {span(g.temperature_c, ' °C') ? ` · ${span(g.temperature_c, ' °C')}` : ''}
+              {span(g.time_h, ' h') ? ` · ${span(g.time_h, ' h')}` : ''}
+              {span(g.yield_pct, '%') ? ` · yield ${span(g.yield_pct, '%')}` : ''}
+              {g.catalysts?.length ? ` · catalyst ${g.catalysts.join(', ')}` : ''}
+            </span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  )
+}
+
 function Conditions({ c }) {
   const rows = [
     ['Temperature', c?.temperature_c != null ? `${sig(c.temperature_c)} °C` : null, false, 'temperature_c'],
@@ -258,25 +299,9 @@ export default function StepDetail({ route, stepIndex, onSelect, scale, targetG,
           </div>
           <Conditions c={s.conditions} />
         </dl>
-        {/* 다른 레코드가 적어 둔 조건. 위의 값과 섞지 않는다 — 각각 다른 실험이다 */}
-        {s.conditions?.alternatives?.length > 0 && (
-          <p className="cond-alts muted small">
-            Other records of this reaction report{' '}
-            {s.conditions.alternatives
-              .map((a) =>
-                [
-                  a.temperature_c != null ? `${sig(a.temperature_c)} °C` : null,
-                  a.time_h != null ? `${sig(a.time_h)} h` : null,
-                  a.solvent ? 'a solvent' : null,
-                ]
-                  .filter(Boolean)
-                  .join(', '),
-              )
-              .filter(Boolean)
-              .join(' · ')}
-            . They are separate runs, so they are not merged into the conditions above.
-          </p>
-        )}
+        {/* 레코드 수가 아니라 **출처 수**로 본다. 한 특허의 스크리닝 표가 6건이면 레코드로는
+            다수지만 독립된 근거는 하나다 (backend/evidence/provenance.py _by_source) */}
+        <SourceSpread by={s.conditions?.by_source} />
       </div>
 
       <Procedure procedure={s.procedure} ourMmol={scale?.nRxn != null ? scale.nRxn * 1000 : null} />

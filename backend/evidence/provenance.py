@@ -131,7 +131,16 @@ def conditions_from(records: list[dict]) -> dict | None:
     def stated(r: dict) -> int:
         return sum(1 for v in read(r).values() if v is not None)
 
-    best = max(records, key=stated) if records else None
+    def worked(r: dict) -> float:
+        y = r.get("yield_pct")
+        return float(y) if y is not None and 0 < y <= 100 else -1.0
+
+    # A yield is the only thing in a record that says the run worked, so it outranks how many
+    # fields the entry happens to carry. Without this, a patent's catalyst-screening table wins by
+    # row count: six of aspirin's eleven records are one table from US07544831B2, each stating a
+    # temperature and a solid acid catalyst, so "most fields" picked a sulfated-zirconia entry and
+    # presented a specialist green-chemistry variant as the conditions for making aspirin.
+    best = max(records, key=lambda r: (worked(r), stated(r))) if records else None
     if best is None or stated(best) == 0:
         return None
     out = {**read(best), "catalyst_loading": None,
@@ -151,7 +160,58 @@ def conditions_from(records: list[dict]) -> dict | None:
         if len(alts) >= 4:
             break
     out["alternatives"] = alts
+    out["by_source"] = _by_source(records, read)
     return out
+
+
+def _by_source(records: list[dict], read) -> list[dict]:
+    """One row per patent or paper, not per record.
+
+    Counting records lets a single patent's screening table drown out every other source. What a
+    chemist wants from eleven records is how many independent groups ran this and what each of them
+    did, so the sources are collapsed and each keeps the range it reports.
+    """
+    groups: dict[str, dict] = {}
+    for r in records:
+        key = r.get("patent") or r.get("doi") or r.get("dataset")
+        if not key:
+            continue
+        v = read(r)
+        g = groups.setdefault(key, {"source": key, "records": 0, "temperatures": [], "times": [],
+                                    "yields": [], "catalysts": set(), "solvents": set(),
+                                    "url": r.get("url")})
+        g["records"] += 1
+        if v["temperature_c"] is not None:
+            g["temperatures"].append(v["temperature_c"])
+        if v["time_h"] is not None:
+            g["times"].append(v["time_h"])
+        y = r.get("yield_pct")
+        if y is not None and 0 < y <= 100:
+            g["yields"].append(float(y))
+        cat = next((x.get("name") for x in ((r.get("procedure") or {}).get("reagents") or [])
+                    if (x.get("role") or "").upper() == "CATALYST" and x.get("name")), None)
+        if cat:
+            g["catalysts"].add(cat)
+        if v["solvent"]:
+            g["solvents"].add(str(v["solvent"]))
+    out = []
+    for g in groups.values():
+        out.append({
+            "source": g["source"], "url": g["url"], "records": g["records"],
+            "temperature_c": _span(g["temperatures"]), "time_h": _span(g["times"]),
+            "yield_pct": _span(g["yields"]),
+            "catalysts": sorted(g["catalysts"]), "solvents": sorted(g["solvents"]),
+        })
+    # most informative source first: one that reports a yield, then one that reports conditions
+    out.sort(key=lambda g: (g["yield_pct"] is not None, g["temperature_c"] is not None,
+                            g["records"]), reverse=True)
+    return out
+
+
+def _span(vals: list[float]) -> dict | None:
+    if not vals:
+        return None
+    return {"min": min(vals), "max": max(vals), "n": len(vals)}
 
 
 def reported_yield(records: list[dict]) -> float | None:
