@@ -71,10 +71,17 @@ def main():
 
     steps = json.loads((DEEP / "steps.json").read_text())
     procs: dict[str, dict] = {}
-    with open(DEEP / "procedures.jsonl") as fh:
-        for line in fh:
-            p = json.loads(line)
-            procs[p["reaction_id"]] = p
+    proc_files = [DEEP / "procedures.jsonl"]
+    # imported records (scripts/import_scifinder.py) keep their text beside their parquet, and
+    # corpus.scan_ids cannot fetch it — it only scans ORD's own projections
+    extra_procs = ROOT / "backend/data/scifinder/procedures.jsonl"
+    if extra_procs.exists():
+        proc_files.append(extra_procs)
+    for path in proc_files:
+        with open(path) as fh:
+            for line in fh:
+                p = json.loads(line)
+                procs[p["reaction_id"]] = p
     log(f"{len(steps):,} steps, {len(procs):,} procedures")
     meta = analogs._load()["meta"]
 
@@ -209,6 +216,22 @@ def main():
             _y_cache[k] = y / 100.0 if y is not None else 0.70
         return _y_cache[k]
 
+    def runnable_fraction(spec_steps) -> float:
+        """Share of a route's steps that have a record of that very reaction carrying a procedure
+        a chemist could run. This is what "best evidenced" has to mean: caffeine's theobromine +
+        MeI route is an AiZynth route, not a chained recorded one, yet every step of it is a
+        published preparation with a yield. Judging evidence by how the route was found instead
+        left it at number four behind three routes with no procedure at all."""
+        if not spec_steps:
+            return 0.0
+        n = 0
+        for product, reactants in spec_steps:
+            rxn = normalize_rxn(".".join(reactants) + ">>" + product)
+            recs = step_out.get(rxn, {}).get("recorded_records", []) if rxn else []
+            if any(proc_score(((r.get("procedure") or {}).get("text")))["experimental"] for r in recs):
+                n += 1
+        return n / len(spec_steps)
+
     def lite_route(spec_steps, spec_leaves, complete, model_b_score):
         """spec_steps: [(product, [reactants])], spec_leaves: [(smiles, leaf fields)]."""
         steps_l = [{"product": lite(p), "reactants": [lite(x) for x in rs],
@@ -231,7 +254,7 @@ def main():
             leaves = [(m, _recorded_leaf(m, status)) for m, status in r["leaves"].items()]
             lr, summ = lite_route(spec, leaves, r["complete"], None)
             cands.append((cost_rank.key(lr, summ) + (0,), "recorded", frozenset(map(flat, spec[-1][1])), j,
-                          _sound(summ, r["complete"])))
+                          _sound(summ, r["complete"]), runnable_fraction(spec)))
 
         # AiZynth routes
         p = DEEP / f"aizynth_{slug}.json"
@@ -250,7 +273,7 @@ def main():
                 complete = all(ins for _, ins in leaves)
                 lr, summ = lite_route(spec, [(m, stock_label(m, ins)) for m, ins in leaves], complete, mb[i])
                 cands.append((cost_rank.key(lr, summ) + (1,), "computed", frozenset(map(flat, spec[-1][1])), i,
-                              _sound(summ, complete)))
+                              _sound(summ, complete), runnable_fraction(spec)))
 
         # One route per final disconnection, cheapest first — except that the best-evidenced route
         # keeps a slot of its own. A recorded route is one where every step is an ORD record, so it
@@ -263,7 +286,13 @@ def main():
         # evidence, it is bad mining, and a cost built on a minority of the route's mass says more
         # about what is missing than about the chemistry. Both are already in the sort key, so a
         # candidate that passes it on its own merits is the one to hold a slot for.
-        best_recorded = next((c for c in cands if c[1] == "recorded" and c[4]), None)
+        # the best-evidenced candidate, whatever found it: most steps with a runnable published
+        # procedure, and it must be sound on its own merits. Ties go to the cheaper one.
+        sound = [c for c in cands if c[4] and c[5] > 0]
+        best_recorded = max(sound, key=lambda c: (c[5], [-x for x in c[0][:1]])) if sound else None
+        if best_recorded is not None:
+            best = max(c[5] for c in sound)
+            best_recorded = next(c for c in cands if c[4] and c[5] == best)
         for c in cands:
             if c[2] in seen_final:
                 continue
@@ -279,7 +308,7 @@ def main():
 
         # ---------------- full payloads for the routes shown
         routes = []
-        for pos, (_key, kind, _final, j, _sound_flag) in enumerate(picked):
+        for pos, (_key, kind, _final, j, _sound_flag, _runnable) in enumerate(picked):
             if kind == "recorded":
                 r = rec["routes"][j]
                 st = []

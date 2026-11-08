@@ -184,7 +184,8 @@ def read_rdf(path: Path) -> list[dict]:
     return out
 
 
-def to_record(raw: dict, n: int) -> tuple[dict | None, dict | None, str]:
+def to_record(raw: dict, n: int, label: str = "SciFinder export",
+              prefix: str = "scifinder") -> tuple[dict | None, dict | None, str]:
     """One export row → (index row, procedure row, reason it was rejected)."""
     product = _canon(_text(raw.get("product_smiles"))) or (
         cas_to_smiles(_text(raw.get("product_cas"))) if _text(raw.get("product_cas")) else None)
@@ -206,15 +207,15 @@ def to_record(raw: dict, n: int) -> tuple[dict | None, dict | None, str]:
     if not (doi or patent or citation):
         return None, None, "no citation — a record with no source is not evidence (absolute rule 2)"
 
-    rid = _text(raw.get("id")) or f"scifinder-{n:06d}"
-    if not rid.startswith("scifinder-"):
-        rid = f"scifinder-{rid}"
+    rid = _text(raw.get("id")) or f"{n:06d}"
+    if not rid.startswith(f"{prefix}-"):
+        rid = f"{prefix}-{rid}"
     y, temp, t_h = _num(raw.get("yield_pct")), _num(raw.get("temperature_c")), _num(raw.get("time_h"))
     if y is not None and not (0 < y <= 100):
         y = None                           # same guard as evidence/provenance.reported_yield
     url = f"https://doi.org/{doi}" if doi else None
     row = {
-        "reaction_id": rid, "dataset_id": "scifinder", "dataset_name": "SciFinder export",
+        "reaction_id": rid, "dataset_id": prefix, "dataset_name": label,
         "yield_pct": y, "temperature_c": temp, "time_h": t_h,
         "solvents": _text(raw.get("solvents")) or None, "catalysts": _text(raw.get("catalysts")) or None,
         "reagents": _text(raw.get("reagents")) or None,
@@ -239,6 +240,10 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--in", dest="src", type=Path, required=True, help="export file or directory")
     ap.add_argument("--out", type=Path, default=OUT_DIR)
+    ap.add_argument("--source-label", default="SciFinder export",
+                    help="what this export is, shown as the dataset name (e.g. 'Open-access literature')")
+    ap.add_argument("--id-prefix", default="scifinder",
+                    help="prefix for reaction ids, so a record says where it came from")
     ap.add_argument("--dry-run", action="store_true")
     a = ap.parse_args()
 
@@ -253,7 +258,7 @@ def main():
 
     rows, procs, rejected = [], [], {}
     for i, raw in enumerate(raws, 1):
-        row, proc, why = to_record(raw, i)
+        row, proc, why = to_record(raw, i, a.source_label, a.id_prefix)
         if row is None:
             rejected[why] = rejected.get(why, 0) + 1
             continue
