@@ -65,3 +65,6 @@ backend/data/deep/*
 # 중간 점검용으로 학습한 모델 B (후보 500개·1000개 시점). 새벽 본 학습이 route_ranker.pkl을
 # 따로 쓰므로 이건 남겨둘 이유가 없다
 backend/data/route_ranker_early*
+
+# 데모 재구축 중간 산물 (scripts/rebuild_deep_targets.sh가 끝나면 data/deep/로 옮기고 지운다)
+backend/data/deep_next/

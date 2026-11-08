@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, useSyncExternalStore } from 'react'
 import * as api from './api'
 import { usd } from './lib/format'
 import { tierCounts } from './lib/route'
-import { CopyText, Mock, Mol, TIER_INFO, TierBadge } from './components/bits'
+import { CopyText, Mol, TIER_INFO, TierBadge } from './components/bits'
 import RouteScheme from './components/RouteScheme'
 import StepDetail from './components/StepDetail'
 import CostSheet from './components/CostSheet'
@@ -202,16 +202,14 @@ function RouteList({ routes, costs, routeId, onPick, targetG, search }) {
     <section className="panel routes" aria-labelledby="routes-title">
       <div className="panel-head">
         <h2 id="routes-title">{routes.length} routes</h2>
-        {search?.precomputed ? (
-          <p className="muted small">
-            Recorded routes first — every step is an ORD record ({search.recorded_routes_found} found). Then
-            AiZynthFinder routes ({search.aizynth_routes_searched} searched),{' '}
-            {search.model_b === 'trained' ? 'ranked by Model B' : 'ranked by AiZynth score (Model B not trained yet)'}, one
-            per final disconnection.
-          </p>
-        ) : (
-          <p className="muted small">AiZynthFinder searched for {search?.search_time_s ?? '—'} s. Highest score first.</p>
-        )}
+        {/* 순서는 backend/cost/rank.py가 정한다: g당 재료비(수율을 경로 끝까지 반영), 비용을 다 아는 경로 먼저 */}
+        <p className="muted small">
+          Cheapest to make first: material cost per gram of target, with every step’s yield carried back through the
+          route. Routes with every material priced come first; a “≥” total is missing prices. Fewer steps break ties.{' '}
+          {search?.precomputed
+            ? `${search.candidates_costed ?? '—'} candidates costed — ${search.recorded_routes_found} recorded routes (every step an ORD record) and ${search.aizynth_routes_searched} from AiZynthFinder — one shown per final disconnection.`
+            : `AiZynthFinder searched for ${search?.search_time_s ?? '—'} s.`}
+        </p>
       </div>
       <ul className="route-list" data-n={routes.length}>
         {routes.map((r, i) => {
@@ -259,12 +257,35 @@ function RouteList({ routes, costs, routeId, onPick, targetG, search }) {
                     {costs[r.id]?.buy?.verdict === 'buy' && <span className="rc-buy"> · cheaper to buy</span>}
                   </span>
                 </span>
+                {r.rank && (
+                  <span className="rc-rank small">
+                    Ranked on{' '}
+                    <strong className="num">
+                      {r.rank.cost_known === 'lower_bound' ? '≥ ' : ''}
+                      {usd(r.rank.cost_per_g)}
+                    </strong>
+                    /g of materials used
+                    {r.rank.unpriced_materials > 0 && (
+                      <span className="rc-warn"> · {r.rank.unpriced_materials} unpriced</span>
+                    )}
+                    {r.rank.steps_missing_reactant?.length > 0 && (
+                      <span
+                        className="rc-warn"
+                        title="The record of this step lists no reactant for some of the product's atoms, so that material is not on the bill"
+                      >
+                        {' '}
+                        · record missing a reactant
+                      </span>
+                    )}
+                  </span>
+                )}
                 <span className="rc-score muted small">
                   {r.kind === 'recorded'
                     ? `${r.steps.length} recorded step${r.steps.length > 1 ? 's' : ''}${r.complete === false ? ' · gap to buyable' : ''}`
                     : r.route_rank_score != null
                       ? `Model B ${r.route_rank_score.toFixed(2)} · AiZynth ${r.aizynth_score?.toFixed(3) ?? '—'}`
-                      : `Score ${r.aizynth_score != null ? r.aizynth_score.toFixed(3) : '—'}`}{' '}
+                      : `Score ${r.aizynth_score != null ? r.aizynth_score.toFixed(3) : '—'}`}
+                  {r.kind !== 'recorded' && r.complete === false ? ' · gap to buyable' : ''}{' '}
                   <span className="rc-id">{r.id}</span>
                 </span>
               </button>
@@ -273,8 +294,9 @@ function RouteList({ routes, costs, routeId, onPick, targetG, search }) {
         })}
       </ul>
       <p className="muted small">
-        Costs use supplier list prices where a material has one, and <Mock what="Prices" /> values for the rest. The
-        bill of materials says which is which, per material.
+        Costs use supplier list prices, each linked to the page it was read from. A material without one shows —,
+        and any total that leaves it out is marked ≥. Reagents, solvents and catalysts that do not end up in the
+        product are not costed yet.
       </p>
     </section>
   )

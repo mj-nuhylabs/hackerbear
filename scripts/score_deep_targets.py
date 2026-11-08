@@ -12,10 +12,13 @@ plus, per step:
                       text, each rescaled the same way and labelled as recorded for a different
                       substrate
 
-Route order:
-  * recorded routes first (every step is a record), complete before incomplete, fewer steps first
-  * then AiZynth routes, ordered by Model B when it is trained (else AiZynth's state score), and
-    diversified: no two shown routes share a final disconnection
+Route order (cost/rank.py): every candidate — all enumerated recorded routes and up to
+--max-aizynth AiZynth routes — is costed first with the cost engine (cheap: no SVGs, no
+procedures). One list, cheapest material cost per gram of target first (yields pushed back
+through the route), fully costed routes before lower bounds, then fewer steps. No two shown
+routes share a final disconnection. Recorded and computed routes compete on the same number;
+"recorded" is a label, not a rank. Model B's score is kept on each AiZynth route for display and
+breaks exact ties only.
 
     .venv/bin/python -I scripts/score_deep_targets.py [--max-aizynth 2000]
 """
@@ -23,6 +26,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import sys
 import time
 from pathlib import Path
@@ -30,10 +34,11 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "backend"))
 
-DEEP = ROOT / "backend/data/deep"
+# SYNTHPATH_DEEP_DIR lets a rebuild write somewhere other than the live demo inputs (the retrain
+# loop re-runs score_deep_targets.py on whatever is in data/deep/ at any moment)
+DEEP = Path(os.environ.get("SYNTHPATH_DEEP_DIR") or ROOT / "backend/data/deep")
 ADAPT_K = 3
-SHOW_RECORDED = 5
-SHOW_COMPUTED = 5
+SHOW_ROUTES = 10      # recorded and computed together, one per final disconnection
 SCALE_MMOL = 1.0      # tables are per 1 mmol of the limiting substrate; the UI multiplies
 
 
@@ -44,12 +49,17 @@ def log(m: str):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--max-aizynth", type=int, default=2000, help="AiZynth routes scored per target")
+    ap.add_argument("--out-dir", type=Path, default=DEEP, help="where demo_*.json go (default: the live ones)")
     a = ap.parse_args()
 
     import numpy as np
     import pandas as pd
 
+    from chem.balance import missing_atoms
     from chem.resolve import describe
+    from chem.stock import label as stock_label
+    from cost import prices
+    from cost import rank as cost_rank
     from evidence import analogs
     from evidence.adapt import adapt
     from evidence.recorded_routes import flat
@@ -159,73 +169,117 @@ def main():
                             if y is not None else {"basis": "assumed", "value": 0.70}),
             "plausibility_raw": raw, "plausibility_calibrated": cal,
             "recorded_step": recorded_info,
+            # atoms of the product no listed reactant supplies (chem/balance.py): the record is missing
+            # a reactant, so this step's material is not on the bill and the route's cost is a lower bound
+            "missing_atoms": missing_atoms(reactants, product),
         }
 
     model_b = route_ranker._load_model() is not None
-    log(f"Model B {'trained — ranking AiZynth routes' if model_b else 'NOT trained — AiZynth state score order'}")
+    log(f"Model B {'trained — scoring AiZynth routes' if model_b else 'NOT trained — no Model B scores'}")
+    price_table = prices.table()
+
+    # ---------------- cheap pass: cost every candidate route before building any payload
+    _lite_cache: dict[str, dict] = {}
+
+    def lite(s):
+        if s not in _lite_cache:
+            _lite_cache[s] = describe(s, svg=False)
+        return _lite_cache[s]
+
+    _y_cache: dict[tuple, float] = {}
+
+    def step_yield(product, reactants):
+        k = (product, tuple(reactants))
+        if k not in _y_cache:
+            rxn = normalize_rxn(".".join(reactants) + ">>" + product)
+            recs = step_out.get(rxn, {}).get("recorded_records", []) if rxn else []
+            y = next((r["yield_pct"] for r in recs if r.get("yield_pct") is not None), None)
+            _y_cache[k] = y / 100.0 if y is not None else 0.70
+        return _y_cache[k]
+
+    def lite_route(spec_steps, spec_leaves, complete, model_b_score):
+        """spec_steps: [(product, [reactants])], spec_leaves: [(smiles, leaf fields)]."""
+        steps_l = [{"product": lite(p), "reactants": [lite(x) for x in rs],
+                    "assumed_yield": step_yield(p, rs), "missing_atoms": missing_atoms(rs, p)}
+                   for p, rs in spec_steps]
+        leaves_l = [{**lite(m), **f} for m, f in spec_leaves]
+        r = {"steps": steps_l, "leaf_materials": leaves_l, "complete": complete,
+             "route_rank_score": model_b_score}
+        return r, cost_rank.summary(r, price_table)
 
     for name, smi in DEMO_TARGETS.items():
         slug = name.lower()
         rec = json.loads((DEEP / f"recorded_{slug}.json").read_text())
         g = rec["graph"]
-        routes = []
-        # ---------------- recorded routes
-        # one route per recorded final step first (round-robin in the recorded order), then the rest:
-        # five variants of the same last step hide the other ways the target has been made
-        by_final: dict[int, list] = {}
-        for r in rec["routes"]:
-            by_final.setdefault(r["steps"][-1]["option"], []).append(r)
-        picked = []
-        while len(picked) < SHOW_RECORDED and any(by_final.values()):
-            for opt in sorted(by_final):
-                if by_final[opt] and len(picked) < SHOW_RECORDED:
-                    picked.append(by_final[opt].pop(0))
-        for k, r in enumerate(picked):
-            st = []
-            for s in r["steps"]:
-                opt = g["steps"][s["product"]][s["option"]]
-                st.append(step_payload(s["product"], opt["substrates"], precedent_count=opt["n_records"],
-                                       recorded_info={"n_records": opt["n_records"], "n_sources": opt["n_sources"],
-                                                      "unclassified": opt.get("unclassified") or []}))
-            leaves = [{**desc(m), "in_stock": status in ("zinc", "priced"), "stock_status": status}
-                      for m, status in r["leaves"].items()]
-            routes.append({"id": f"{name[:3].upper()}-REC{k + 1}", "kind": "recorded", "steps": st,
-                           "leaf_materials": leaves, "complete": r["complete"],
-                           "rank_basis": "recorded routes: complete first, then fewer steps, then more sources",
-                           "aizynth_score": None, "route_rank_score": None})
-        # ---------------- AiZynth routes
+        cands = []          # (key, kind, final disconnection, index)
+
+        # recorded routes: every step is an ORD record
+        for j, r in enumerate(rec["routes"]):
+            spec = [(s["product"], g["steps"][s["product"]][s["option"]]["substrates"]) for s in r["steps"]]
+            leaves = [(m, _recorded_leaf(m, status)) for m, status in r["leaves"].items()]
+            lr, summ = lite_route(spec, leaves, r["complete"], None)
+            cands.append((cost_rank.key(lr, summ) + (0,), "recorded", frozenset(map(flat, spec[-1][1])), j))
+
+        # AiZynth routes
         p = DEEP / f"aizynth_{slug}.json"
+        dicts, state, mb, stats = [], [], [], {}
         if p.exists():
             az = json.loads(p.read_text())
             dicts = az["routes"][:a.max_aizynth]
             state = [float(sc.get("state score", 0.0)) for sc in az["scores"][:a.max_aizynth]]
             mb = route_ranker.score_routes(dicts, state) if model_b else [None] * len(dicts)
-            keyed = [((mb[i] if mb[i] is not None else state[i]), -i, i) for i in range(len(dicts))]
-            keyed.sort(reverse=True)
-            seen_final, shown = set(), 0
-            for _score, _neg, i in keyed:
-                rd = dicts[i]
-                final = frozenset(flat(c["smiles"]) for c in rd["children"][0]["children"]) if rd.get("children") else None
-                if final is None or final in seen_final:
+            stats = az.get("stats", {})
+            for i, rd in enumerate(dicts):
+                if not rd.get("children"):
                     continue
-                seen_final.add(final)
+                spec, leaves = [], []
+                _walk_light(rd, spec, leaves)
+                complete = all(ins for _, ins in leaves)
+                lr, summ = lite_route(spec, [(m, stock_label(m, ins)) for m, ins in leaves], complete, mb[i])
+                cands.append((cost_rank.key(lr, summ) + (1,), "computed", frozenset(map(flat, spec[-1][1])), i))
+
+        # one route per final disconnection, across both kinds, cheapest first
+        cands.sort(key=lambda c: c[0])
+        picked, seen_final = [], set()
+        for c in cands:
+            if c[2] in seen_final:
+                continue
+            seen_final.add(c[2])
+            picked.append(c)
+            if len(picked) >= SHOW_ROUTES:
+                break
+
+        # ---------------- full payloads for the routes shown
+        routes = []
+        for _key, kind, _final, j in picked:
+            if kind == "recorded":
+                r = rec["routes"][j]
+                st = []
+                for s in r["steps"]:
+                    opt = g["steps"][s["product"]][s["option"]]
+                    st.append(step_payload(s["product"], opt["substrates"], precedent_count=opt["n_records"],
+                                           recorded_info={"n_records": opt["n_records"], "n_sources": opt["n_sources"],
+                                                          "unclassified": opt.get("unclassified") or []}))
+                leaves = [{**desc(m), **_recorded_leaf(m, status)} for m, status in r["leaves"].items()]
+                routes.append({"kind": "recorded", "steps": st, "leaf_materials": leaves, "complete": r["complete"],
+                               "aizynth_score": None, "route_rank_score": None})
+            else:
+                rd = dicts[j]
                 st, leaves = [], {}
                 _walk_aiz(rd, st, leaves, step_payload, desc)
-                routes.append({"id": f"{name[:3].upper()}-AZ{shown + 1}", "kind": "computed", "steps": st,
-                               "leaf_materials": list(leaves.values()), "complete": True,
-                               "aizynth_score": round(state[i], 3),
-                               "route_rank_score": round(mb[i], 4) if mb[i] is not None else None,
-                               "rank_basis": ("Model B (learned from patent routes), one route per final disconnection"
-                                              if mb[i] is not None else
-                                              "AiZynthFinder state score, one route per final disconnection")})
-                shown += 1
-                if shown >= SHOW_COMPUTED:
-                    break
-            stats = az.get("stats", {})
-        else:
-            stats = {}
+                routes.append({"kind": "computed", "steps": st, "leaf_materials": list(leaves.values()),
+                               "complete": all(l["in_stock"] for l in leaves.values()),
+                               "aizynth_score": round(state[j], 3),
+                               "route_rank_score": round(mb[j], 4) if mb[j] is not None else None})
+        routes = cost_rank.rank(routes, price_table)
+        n_kind = {"recorded": 0, "computed": 0}
+        for r in routes:
+            n_kind[r["kind"]] += 1
+            r["id"] = f"{name[:3].upper()}-{'REC' if r['kind'] == 'recorded' else 'AZ'}{n_kind[r['kind']]}"
         out = {"target": smi, "name": name, "routes": routes,
                "search": {"solved": bool(routes), "precomputed": True,
+                          "rank_basis": cost_rank.RANK_BASIS,
+                          "candidates_costed": len(cands),
                           "aizynth_routes_searched": len(json.loads(p.read_text())["routes"]) if p.exists() else 0,
                           "recorded_routes_found": len(rec["routes"]),
                           "search_time_s": stats.get("search_time"),
@@ -233,7 +287,8 @@ def main():
                           "model_b": "trained" if model_b else "not trained",
                           "analog_index": analogs.stats() or None,
                           "analogous_min_precedents": 10}}
-        (DEEP / f"demo_{slug}.json").write_text(json.dumps(out, default=str))
+        a.out_dir.mkdir(parents=True, exist_ok=True)
+        (a.out_dir / f"demo_{slug}.json").write_text(json.dumps(out, default=str))
         log(f"  {name}: {sum(r['kind'] == 'recorded' for r in routes)} recorded + "
             f"{sum(r['kind'] == 'computed' for r in routes)} computed routes")
 
@@ -258,13 +313,39 @@ def _conditions(recs: list[dict]) -> dict | None:
     return None
 
 
+def _recorded_leaf(smiles: str, status: str | None) -> dict:
+    """Leaf fields for a recorded route; status comes from evidence/recorded_routes.Purchasable."""
+    from chem.stock import commodity, inchikey
+
+    out = {"in_stock": status in ("priced", "commodity", "zinc"), "stock_status": status}
+    if status == "commodity":
+        c = commodity().get(inchikey(smiles)) or {}
+        out.update(ord_records=c.get("ord_records"), ord_sources=c.get("ord_sources"))
+    return out
+
+
+def _walk_light(node, steps, leaves):
+    """AiZynth route dict → [(product, [reactants])] in synthesis order + [(leaf, in_stock)]."""
+    if node.get("type") != "mol":
+        return
+    if not node.get("children"):
+        leaves.append((node["smiles"], bool(node.get("in_stock"))))
+        return
+    rxn = node["children"][0]
+    for child in rxn.get("children", []):
+        _walk_light(child, steps, leaves)
+    steps.append((node["smiles"], [c["smiles"] for c in rxn.get("children", [])]))
+
+
 def _walk_aiz(node, steps, leaves, step_payload, desc):
+    from chem.stock import label
+
     if node.get("type") != "mol":
         return
     if not node.get("children"):
         c = desc(node["smiles"])
-        leaves[c["smiles"]] = {**c, "in_stock": bool(node.get("in_stock")),
-                               "stock_status": "zinc" if node.get("in_stock") else None}
+        ins = bool(node.get("in_stock"))
+        leaves[c["smiles"]] = {**c, "in_stock": ins, **label(node["smiles"], ins)}
         return
     rxn = node["children"][0]
     for child in rxn.get("children", []):

@@ -125,6 +125,15 @@ export default function CostSheet({ cost, targetG, setTargetG, purification, set
                     <Mol compound={l.compound} size="xs" />
                     <code className="bom-smiles">{l.compound.smiles}</code>
                   </div>
+                  {/* backend/chem/stock.py: ZINC에 없는 흔한 시약. 구매 가능의 근거이지 가격이 아니다 */}
+                  {l.compound.stock_status === 'commodity' && (
+                    <div
+                      className="bom-stock muted small"
+                      title={`Not in the ZINC catalog. Counted as buyable because ${l.compound.ord_records?.toLocaleString() ?? '—'} ORD records from ${l.compound.ord_sources?.toLocaleString() ?? '—'} patents or papers use it as a reactant — not a price.`}
+                    >
+                      common reagent · {l.compound.ord_records?.toLocaleString() ?? '—'} ORD records
+                    </div>
+                  )}
                 </td>
                 <td className="r num">{l.compound.mw != null ? l.compound.mw.toFixed(2) : DASH}</td>
                 <td className="r num">{mmol(l.n)} mmol</td>

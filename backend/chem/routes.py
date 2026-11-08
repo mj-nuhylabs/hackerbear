@@ -12,11 +12,14 @@ from __future__ import annotations
 import threading
 from pathlib import Path
 
+from cost import rank as cost_rank
 from evidence import analogs, provenance
 from evidence.tiers import ANALOGOUS_MIN_PRECEDENTS, decide
 from model.predict import score_many
 
+from .balance import missing_atoms
 from .resolve import describe
+from .stock import label as stock_label
 
 CONFIG = Path(__file__).resolve().parents[1] / "data/aizynth/config.yml"
 ASSUMED_YIELD = 0.70          # 문헌값이 없을 때만. 반드시 assumed로 표시한다
@@ -36,8 +39,11 @@ def finder():
         with _lock:
             if _finder is None:
                 from aizynthfinder.aizynthfinder import AiZynthFinder
+
+                from .stock import use_with_zinc
                 f = AiZynthFinder(configfile=str(CONFIG))
-                f.stock.select("zinc")
+                # ZINC만으로는 EtOH·MeI·CS2를 못 사서 탐색이 그걸 "합성"한다 (chem/stock.py)
+                use_with_zinc(f)
                 f.expansion_policy.select("uspto")
                 f.filter_policy.select("uspto")
                 _finder = f
@@ -51,7 +57,8 @@ def _walk(node: dict, steps: list, leaves: dict):
     # SVG는 UI가 스킴·스텝·BOM에 그대로 꽂는다 (RDKit 렌더)
     if not node.get("children"):
         c = describe(node["smiles"])
-        leaves[c["smiles"]] = {**c, "in_stock": bool(node.get("in_stock"))}
+        leaves[c["smiles"]] = {**c, "in_stock": bool(node.get("in_stock")),
+                               **stock_label(c["smiles"], bool(node.get("in_stock")))}
         return
     rxn = node["children"][0]
     for child in rxn.get("children", []):
@@ -66,6 +73,7 @@ def _walk(node: dict, steps: list, leaves: dict):
         "reactants": reactants,
         "product": product,
         "precedent_count": int(md.get("library_occurence") or 0),
+        "missing_atoms": missing_atoms([r["smiles"] for r in reactants], product["smiles"]),
     })
 
 
@@ -106,6 +114,8 @@ def _finish_steps(steps: list[dict]) -> list[dict]:
             "reactants": s["reactants"],
             "product": s["product"],
             "evidence": evidence,
+            # 반응물 목록이 생성물의 원자를 다 대지 못하면 빠진 원소 수 (chem/balance.py). 비용이 하한이 된다
+            "missing_atoms": s.get("missing_atoms"),
             # 조건도 같은 순서. 유사 반응 조건은 from_analog=True로 표시돼 UI가 구분한다
             "conditions": (provenance.conditions_from(records)
                            or analogs.conditions_from(hits)),
@@ -179,8 +189,9 @@ def search(smiles: str, max_depth: int = 4, *, time_limit_s: int = DEFAULT_TIME_
             "leaf_materials": list(leaves.values()),
             "aizynth_score": round(float(sc.get("state score", next(iter(sc.values())))), 3),
         })
-    routes.sort(key=lambda r: -r["aizynth_score"])
-    routes = routes[:max_routes]
+    # AiZynth 점수는 짧고 다 살 수 있는 경로면 거의 다 0.998이라 순서를 못 정한다.
+    # 비용 엔진의 g당 재료비(수율 반영)로 정렬한다 (cost/rank.py)
+    routes = cost_rank.rank(routes)[:max_routes]
     for r in routes:
         ROUTES[r["id"]] = r
     return {

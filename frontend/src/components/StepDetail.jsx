@@ -214,6 +214,17 @@ export default function StepDetail({ route, stepIndex, onSelect, scale, targetG,
         </svg>
         <Mol compound={s.product} size="sm" caption={caption(s.product)} />
       </div>
+      {/* backend/chem/balance.py: 반응물 목록이 생성물의 원자를 다 대지 못한다 — 레코드에서 반응물이 빠졌다 */}
+      {s.missing_atoms && Object.keys(s.missing_atoms).length > 0 && (
+        <p className="step-gap" role="note">
+          <strong>A reactant is missing from this step.</strong> The product has{' '}
+          {Object.entries(s.missing_atoms)
+            .map(([el, n]) => `${n} ${el}`)
+            .join(', ')}{' '}
+          that none of the listed reactants supply — the record left one out. That material is not on the bill, so
+          this route’s cost is a lower bound.
+        </p>
+      )}
       {/* 만들 때 바로 봐야 하는 것부터: 스케일, 수율, 조건 → 절차 → 내 스케일로 환산한 양 */}
       <div className="run-step">
         <h3>Run this step</h3>

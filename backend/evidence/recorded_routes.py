@@ -218,11 +218,15 @@ def unclassified_reactants(reactants_flat: list[str], substrates: list[str]) -> 
 
 
 class Purchasable:
-    """ZINC in-stock (the same stock AiZynthFinder uses) or a row in data/prices.csv."""
+    """A row in data/prices.csv, a common ORD reagent (chem/stock.py), or ZINC in-stock (the same
+    stock AiZynthFinder uses). Labelled in that order, the same order chem/stock.label uses."""
 
     def __init__(self):
+        from chem.stock import commodity
+
         keys = pd.read_hdf(ZINC, key="table")["inchi_key"]
         self._zinc = set(keys.tolist())
+        self._commodity = frozenset(commodity())
         self._priced: set[str] = set()
         if PRICES.exists():
             for s in pd.read_csv(PRICES).get("smiles", pd.Series(dtype=str)).dropna():
@@ -232,13 +236,16 @@ class Purchasable:
 
     @lru_cache(maxsize=200_000)
     def check(self, smiles_flat: str) -> str | None:
-        """'zinc' / 'priced' / None."""
+        """'priced' / 'commodity' / 'zinc' / None."""
         if smiles_flat in self._priced:
             return "priced"
         m = Chem.MolFromSmiles(smiles_flat)
         if m is None:
             return None
-        return "zinc" if Chem.MolToInchiKey(m) in self._zinc else None
+        k = Chem.MolToInchiKey(m)
+        if k in self._commodity:
+            return "commodity"
+        return "zinc" if k in self._zinc else None
 
 
 class RecordIndex:
@@ -391,7 +398,7 @@ def enumerate_routes(g: Graph, max_routes: int = MAX_ROUTES) -> list[dict]:
         routes.append({
             "steps": [{"product": m, "option": k} for m, k in steps],
             "leaves": leaves,
-            "complete": all(v in ("zinc", "priced", "small") for v in leaves.values()),
+            "complete": all(v in ("zinc", "priced", "commodity", "small") for v in leaves.values()),
             "n_steps": len(steps),
         })
     # complete first, then fewer steps, then better-sourced steps

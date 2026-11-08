@@ -23,3 +23,22 @@
   .route-list:is([data-n='7'], [data-n='8']) { grid-template-columns: repeat(4, minmax(0, 1fr)); }
   .route-list[data-n='10'] { grid-template-columns: repeat(5, minmax(0, 1fr)); }
 }
+
+/* What the order is decided on (backend/cost/rank.py), under the purchase total */
+.rc-rank { color: var(--ink-2); }
+.rc-rank strong { color: var(--ink); font-weight: 600; }
+
+/* A step whose record lists no reactant for some product atoms (backend/chem/balance.py) */
+.step-gap {
+  margin: 0 0 12px;
+  padding: 8px 10px;
+  border-left: 3px solid var(--warn);
+  border-radius: var(--r-tag);
+  background: var(--sunk);
+  color: var(--ink-2);
+  font-size: var(--fs-sm);
+}
+.step-gap strong { color: var(--warn); }
+
+/* Why a material counts as buyable when it is not in ZINC (backend/chem/stock.py) */
+.bom-stock { margin-top: 2px; font-size: var(--fs-xs); }

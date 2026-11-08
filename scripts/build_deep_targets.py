@@ -24,6 +24,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import sys
 import time
 from multiprocessing import Pool
@@ -34,7 +35,9 @@ sys.path.insert(0, str(ROOT / "backend"))
 
 from model.holdout import DEMO_TARGETS  # noqa: E402
 
-DEEP = ROOT / "backend/data/deep"
+# SYNTHPATH_DEEP_DIR lets a rebuild write somewhere other than the live demo inputs (the retrain
+# loop re-runs score_deep_targets.py on whatever is in data/deep/ at any moment)
+DEEP = Path(os.environ.get("SYNTHPATH_DEEP_DIR") or ROOT / "backend/data/deep")
 CONFIG = ROOT / "backend/data/aizynth/config.yml"
 ITERATIONS = 5000
 TIME_LIMIT_S = 1500
@@ -74,7 +77,13 @@ def stage_recorded():
         (DEEP / f"recorded_{slug(name)}.json").write_text(json.dumps(out, default=str))
         log(f"  {name}: {len(g.steps)} molecules with recorded steps, {len(routes)} routes "
             f"({sum(r['complete'] for r in routes)} complete)")
-    (DEEP / "holdout_molecules.txt").write_text("\n".join(sorted(holdout)) + "\n")
+    # Never shrink the holdout. A wider stock stops the recorded search at more molecules, so a
+    # re-run can find fewer intermediates — and the models already in training excluded the old
+    # set. Dropping a molecule from it would let the next training run learn a demo answer.
+    hp = DEEP / "holdout_molecules.txt"
+    if hp.exists():
+        holdout |= {l.strip() for l in hp.read_text().splitlines() if l.strip()}
+    hp.write_text("\n".join(sorted(holdout)) + "\n")
     log(f"wrote holdout_molecules.txt ({len(holdout)} molecules)")
 
 
@@ -85,9 +94,12 @@ def _aizynth_one(item):
     if out_path.exists():
         return name, "exists"
     from aizynthfinder.aizynthfinder import AiZynthFinder
+
+    from chem.stock import use_with_zinc
     t0 = time.time()
     f = AiZynthFinder(configfile=str(CONFIG))
-    f.stock.select("zinc")
+    # ZINC + priced + common ORD reagents (chem/stock.py). ZINC alone has no EtOH, MeI or CS2
+    use_with_zinc(f)
     f.expansion_policy.select(["uspto", "ringbreaker"])
     f.filter_policy.select("uspto")
     f.config.search.iteration_limit = ITERATIONS
