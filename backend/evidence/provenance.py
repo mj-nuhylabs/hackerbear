@@ -162,10 +162,17 @@ def conditions_from(records: list[dict]) -> dict | None:
         """A procedure with no time cannot be run; one that states it can."""
         return 1 if read(r)["time_h"] is not None else 0
 
-    # Least material, then a stated time, then a reported yield, then how much the entry happens
-    # to carry. A yield says the run worked; it does not say the run was a sensible way to get
-    # there, and a run nobody timed cannot be followed at all.
-    best = max(records, key=lambda r: (lean(r), timed(r), worked(r), stated(r))) if records else None
+    # A reported yield comes first, then a stated time, then least material, then how much the
+    # entry happens to carry.
+    #
+    # The yield leads because the cost engine is already using one. When the conditions came from a
+    # record with no yield, the yield pushed through the route had to come from somewhere else, and
+    # aspirin ended up with the quantities and temperature of a teaching-lab preparation that
+    # reports no yield beside 76% taken from a patent nobody else on the sheet ran. That is two
+    # experiments presented as one. Whatever record the sheet shows, the number the cost rests on
+    # has to be that record's own, so a run that says what it gave is preferred to one that does
+    # not — and the leaner run only wins among those that do.
+    best = max(records, key=lambda r: (worked(r), timed(r), lean(r), stated(r))) if records else None
     if best is None or stated(best) == 0:
         return None
     out = {**read(best), "catalyst_loading": None,

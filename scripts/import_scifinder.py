@@ -271,7 +271,9 @@ def to_record(raw: dict, n: int, label: str = "SciFinder export",
     y, temp, t_h = _num(raw.get("yield_pct")), _num(raw.get("temperature_c")), _num(raw.get("time_h"))
     if y is not None and not (0 < y <= 100):
         y = None                           # same guard as evidence/provenance.reported_yield
-    url = f"https://doi.org/{doi}" if doi else None
+    # A patent with no DOI still has a public page; without a link the record cannot be checked.
+    url = (f"https://doi.org/{doi}" if doi
+           else f"https://patents.google.com/patent/{patent}/en" if patent else None)
     row = {
         "reaction_id": rid, "dataset_id": prefix, "dataset_name": label,
         "yield_pct": y, "temperature_c": temp, "time_h": t_h,

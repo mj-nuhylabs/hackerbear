@@ -94,7 +94,9 @@ def main():
 
     def desc(s):
         if s not in _desc_cache:
-            _desc_cache[s] = describe(s)
+            # 스텝의 분자는 화면에 이름으로 뜬다 — 여기서만 이름을 찾는다.
+            # lite()는 후보 경로 수천 개를 훑으므로 켜지 않는다
+            _desc_cache[s] = describe(s, look_up_name=True)
         return _desc_cache[s]
 
     step_out: dict[str, dict] = {}
@@ -167,10 +169,18 @@ def main():
         # the structured record reads as an acetylation. It must not make a step REPORTED.
         recs = [r for r in ev["recorded_records"]
                 if not is_formulation((r.get("procedure") or {}).get("text"))]
-        y = next((r["yield_pct"] for r in recs if r.get("yield_pct") is not None), None)
         tier = "REPORTED" if recs else ("ANALOGOUS" if (precedent_count or 0) >= 10 else "COMPUTED")
         # conditions first, so the procedure can be the same run rather than a different record
         _cond = _conditions(recs) or analogs.conditions_from(ev["analogs"])
+        # The yield the cost rests on comes from the record the sheet shows, when that record
+        # states one. Taking the first yield in the list instead put 76% from one patent beside
+        # another run's quantities and temperature, and the step then cited five records for a
+        # number only one of them reported.
+        _sid = (_cond or {}).get("source_id")
+        _yrecs = [r for r in recs if r.get("yield_pct") is not None]
+        _ysrc = (next((r for r in _yrecs if r.get("reaction_id") == _sid), None)
+                 or (_yrecs[0] if _yrecs else None))
+        y = _ysrc["yield_pct"] if _ysrc else None
         return {
             "rxn_smiles": rxn or (".".join(reactants) + ">>" + product),
             "template_id": template_id, "classification": classification,
@@ -192,12 +202,14 @@ def main():
             "reported_yield": y / 100.0 if y is not None else None,
             "assumed_yield": y / 100.0 if y is not None else 0.70,
             "yield_is_assumed": y is None,
-            "yield_basis": ({"basis": "reported", "source_ids": [r["reaction_id"] for r in recs[:5]]}
+            # the record that reported it, not every record on the step
+            "yield_basis": ({"basis": "reported", "source_ids": [_ysrc["reaction_id"]],
+                             "same_record_as_procedure": _ysrc.get("reaction_id") == _sid}
                             if y is not None else {"basis": "assumed", "value": 0.70}),
             "plausibility_raw": raw, "plausibility_calibrated": cal,
             "recorded_step": recorded_info,
             # 이 스텝을 우리 규모로 돌리는 순서표. 숫자는 전부 레코드/환산표에서 온다 (evidence/protocol.py)
-            "protocol": _protocol_for(recs, ev, _cond),
+            "protocol": _protocol_for(recs, ev, _cond, rxn, desc(product)),
             # atoms of the product no listed reactant supplies (chem/balance.py): the record is missing
             # a reactant, so this step's material is not on the bill and the route's cost is a lower bound
             "missing_atoms": missing_atoms(reactants, product),
@@ -340,16 +352,20 @@ def main():
                                "route_rank_score": round(mb[j], 4) if mb[j] is not None else None})
             routes[-1]["_reserved"] = pos == reserved_idx
         routes = cost_rank.rank(routes, price_table)
-        # rank() sorts on cost alone, so put the reserved route back right under the cheapest
+        # A step with no precedent behind it is not something to lead with, whatever it costs.
+        routes = cost_rank.demote_computed(routes)
+        # The lead goes to the cheapest route a chemist can actually run, not the cheapest route
+        # (cost/rank.lead_with_runnable); the cheapest keeps the slot below it.
+        routes = cost_rank.lead_with_runnable(routes)
         held = next((r for r in routes if r.pop("_reserved", False)), None)
         for r in routes:
             r.pop("_reserved", None)
-        if held is not None and routes and routes[0] is not held:
+        # The best-evidenced candidate still keeps a place in the top three when the lead and the
+        # cheapest are both something else.
+        if held is not None and routes and routes[0] is not held and "slot" not in held["rank"]:
             routes.remove(held)
-            routes.insert(min(2, len(routes)), held)      # a place in the top three, not the top two
+            routes.insert(min(2, len(routes)), held)
             held["rank"]["slot"] = "best_evidence"
-        if routes:
-            routes[0]["rank"]["slot"] = "cheapest"
         n_kind = {"recorded": 0, "computed": 0}
         for r in routes:
             n_kind[r["kind"]] += 1
@@ -431,12 +447,13 @@ def _conditions(recs: list[dict]) -> dict | None:
     return conditions_from(recs)
 
 
-def _protocol_for(recs, ev, cond):
+def _protocol_for(recs, ev, cond, rxn_smiles, product=None):
     """The bench sheet for this step at SCALE_MMOL; the UI multiplies it to the chemist's scale.
 
     The quantity table has to be the one belonging to the record the conditions name, or the sheet
     charges one run's reagents at another run's temperature.
     """
+    from evidence.procedures import adapts_to
     from evidence.protocol import build as build_protocol
 
     sid = (cond or {}).get("source_id")
@@ -444,12 +461,45 @@ def _protocol_for(recs, ev, cond):
     if table is None:
         table = next((r.get("table") for r in recs if r.get("table")), None)
     proc = _first_procedure(recs, sid)
-    if table is None and proc is None:
-        return None
     y = next((r["yield_pct"] for r in recs if r.get("yield_pct") is not None), None)
-    return build_protocol({"conditions": cond, "procedure": proc, "product": {},
-                           "reported_yield": None if y is None else y / 100.0,
-                           "yield_basis": {}}, table, 1.0)
+    analog = None
+
+    # Most steps have no record of that exact reaction, and every one of them has a record of the
+    # closest reaction to it — the same transformation run on a different substrate, with its
+    # amounts already rescaled to our substrates by evidence/adapt.py. A sheet built from that is
+    # not a precedent for this step and must never read as one, but it is what a chemist would
+    # reach for, and leaving the step with nothing at all was the worse answer.
+    if table is None:
+        # The closest record, but only where it is honestly a procedure for this reaction —
+        # evidence/procedures.adapts_to decides, and its reason is kept so the step can say why it
+        # has no sheet instead of leaving the chemist to guess.
+        why = []
+        best = None
+        for a in (ev.get("adapted_procedures") or []):
+            t = a.get("table") or {}
+            reason = adapts_to(t, rxn_smiles or "", a.get("similarity"),
+                               t.get("temperature_c"), t.get("time_h"))
+            if reason is None and a.get("experimental"):
+                best = a
+                break
+            why.append(reason or a.get("not_experimental_reason") or "the record is not a procedure")
+        if best is None:
+            return {"no_sheet_because": why[0] if why else "no record of this reaction carries amounts"}
+        table = best["table"]
+        analog = {"similarity": best.get("similarity"), "reaction_id": best.get("reaction_id"),
+                  "patent": best.get("patent"), "url": best.get("url")}
+        proc = {"text": (best.get("table") or {}).get("text"), "reaction_id": best.get("reaction_id")}
+        t = best["table"]
+        cond = {"temperature_c": t.get("temperature_c"), "time_h": t.get("time_h"),
+                "source_id": t.get("reaction_id")}
+        y = None
+
+    sheet = build_protocol({"conditions": cond or {}, "procedure": proc, "product": product or {},
+                            "reported_yield": None if y is None else y / 100.0,
+                            "yield_basis": {}}, table, 1.0)
+    if sheet is not None:
+        sheet["from_analog"] = analog
+    return sheet
 
 
 def _sound(summ: dict, complete: bool) -> bool:

@@ -205,3 +205,53 @@
 .protocol-verb { font-weight: 600; color: var(--ink); }
 .protocol-quote { font-style: italic; color: var(--ink-2); }
 .protocol-scaleup { margin: 2px 0 6px; color: var(--warn); }
+
+/* A sheet carried over from a record of a different substrate says so before its first line. */
+.protocol-analog {
+  margin: 0 0 0.7rem;
+  padding: 0.5rem 0.65rem;
+  border-left: 3px solid var(--warn, #c79a28);
+  background: var(--warn-bg, rgba(199, 154, 40, 0.08));
+  border-radius: 0 3px 3px 0;
+  line-height: 1.45;
+}
+/* A step with no sheet at all states the reason rather than showing an empty panel. */
+.protocol-absent {
+  border-style: dashed;
+}
+.protocol-absent .proc-head h3 {
+  color: var(--muted, #8a8a8a);
+}
+
+/* The same step as a journal experimental section, ready to paste into a submission. */
+.experimental { position: relative; }
+.exp-title {
+  margin: 0 0 0.35rem;
+  font-weight: 700;
+}
+.exp-body {
+  margin: 0 0 0.7rem;
+  line-height: 1.6;
+  text-align: justify;
+}
+.exp-copy {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  padding: 2px 9px;
+  font-size: var(--fs-xs);
+  border: 1px solid var(--line);
+  border-radius: var(--r-tag);
+  background: var(--bg);
+  color: var(--muted);
+  cursor: pointer;
+}
+.exp-copy:hover { color: var(--fg); border-color: var(--fg); }
+
+/* The source's own spectroscopic data, kept apart from the procedure as a submission does. */
+.exp-data {
+  margin: 0 0 0.7rem;
+  font-size: var(--fs-sm);
+  line-height: 1.55;
+}
+.exp-data-label { color: var(--muted); }

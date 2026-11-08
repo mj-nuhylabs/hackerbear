@@ -205,12 +205,15 @@ function RouteList({ routes, costs, routeId, onPick, targetG, search }) {
     <section className="panel routes" aria-labelledby="routes-title">
       <div className="panel-head">
         <h2 id="routes-title">{routes.length} routes</h2>
-        {/* 순서는 backend/cost/rank.py가 정한다: g당 재료비(수율을 경로 끝까지 반영), 비용을 다 아는 경로 먼저 */}
+        {/* 순서는 backend/cost/rank.py가 정한다: 모든 스텝에 실험 절차가 있는 가장 싼 경로가 선두,
+            그 아래가 최저가. 절차가 없는 스텝은 수율도 가정값이라 비용이 같은 종류의 숫자가 아니다 */}
         <p className="muted small">
-          Cheapest to make first: material cost per gram of target, with every step’s yield carried back through the
-          route. A “≥” total leaves out a material with no price; where that is more than half of what the route buys
-          by mass, or a record omits a reactant, the route drops below the ones whose cost is known. Fewer steps break
-          ties.{' '}
+          The route you can actually run comes first: the cheapest one with a written preparation for every step,
+          marked <strong>runnable</strong>. The lowest cost per gram sits below it, marked <strong>cheapest</strong> —
+          a route with no procedure for a step has no recorded yield for it either, so its cost rests on an assumed
+          yield. Below those, cheapest first: material cost per gram of target, with every step’s yield carried back
+          through the route. A “≥” total leaves out a material with no price; where that is more than half of what the
+          route buys by mass, or a record omits a reactant, the route drops below the ones whose cost is known.{' '}
           {search?.precomputed
             ? `${search.candidates_costed ?? '—'} candidates costed — ${search.recorded_routes_found} recorded routes (every step an ORD record) and ${search.aizynth_routes_searched} from AiZynthFinder — one shown per final disconnection.`
             : `AiZynthFinder searched for ${search?.search_time_s ?? '—'} s.`}
@@ -231,9 +234,32 @@ function RouteList({ routes, costs, routeId, onPick, targetG, search }) {
                   <span className="rc-name">
                     Route {i + 1}
                     {r.kind && (
-                      <span className={`rc-kind rc-kind-${r.kind}`}>{r.kind === 'recorded' ? 'recorded' : 'computed'}</span>
+                      <span
+                        className={`rc-kind rc-kind-${r.kind}`}
+                        title={
+                          r.kind === 'recorded'
+                            ? 'Every step of this route is a reaction record in the corpus.'
+                            : 'AiZynthFinder proposed this route from its USPTO-trained expansion policy. The badges below grade each step on what the corpus holds for it.'
+                        }
+                      >
+                        {r.kind === 'recorded' ? 'all steps recorded' : 'AiZynthFinder'}
+                      </span>
                     )}
                     {/* 비용 순서를 제치고 자리를 받은 경로 — 왜 여기 있는지 말해 준다 */}
+                    {/* 비용 1위를 제치고 선두에 선 경로 — 모든 스텝에 실험 절차가 있다 */}
+                    {r.rank?.slot === 'runnable' && (
+                      <span
+                        className="rc-slot rc-slot-runnable"
+                        title="Leads because every step of it has a bench sheet — a written preparation you can run. Cheaper routes exist, but a route with no procedure for a step has no recorded yield for it either, so its cost per gram rests on an assumed yield."
+                      >
+                        runnable
+                      </span>
+                    )}
+                    {r.rank?.slot === 'cheapest' && i > 0 && (
+                      <span className="rc-slot" title="The lowest material cost per gram of target, but at least one of its steps has no written preparation in the corpus.">
+                        cheapest
+                      </span>
+                    )}
                     {r.rank?.slot === 'best_evidence' && (
                       <span
                         className="rc-slot"

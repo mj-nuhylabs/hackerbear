@@ -24,7 +24,8 @@ function Charge({ c, factor }) {
   }
   // by volume when a density let us convert a mass, and also when the record only ever gave a
   // volume — a solvent with no density on record still has to appear as the millilitres it is
-  const byVolume = a.volume_ml != null && (a.measured_by_density || a.mass_mg == null)
+  const byVolume =
+    a.volume_ml != null && (a.measured_by_density || a.volume_recorded || a.mass_mg == null)
   const amount = byVolume ? vol(a.volume_ml * factor) : a.mass_mg != null ? mass(a.mass_mg * factor) : null
   return (
     <li>
@@ -42,8 +43,24 @@ function Charge({ c, factor }) {
 }
 
 export default function Protocol({ protocol, factor, targetG }) {
-  if (!protocol?.charges?.length) return null
+  // 시트가 없는 스텝은 비워 두지 않는다. 왜 없는지 적는다 — 레코드가 이 반응을 쓴 적이 없다는
+  // 사실 자체가 화학자가 알아야 할 정보다 (backend/evidence/procedures.adapts_to)
+  if (!protocol?.charges?.length) {
+    if (!protocol?.no_sheet_because) return null
+    return (
+      <div className="proc protocol protocol-absent">
+        <div className="proc-head">
+          <h3>No bench sheet for this step</h3>
+        </div>
+        <p className="muted small">
+          The corpus has no written preparation this step can be run from: {protocol.no_sheet_because}. The closest
+          records are below — read them as a starting point, not as a procedure for this reaction.
+        </p>
+      </div>
+    )
+  }
   const here = (protocol.scale_mmol ?? 1) * factor
+  const an = protocol.from_analog
 
   return (
     <div className="proc protocol">
@@ -53,6 +70,16 @@ export default function Protocol({ protocol, factor, targetG }) {
           {sig(here)} mmol{targetG ? ` · for ${targetG} g of product` : ''}
         </span>
       </div>
+      {/* 다른 기질의 레코드에서 옮겨 온 시트. 이 반응의 선례가 아니라는 것을 먼저 말한다 */}
+      {an && (
+        <p className="protocol-analog small">
+          This is not a record of this reaction. It is{' '}
+          <strong className="num">{sig(an.similarity * 100, 2)}%</strong> similar — the same transformation written up
+          for a different substrate, with its amounts rescaled to yours by equivalents. The conditions and the work-up
+          are that substrate&apos;s, so treat them as a starting point and expect to re-optimise.
+          {an.patent ? ` Record: ${an.patent}.` : ''}
+        </p>
+      )}
       {/* 레코드가 돌린 규모와의 배수. 50 mg짜리를 1 g으로 올리면 모든 양이 20배가 된다 */}
       {protocol.record_scale_mmol > 0 && here / protocol.record_scale_mmol >= 5 && (
         <p className="protocol-scaleup muted small">

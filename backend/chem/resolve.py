@@ -49,13 +49,30 @@ def mol_svg(mol, size=(260, 200)) -> str:
     return svg.replace("#000000", "currentColor").strip()
 
 
-def describe(smiles: str, name: str | None = None, cas: str | None = None, *, svg: bool = True) -> dict:
-    """SMILES → 정규 SMILES + InChIKey + MW + SVG. 전부 RDKit 계산값."""
+def describe(smiles: str, name: str | None = None, cas: str | None = None, *, svg: bool = True,
+             look_up_name: bool = False) -> dict:
+    """SMILES → 정규 SMILES + InChIKey + MW + SVG. 전부 RDKit 계산값.
+
+    look_up_name은 이름이 **화면에 뜨는** 분자에만 켠다. 켜면 chem/names.name_for가 공급사
+    제품명이나 PubChem 타이틀을 찾는데, PubChem은 초당 5건 제한이 있어 네트워크 호출이 된다.
+    후보 경로 수천 개의 말단 물질마다 부르면 빌드가 몇 분씩 늘어난다 (한 번 겪었다).
+    """
     mol = Chem.MolFromSmiles(smiles)
     if mol is None:
         raise ResolveError(f"RDKit could not read {smiles!r} as a structure")
+    canon = Chem.MolToSmiles(mol)
+    if name is None and look_up_name:
+        # The supplier's own product name, else PubChem's title — "Aspirin", not
+        # "2-(acetyloxy)benzoic acid" and not a bare SMILES (chem/names.py, disk-cached). Without
+        # this the experimental section headed every step "Title compound", because nothing had
+        # asked for a name for the one molecule the step is about.
+        from .names import name_for
+        try:
+            name = name_for(canon)
+        except Exception:
+            name = None
     return {
-        "smiles": Chem.MolToSmiles(mol),
+        "smiles": canon,
         "inchikey": Chem.MolToInchiKey(mol) or None,
         "mw": round(Descriptors.MolWt(mol), 2),
         "name": name,

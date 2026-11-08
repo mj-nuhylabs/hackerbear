@@ -164,3 +164,76 @@ def rank_key(text: str | None):
     detailed. Use with reverse=True."""
     s = score(text)
     return (s["experimental"], s["quantities"] + s["operations"])
+
+
+# --- Is a record of a *different* substrate a procedure for this step? ------------------
+# Most steps have no record of the exact reaction, and evidence/adapt.py can rescale the closest
+# record's amounts onto our substrates. That is worth putting on the bench — but only when the
+# record is the same transformation. adapt.py maps the substrate across and leaves every other
+# charge alone, so a record of theobromine + hexenyl mesylate, asked to stand in for theobromine +
+# a methyl source, produces a sheet that says "charge 1-methansulfonyloxy-4-hexene". The substrate
+# matches, the chemistry does not, and the sheet reads like a procedure for our step.
+ANALOG_MIN_SIMILARITY = 0.5
+
+
+def _canon(smiles: str | None) -> str | None:
+    from rdkit import Chem
+    m = Chem.MolFromSmiles(smiles) if smiles else None
+    return Chem.MolToSmiles(m) if m is not None else None
+
+
+def _heavy(smiles: str | None) -> int:
+    from rdkit import Chem
+    m = Chem.MolFromSmiles(smiles) if smiles else None
+    return m.GetNumHeavyAtoms() if m is not None else 0
+
+
+def adapts_to(table: dict | None, rxn_smiles: str, similarity: float | None,
+              temperature_c: float | None, time_h: float | None) -> str | None:
+    """None when this record can stand in for that reaction, else why it cannot.
+
+    The test is not "does it charge our substrates" — that passes a record of theobromine plus a
+    hexenyl mesylate standing in for theobromine plus a methyl source. It is whether the record and
+    our step build the same molecule out of the same pieces, and adapt.py has already worked that
+    out when it paired the record's substrates against ours. Two of its flags say it did not:
+
+      unmatched_substrate      the record joins on a fragment our reaction does not have, so its
+                               product is not ours (an imatinib record charges its own aniline
+                               beside the one we need coupled)
+      no_recorded_counterpart  one of our starting materials has no counterpart in the record, so
+                               the sheet cannot say how much of it to weigh — and something else in
+                               the record is playing its part (an aspirin record acylates with
+                               acetic anhydride where our step has acetic acid)
+
+    A reagent that is consumed without ending up in the product — triethylamine scavenging HCl,
+    oxalyl chloride making an acid chloride — is not a difference in what is being made, and is not
+    read as one here.
+    """
+    if not table or not (table.get("rows") or []):
+        return "the record states no amounts"
+    if similarity is None or similarity < ANALOG_MIN_SIMILARITY:
+        return (f"the closest record is only {similarity:.2f} similar to this step"
+                if similarity is not None else "how close the record is was not measured")
+    if temperature_c is None and time_h is None:
+        return "the record states neither a temperature nor a time"
+
+    def named(row):
+        return row.get("recorded_name") or row.get("label") or row.get("our_smiles") or "a reagent"
+
+    # Cite the biggest unmatched piece. substrates_of counts an activator like oxalyl chloride as a
+    # substrate of its own record, and naming that instead of the aniline it activates describes the
+    # mismatch wrongly even though the verdict is right.
+    if joined := sorted((r for r in table["rows"] if r.get("unmatched_substrate")),
+                        key=lambda r: -_heavy(r.get("our_smiles") or r.get("recorded_smiles"))):
+        return f"the record builds a different molecule — it joins on {named(joined[0])}"
+    if unscaled := [r for r in table["rows"] if r.get("no_recorded_counterpart")]:
+        return (f"the record has no counterpart for {len(unscaled)} of our starting materials, so "
+                f"the sheet cannot say how much to use")
+
+    left, _, right = rxn_smiles.partition(">>")
+    ours = {c for c in (_canon(s) for s in left.split(".")) if c}
+    charged = {c for c in (_canon(r.get("our_smiles") or r.get("recorded_smiles"))
+                           for r in table["rows"]) if c}
+    if missing := ours - charged:
+        return f"the record does not charge {len(missing)} of this step's starting materials"
+    return None

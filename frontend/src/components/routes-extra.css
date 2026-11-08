@@ -78,3 +78,9 @@
 .cond-sources ul { list-style: none; margin: 4px 0 0; padding: 0; display: grid; gap: 3px; }
 .cond-sources li { font-size: var(--fs-sm); }
 .cond-src-name { font-family: var(--font-mono); font-size: 11px; color: var(--ink-2); }
+
+/* The lead route: every step has a procedure you can run (cost/rank.lead_with_runnable) */
+.rc-slot-runnable {
+  color: var(--ok, #2e7d4f);
+  background: var(--ok-soft, rgba(46, 125, 79, 0.12));
+}

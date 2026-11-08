@@ -8,6 +8,11 @@ and AstraZeneca's 5-step osimertinib route (40 % overall, all yields recorded) a
 one (17 %). The old order did neither: recorded routes always first, fewer steps first, and
 Model B (trained to imitate patents) for the rest — none of which ever looked at a price or a yield.
 
+A route ranked first has to be one a chemist can run: cost_rank.lead_with_runnable gives the lead
+to the cheapest route with a bench sheet for every step, and the cheapest route sits below it. A
+route with no written preparation for a step has no recorded yield for it either, so its cost rests
+on an assumed yield and is not the same kind of number.
+
 Sort key, in order:
   1. complete before incomplete — a route that does not reach buyable materials cannot be run
   2. a route with no price at all on any material goes last; there is nothing to compare
@@ -34,8 +39,9 @@ from __future__ import annotations
 
 from . import prices, stoich
 
-RANK_BASIS = ("material cost per gram of target, yields pushed back through the route; "
-              "fully costed routes first, then fewer steps")
+RANK_BASIS = ("the cheapest route with a bench sheet for every step first, then the cheapest "
+              "route; below those, material cost per gram of target with yields pushed back "
+              "through the route, fully costed routes first, then fewer steps")
 KNOWN_ORDER = {"full": 0, "lower_bound": 1, "none": 2}
 # Share of the route's bought mass that has to be priced before its cost is worth comparing.
 # Half: below that the number is built on a minority of the route and says more about what is
@@ -111,3 +117,68 @@ def rank(routes: list[dict], table: dict[str, dict] | None = None) -> list[dict]
         r["rank"] = summary(r, table)
         r["rank_basis"] = RANK_BASIS
     return sorted(routes, key=lambda r: key(r, r["rank"]))
+
+
+def runnable(route: dict) -> bool:
+    """Can a chemist run every step of this route tonight?
+
+    True when each step carries a bench sheet — amounts for everything that goes in, a temperature
+    or a time, and an isolation (evidence/protocol.build, gated by evidence/procedures.adapts_to).
+    A step without one is a disconnection the corpus has a template for and no written preparation
+    of, so the route is a proposal rather than something to put on a bench.
+    """
+    steps = route.get("steps") or []
+    return bool(steps) and all((s.get("protocol") or {}).get("charges") for s in steps)
+
+
+def weakest_tier(route: dict) -> str:
+    """The weakest evidence grade among this route's steps."""
+    tiers = {(s.get("evidence") or {}).get("tier") for s in (route.get("steps") or [])}
+    for t in ("COMPUTED", "ANALOGOUS", "REPORTED"):
+        if t in tiers:
+            return t
+    return "REPORTED"
+
+
+def demote_computed(routes: list[dict]) -> list[dict]:
+    """Routes with a COMPUTED step go below every route that has none, cost order kept within each.
+
+    A COMPUTED step is one whose template has fewer than ten precedents in the corpus, or whose
+    plausibility score is low. The route is still AiZynthFinder's proposal rather than anything
+    invented, but a step at that grade has no body of literature behind it, and a chemist asked to
+    run the route would be starting at the one step nobody has written up. REPORTED and ANALOGOUS
+    steps both have precedent; COMPUTED does not, so it is a floor rather than a ranking.
+    """
+    return sorted(routes, key=lambda r: weakest_tier(r) == "COMPUTED")
+
+
+def lead_with_runnable(routes: list[dict]) -> list[dict]:
+    """Put the cheapest route that can actually be run first, the cheapest route second.
+
+    Ranking on cost alone led with routes nobody has written down: caffeine's dimethyl sulfate
+    methylation at $3.73/g over the published methyl iodide route at $11.67/g, and two analogous
+    imatinib routes over the recorded one. Those cheaper figures are not measurements. A route with
+    no procedure for a step has no recorded yield for it either, so its cost per gram was computed
+    from an assumed yield; preferring it to a route costed on recorded yields is not a cost
+    comparison, it is a comparison between a number and a guess.
+
+    So the lead goes to the cheapest route that can be run — and only when it is also sound, by the
+    same tests the sort key applies: it reaches buyable materials, no step's record omits a
+    reactant, and its cost covers most of what the route buys. Without that last guard this
+    promotes aspirin's recorded acetylation, whose $0.62/g is cheapest only because the record
+    never lists the acetic anhydride. The cheapest route keeps the slot below, and each says in
+    rank.slot which it is, so neither is presented as the other.
+    """
+    if not routes:
+        return routes
+    cheapest = routes[0]
+    pick = next((r for r in routes
+                 if runnable(r) and r.get("complete") is not False
+                 and not r["rank"]["steps_missing_reactant"]
+                 and r["rank"]["bound_covers_most"]
+                 and r["rank"]["cost_per_g"] is not None), None)
+    if pick is not None and pick is not cheapest:
+        routes = [pick] + [r for r in routes if r is not pick]
+        pick["rank"]["slot"] = "runnable"
+    cheapest["rank"]["slot"] = "cheapest"
+    return routes

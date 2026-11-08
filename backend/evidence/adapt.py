@@ -161,4 +161,10 @@ def adapt(procedure: dict, our_substrates: list[str], our_product: str, our_limi
                  "recorded for a different substrate; they are not reported for this one."),
         "recorded_product": rec_product,
         "our_product": our_product,
+        # The record's own conditions travel with its table. A sheet built from this record and
+        # shown with no temperature and no time is not a procedure, and without these fields
+        # evidence/procedures.adapts_to cannot tell the difference.
+        "temperature_c": procedure.get("temperature_c"),
+        "time_h": procedure.get("time_h"),
+        "yield_pct": procedure.get("yield_pct"),
     }

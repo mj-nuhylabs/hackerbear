@@ -7,6 +7,7 @@ import { Mock, Mol, TIER_INFO, TierBadge } from './bits'
 import Procedure from './Procedure'
 import Analogs from './Analogs'
 import Adapted from './Adapted'
+import Experimental from './Experimental'
 import Protocol from './Protocol'
 import './analogs.css'
 
@@ -306,6 +307,9 @@ export default function StepDetail({ route, stepIndex, onSelect, scale, targetG,
       </div>
 
       <Protocol protocol={s.protocol} factor={scale?.nRxn != null ? scale.nRxn * 1000 : 1} targetG={targetG} />
+
+      {/* 같은 데이터를 제출 서식의 문단으로. 표를 그대로 붙여 넣을 수는 없으니까 */}
+      <Experimental protocol={s.protocol} factor={scale?.nRxn != null ? scale.nRxn * 1000 : 1} targetG={targetG} />
 
       <Procedure procedure={s.procedure} ourMmol={scale?.nRxn != null ? scale.nRxn * 1000 : null} />
 

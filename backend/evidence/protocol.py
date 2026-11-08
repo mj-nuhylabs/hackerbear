@@ -34,11 +34,18 @@ _ISOLATION = (r"quench\w*|pour\w*|filter\w*|filtrat\w*|extract\w*|wash\w*|collec
               r"evaporat\w*|crystalli[sz]\w*|recrystalli[sz]\w*|precipitat\w*|triturat\w*|"
               r"concentrated (?:under|in vacuo|to)|concentrate the|was concentrated|"
               r"dried over|dry under|dried under")
-_WORKUP = re.compile(
-    rf"[^.]*?\b(?:{_ISOLATION})[^.]*\.",
-    re.I)
-# Sentences that only set up the reaction are not workup, however they are phrased.
-_NOT_WORKUP = re.compile(r"\b(?:add|charge|weigh|measure|heat|stir|reflux)\w*\s+\d|\bwas added\b", re.I)
+_ISOLATION_RE = re.compile(rf"\b(?:{_ISOLATION})", re.I)
+# A sentence ends at a full stop only where the next sentence begins — whitespace then a capital.
+# Splitting on every "." cut the caffeine work-up at "to give a silky white solid (0." because the
+# yield in parentheses contains one, and it would cut "m.p. 234-236 C" the same way.
+_SENTENCE = re.compile(r"(?<=[.!?])\s+(?=[A-Z])")
+# There is deliberately no second filter rejecting sentences that mention adding something. One was
+# here, and it threw away the real work-up: "the acetonitrile was evaporated under vacuum, ethanol
+# was added to the solid crude reaction mixture, followed by water" is an isolation that happens to
+# add a solvent, and lidocaine's two leading routes showed no work-up at all because of it. It also
+# dropped aspirin's recrystallisation for saying "add 13 mL of cold water". Carrying an isolation
+# verb is the test; a sentence that only sets the reaction up has none.
+_NOT_WORKUP = re.compile(r"(?!)")      # matches nothing
 
 
 def _fmt_mass(mg: float | None) -> str | None:
@@ -66,6 +73,10 @@ def _amount(row: dict, factor: float) -> dict:
         "mass_mg": None if mass_mg is None else round(mass_mg, 4),
         "volume_ml": None if vol is None else round(vol, 5),
         "measured_by_density": measure_ml is not None,
+        # The record poured it, so we pour it. Without this a reagent whose volume the source
+        # states - the patent's pyridine, 64 microlitres for 0.80 mmol - was shown as a mass,
+        # because a mass could be worked out from its moles and the screen preferred that.
+        "volume_recorded": rec_vol is not None,
         "mmol": None if row.get("mmol") is None else round(row["mmol"] * factor, 4),
         "equiv": row.get("equiv"),
     }
@@ -104,12 +115,44 @@ def charges(step: dict, table: dict | None, factor: float) -> list[dict]:
     return out
 
 
+# Spectroscopic and physical data. A submission keeps these apart from the procedure, and the
+# mined patent text runs them together: "...to give the title compound (138.7 g, 81.5%) as a purple
+# solid; 1H NMR (CDCl3) 3.89 (3H, s)...". Pulled out, the isolation reads as an isolation and the
+# data sits where a referee looks for it - still the source's own material, never ours.
+_DATA = re.compile(r"(?:\b(?:1H|13C|19F|31P|29Si|11B)\s*NMR\b|\bHRMS\b|\bLCMS\b|\bESI?[+-]|"
+                   r"\bm/z\b|\bMH\+|\bIR\s*\(|\bm\.?p\.?\s*\d|\bmelting point\b|"
+                   r"\[α\]|\bAnal\.\s*Calcd)", re.I)
+
+
+def _split_data(sentence: str) -> tuple[str, str | None]:
+    """One sentence into (what was done, what was measured).
+
+    A patent writes both in one sentence: "The solid was collected by filtration ... to give the
+    title compound (138.7 g, 81.5%) as a purple solid; 1H NMR (CDCl3) 3.89 (3H, s)...". Splitting
+    whole sentences sent the isolation to the data line with the NMR; the cut has to be inside the
+    sentence, where the data starts.
+    """
+    m = _DATA.search(sentence)
+    if not m:
+        return sentence, None
+    return sentence[:m.start()].rstrip(" ;,:").strip(), sentence[m.start():].strip()
+
+
+def characterisation(text: str | None) -> str | None:
+    """The source's own spectroscopic data for its own material, kept out of the procedure."""
+    if not text:
+        return None
+    found = [d for d in (_split_data(x.strip())[1] for x in _SENTENCE.split(text)) if d]
+    return " ".join(dict.fromkeys(found)).strip() or None
+
+
 def workup(text: str | None) -> str | None:
     """The source's own isolation sentences, quoted. None when it does not describe one."""
     if not text:
         return None
-    found = [m.group(0).strip() for m in _WORKUP.finditer(text)
-             if not _NOT_WORKUP.search(m.group(0))]
+    found = [h for h in (_split_data(x.strip())[0] for x in _SENTENCE.split(text))
+             if h and _ISOLATION_RE.search(h) and not _NOT_WORKUP.search(h)]
+    found = [h if h.endswith(".") else h + "." for h in found]
     joined = " ".join(dict.fromkeys(found)).strip()
     return joined or None
 
@@ -141,6 +184,7 @@ def build(step: dict, table: dict | None, factor: float, target_g: float | None 
         "solvent": c.get("solvent"),
         "catalyst": c.get("catalyst_name") or c.get("catalyst"),
         "workup": workup((step.get("procedure") or {}).get("text")),
+        "characterisation": characterisation((step.get("procedure") or {}).get("text")),
         "source_id": c.get("source_id") or (step.get("procedure") or {}).get("reaction_id"),
         "expected_g": (round(target_g, 4) if target_g else None),
         "product_name": product.get("name"),
