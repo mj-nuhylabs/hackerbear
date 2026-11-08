@@ -1,0 +1,52 @@
+{
+  "retrieved": "2026-11-08",
+  "site": "https://www.sigmaaldrich.com",
+  "country": "US",
+  "currency": "USD",
+  "note": "Materials whose missing price was distorting the route order rather than merely showing a dash. Caffeine's leading route methylates theobromine with DMF and cost $3.17/g only because the DMF was free; the published methyl iodide route cost $11.67/g with every material priced. Imatinib's leading route buys 4-chloro-2-methylthiopyrimidine and 3-pyridylboronic acid, both unpriced, so 99% of its mass cost nothing. Same rules as the earlier files: list prices read from each product page, no account or contract pricing, sale prices ignored, multipack SKUs not used, analytical and pharmacopoeia standards excluded.",
+  "sale_note": "Dimethyl sulfate D186309-5ML showed a struck-through $41.90 beside a sale price of $35.61. The list price is recorded.",
+  "products": {
+    "68-12-2": {
+      "href": "/US/en/product/sial/227056",
+      "brand": "Sigma-Aldrich",
+      "name": "N,N-Dimethylformamide, anhydrous, 99.8%",
+      "density_g_per_ml": 0.944,
+      "packs": [
+        { "qty": 100, "unit": "mL", "usd": 88.5, "sku": "227056-100ML" },
+        { "qty": 1, "unit": "L", "usd": 158.0, "sku": "227056-1L" },
+        { "qty": 2, "unit": "L", "usd": 255.0, "sku": "227056-2L" },
+        { "qty": 18, "unit": "L", "usd": 1380.0, "sku": "227056-18L" }
+      ]
+    },
+    "77-78-1": {
+      "href": "/US/en/product/sial/d186309",
+      "brand": "Sigma-Aldrich",
+      "name": "Dimethyl sulfate, >=99.5%",
+      "density_g_per_ml": 1.333,
+      "packs": [
+        { "qty": 5, "unit": "mL", "usd": 41.9, "sku": "D186309-5ML" },
+        { "qty": 100, "unit": "mL", "usd": 42.9, "sku": "D186309-100ML" },
+        { "qty": 500, "unit": "mL", "usd": 106.0, "sku": "D186309-500ML" }
+      ]
+    },
+    "49844-90-8": {
+      "href": "/US/en/product/aldrich/145289",
+      "brand": "Sigma-Aldrich",
+      "name": "4-Chloro-2-methylthiopyrimidine, 98%",
+      "packs": [
+        { "qty": 10, "unit": "g", "usd": 59.2, "sku": "145289-10G" },
+        { "qty": 50, "unit": "g", "usd": 206.25, "sku": "145289-50G" }
+      ]
+    },
+    "1692-25-7": {
+      "href": "/US/en/product/aldrich/512125",
+      "brand": "Sigma-Aldrich",
+      "name": "3-Pyridinylboronic acid, >=95.0%",
+      "packs": [
+        { "qty": 1, "unit": "g", "usd": 129.0, "sku": "512125-1G" },
+        { "qty": 5, "unit": "g", "usd": 271.5, "sku": "512125-5G" },
+        { "qty": 25, "unit": "g", "usd": 447.75, "sku": "512125-25G" }
+      ]
+    }
+  }
+}

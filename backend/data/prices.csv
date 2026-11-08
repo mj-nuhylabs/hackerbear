@@ -1,74 +1,78 @@
 smiles,name,price_per_g,pack_size_g,pack_price,currency,supplier,catalog_no,url,as_of_date,is_mock
-Br,Hydrogen Bromide,1.4821,71.52,106.0,USD,Sigma-Aldrich,244260-100ML,https://www.sigmaaldrich.com/US/en/product/sigald/244260,2026-11-07,false
-C1CNCCN1,Piperazine,9.02,5.0,45.1,USD,Sigma-Aldrich,P45907-5G,https://www.sigmaaldrich.com/US/en/product/sial/P45907,2026-11-07,false
-C=CC(=O)Cl,Acryloyl chloride,15.7,5.0,78.5,USD,Sigma-Aldrich,A24109-5G,https://www.sigmaaldrich.com/US/en/product/aldrich/A24109,2026-11-07,false
-C=CC(=O)Nc1cc(Nc2nccc(-c3cn(C)c4ccccc34)n2)c(OC)cc1N(C)CCN(C)C,Osimertinib,35.0,1.0,35.0,USD,BLD Pharmatech,BL3H1F1C91A2,https://www.sigmaaldrich.com/US/en/product/bldpharmatech/BL3H1F1C91A2,2026-11-07,false
-C=CC(=O)O,Acrylic Acid,10.7,5.0,53.5,USD,Sigma-Aldrich,147230-5G,https://www.sigmaaldrich.com/US/en/product/aldrich/147230,2026-11-07,false
-C=O,Formaldehyde,3.9871,10.0825,40.2,USD,Sigma-Aldrich,252549-25ML,https://www.sigmaaldrich.com/US/en/product/sial/252549,2026-11-07,false
-CC(=O)Cl,Acetyl chloride,0.5688,110.4,62.8,USD,Sigma-Aldrich,00990,https://www.sigmaaldrich.com/US/en/product/sial/00990,2026-11-07,false
-CC(=O)O,Acetic Acid,0.574,104.0,59.7,USD,Sigma-Aldrich,695092,https://www.sigmaaldrich.com/US/en/product/sigald/695092,2026-11-07,false
-CC(=O)OC(C)=O,Acetic Anhydride,0.4222,108.0,45.6,USD,Sigma-Aldrich,320102,https://www.sigmaaldrich.com/US/en/product/sial/320102,2026-11-07,false
-CC(=O)Oc1ccccc1C(=O)O,Aspirin,0.296,100.0,29.6,USD,Sigma-Aldrich,A5376,https://www.sigmaaldrich.com/US/en/product/sigma/A5376,2026-11-07,false
-CC(C)(C)O,tert-Butanol,0.2968,387.5,115.0,USD,Sigma-Aldrich,360538-500ML,https://www.sigmaaldrich.com/US/en/product/sigald/360538,2026-11-07,false
-CC1(C)OB(c2c[nH]c3ccccc23)OC1(C)C,"3-(4,4,5,5-Tetramethyl-1,3,2-dioxaborolan-2-yl)-1H-indole",100.0,1.0,100.0,USD,ChemScene,CIAH987ED488-1G,https://www.sigmaaldrich.com/US/en/product/chemscenellcpreferredpartner/CIAH987ED488,2026-11-07,false
-CC=NO,Aldoxime,2.436,25.0,60.9,USD,Sigma-Aldrich,A1002-25G,https://www.sigmaaldrich.com/US/en/product/aldrich/A1002,2026-11-07,false
-CCN(C(C)C)C(C)C,"N,N-Diisopropylethylamine",0.8261,74.2,61.3,USD,Sigma-Aldrich,D125806-100ML,https://www.sigmaaldrich.com/US/en/product/sial/d125806,2026-11-07,false
-CCN(CC)CC,Triethylamine,0.5813,72.6,42.2,USD,Sigma-Aldrich,471283-100ML,https://www.sigmaaldrich.com/US/en/product/sial/471283,2026-11-07,false
-CCN(CC)CC(=O)Nc1c(C)cccc1C,Lidocaine,2.568,25.0,64.2,USD,Sigma-Aldrich,L7757,https://www.sigmaaldrich.com/US/en/product/sigma/L7757,2026-11-07,false
-CCNCC,Diethylamine,6.6195,3.535,23.4,USD,Sigma-Aldrich,471216,https://www.sigmaaldrich.com/US/en/product/sial/471216,2026-11-07,false
-CCNCC(=O)Nc1c(C)cccc1C,Monoethylglycinexylidide,24080.0,0.025,602.0,USD,Sigma-Aldrich,SML0087-25MG,https://www.sigmaaldrich.com/US/en/product/sigma/SML0087,2026-11-07,false
+Br,Hydrogen Bromide,1.4821,71.52,106.0,USD,Sigma-Aldrich,244260-100ML,https://www.sigmaaldrich.com/US/en/product/sigald/244260,2026-11-08,false
+C1CNCCN1,Piperazine,9.02,5.0,45.1,USD,Sigma-Aldrich,P45907-5G,https://www.sigmaaldrich.com/US/en/product/sial/P45907,2026-11-08,false
+C=CC(=O)Cl,Acryloyl chloride,15.7,5.0,78.5,USD,Sigma-Aldrich,A24109-5G,https://www.sigmaaldrich.com/US/en/product/aldrich/A24109,2026-11-08,false
+C=CC(=O)Nc1cc(Nc2nccc(-c3cn(C)c4ccccc34)n2)c(OC)cc1N(C)CCN(C)C,Osimertinib,35.0,1.0,35.0,USD,BLD Pharmatech,BL3H1F1C91A2,https://www.sigmaaldrich.com/US/en/product/bldpharmatech/BL3H1F1C91A2,2026-11-08,false
+C=CC(=O)O,Acrylic Acid,10.7,5.0,53.5,USD,Sigma-Aldrich,147230-5G,https://www.sigmaaldrich.com/US/en/product/aldrich/147230,2026-11-08,false
+C=O,Formaldehyde,3.9871,10.0825,40.2,USD,Sigma-Aldrich,252549-25ML,https://www.sigmaaldrich.com/US/en/product/sial/252549,2026-11-08,false
+CC(=O)Cl,Acetyl chloride,0.5688,110.4,62.8,USD,Sigma-Aldrich,00990,https://www.sigmaaldrich.com/US/en/product/sial/00990,2026-11-08,false
+CC(=O)O,Acetic Acid,0.574,104.0,59.7,USD,Sigma-Aldrich,695092,https://www.sigmaaldrich.com/US/en/product/sigald/695092,2026-11-08,false
+CC(=O)OC(C)=O,Acetic Anhydride,0.4222,108.0,45.6,USD,Sigma-Aldrich,320102,https://www.sigmaaldrich.com/US/en/product/sial/320102,2026-11-08,false
+CC(=O)Oc1ccccc1C(=O)O,Aspirin,0.296,100.0,29.6,USD,Sigma-Aldrich,A5376,https://www.sigmaaldrich.com/US/en/product/sigma/A5376,2026-11-08,false
+CC(C)(C)O,tert-Butanol,0.2968,387.5,115.0,USD,Sigma-Aldrich,360538-500ML,https://www.sigmaaldrich.com/US/en/product/sigald/360538,2026-11-08,false
+CC1(C)OB(c2c[nH]c3ccccc23)OC1(C)C,"3-(4,4,5,5-Tetramethyl-1,3,2-dioxaborolan-2-yl)-1H-indole",100.0,1.0,100.0,USD,ChemScene,CIAH987ED488-1G,https://www.sigmaaldrich.com/US/en/product/chemscenellcpreferredpartner/CIAH987ED488,2026-11-08,false
+CC=NO,Aldoxime,2.436,25.0,60.9,USD,Sigma-Aldrich,A1002-25G,https://www.sigmaaldrich.com/US/en/product/aldrich/A1002,2026-11-08,false
+CCN(C(C)C)C(C)C,"N,N-Diisopropylethylamine",0.8261,74.2,61.3,USD,Sigma-Aldrich,D125806-100ML,https://www.sigmaaldrich.com/US/en/product/sial/d125806,2026-11-08,false
+CCN(CC)CC,Triethylamine,0.5813,72.6,42.2,USD,Sigma-Aldrich,471283-100ML,https://www.sigmaaldrich.com/US/en/product/sial/471283,2026-11-08,false
+CCN(CC)CC(=O)Nc1c(C)cccc1C,Lidocaine,2.568,25.0,64.2,USD,Sigma-Aldrich,L7757,https://www.sigmaaldrich.com/US/en/product/sigma/L7757,2026-11-08,false
+CCNCC,Diethylamine,6.6195,3.535,23.4,USD,Sigma-Aldrich,471216,https://www.sigmaaldrich.com/US/en/product/sial/471216,2026-11-08,false
+CCNCC(=O)Nc1c(C)cccc1C,Monoethylglycinexylidide,24080.0,0.025,602.0,USD,Sigma-Aldrich,SML0087-25MG,https://www.sigmaaldrich.com/US/en/product/sigma/SML0087,2026-11-08,false
 CCOC(=O)CN(CC)CC,"Glycine, N,N-diethyl-, ethyl ester",78.0,1.0,78.0,USD,Combi-Blocks,COM945512660,https://www.sigmaaldrich.com/US/en/product/combiblocksinc/COM945512660,2026-11-07,false
-CI,Methyl iodide,10.2,5.0,51.0,USD,Sigma-Aldrich,I8507-5G,https://www.sigmaaldrich.com/US/en/product/sial/I8507,2026-11-07,false
-CN,Methylamine,1.3489,35.88,48.4,USD,Sigma-Aldrich,426466-100ML,https://www.sigmaaldrich.com/US/en/product/sial/426466,2026-11-07,false
-CN(C)/C=C/C(=O)c1cccnc1,3-Dimethylamino-1-(3-pyridyl)-2-propen-1-one,9.9,1.0,9.9,USD,Aladdin Scientific,ALNH9AD34A5E-1G,https://www.sigmaaldrich.com/US/en/product/aladdinscientific/ALNH9AD34A5E,2026-11-07,false
-CN(C)C=CC(=O)c1cccnc1,1-(3-Pyridyl)-3-(dimethylamino)-2-propen-1-one,36.4,1.0,36.4,USD,Enamine,ENAH3047AA1B-1G,https://www.sigmaaldrich.com/US/en/product/enamine/ENAH3047AA1B,2026-11-07,false
-CN1CCN(Cc2ccc(C(=O)O)cc2)CC1,4-(4-Methyl-1-piperazinylmethyl)benzoic acid,11.0,5.0,55.0,USD,AiFChem,XPIH9BD03A9B,https://www.sigmaaldrich.com/US/en/product/aifchemanxtalpicompany/XPIH9BD03A9B,2026-11-07,false
-CN1CCNCC1,1-Methylpiperazine,8.48,5.0,42.4,USD,Sigma-Aldrich,130001-5G,https://www.sigmaaldrich.com/US/en/product/aldrich/130001,2026-11-07,false
-CNCCN(C)C,"1,2-Ethanediamine, N1,N1,N2-trimethyl-",25.0,5.0,125.0,USD,Sigma-Aldrich,127124-5G,https://www.sigmaaldrich.com/US/en/product/aldrich/127124,2026-11-07,false
-COC(=O)c1ccc(C=O)cc1,Methyl 4-Formylbenzoate,29.8,5.0,149.0,USD,Sigma-Aldrich,244740-5G,https://www.sigmaaldrich.com/US/en/product/aldrich/244740,2026-11-07,false
-COC(=O)c1ccc(CBr)cc1,Methyl 4-(bromomethyl)benzoate,16.92,5.0,84.6,USD,Sigma-Aldrich,348155-5G,https://www.sigmaaldrich.com/US/en/product/aldrich/348155,2026-11-07,false
-COC(=O)c1ccc(CN2CCN(C)CC2)cc1,Methyl 4-((4-methylpiperazin-1-yl)methyl)benzoate,12.6,5.0,63.0,USD,AiFChem,XPIH9BCFFFF8,https://www.sigmaaldrich.com/US/en/product/aifchemanxtalpicompany/XPIH9BCFFFF8,2026-11-07,false
-COC(C)=O,Methyl Acetate,0.7109,93.4,66.4,USD,Sigma-Aldrich,296996-100ML,https://www.sigmaaldrich.com/US/en/product/sial/296996,2026-11-07,false
-COC(OC)OC,Trimethyl orthoformate,0.2742,485.0,133.0,USD,Sigma-Aldrich,108456-500ML,https://www.sigmaaldrich.com/US/en/product/aldrich/108456,2026-11-07,false
-COc1cc(Cl)c([N+](=O)[O-])cc1N,4-Chloro-2-methoxy-5-nitroaniline,87.0,1.0,87.0,USD,AiFChem (an XtalPi company),XPIH9BD0767A-1G,https://www.sigmaaldrich.com/US/en/product/aifchemanxtalpicompany/XPIH9BD0767A,2026-11-07,false
-COc1cc(F)c([N+](=O)[O-])cc1C(=O)O,4-Fluoro-2-methoxy-5-nitrobenzoic acid,496.0,1.0,496.0,USD,BLD Pharmatech,BL3H160C5E2C-1G,https://www.sigmaaldrich.com/US/en/product/bldpharmatech/BL3H160C5E2C,2026-11-07,false
-CS(=O)(=O)O,Methanesulfonic Acid,1.869,37.025,69.2,USD,Sigma-Aldrich,471356-25ML,https://www.sigmaaldrich.com/US/en/product/sial/471356,2026-11-07,false
+CI,Methyl iodide,10.2,5.0,51.0,USD,Sigma-Aldrich,I8507-5G,https://www.sigmaaldrich.com/US/en/product/sial/I8507,2026-11-08,false
+CN,Methylamine,1.3489,35.88,48.4,USD,Sigma-Aldrich,426466-100ML,https://www.sigmaaldrich.com/US/en/product/sial/426466,2026-11-08,false
+CN(C)/C=C/C(=O)c1cccnc1,3-Dimethylamino-1-(3-pyridyl)-2-propen-1-one,9.9,1.0,9.9,USD,Aladdin Scientific,ALNH9AD34A5E-1G,https://www.sigmaaldrich.com/US/en/product/aladdinscientific/ALNH9AD34A5E,2026-11-08,false
+CN(C)C=CC(=O)c1cccnc1,1-(3-Pyridyl)-3-(dimethylamino)-2-propen-1-one,36.4,1.0,36.4,USD,Enamine,ENAH3047AA1B-1G,https://www.sigmaaldrich.com/US/en/product/enamine/ENAH3047AA1B,2026-11-08,false
+CN(C)C=O,"N,N-Dimethylformamide",0.9375,94.4,88.5,USD,Sigma-Aldrich,227056-100ML,https://www.sigmaaldrich.com/US/en/product/sial/227056,2026-11-08,false
+CN1CCN(Cc2ccc(C(=O)O)cc2)CC1,4-(4-Methyl-1-piperazinylmethyl)benzoic acid,11.0,5.0,55.0,USD,AiFChem,XPIH9BD03A9B,https://www.sigmaaldrich.com/US/en/product/aifchemanxtalpicompany/XPIH9BD03A9B,2026-11-08,false
+CN1CCNCC1,1-Methylpiperazine,8.48,5.0,42.4,USD,Sigma-Aldrich,130001-5G,https://www.sigmaaldrich.com/US/en/product/aldrich/130001,2026-11-08,false
+CNCCN(C)C,"1,2-Ethanediamine, N1,N1,N2-trimethyl-",25.0,5.0,125.0,USD,Sigma-Aldrich,127124-5G,https://www.sigmaaldrich.com/US/en/product/aldrich/127124,2026-11-08,false
+COC(=O)c1ccc(C=O)cc1,Methyl 4-Formylbenzoate,29.8,5.0,149.0,USD,Sigma-Aldrich,244740-5G,https://www.sigmaaldrich.com/US/en/product/aldrich/244740,2026-11-08,false
+COC(=O)c1ccc(CBr)cc1,Methyl 4-(bromomethyl)benzoate,16.92,5.0,84.6,USD,Sigma-Aldrich,348155-5G,https://www.sigmaaldrich.com/US/en/product/aldrich/348155,2026-11-08,false
+COC(=O)c1ccc(CN2CCN(C)CC2)cc1,Methyl 4-((4-methylpiperazin-1-yl)methyl)benzoate,12.6,5.0,63.0,USD,AiFChem,XPIH9BCFFFF8,https://www.sigmaaldrich.com/US/en/product/aifchemanxtalpicompany/XPIH9BCFFFF8,2026-11-08,false
+COC(C)=O,Methyl Acetate,0.7109,93.4,66.4,USD,Sigma-Aldrich,296996-100ML,https://www.sigmaaldrich.com/US/en/product/sial/296996,2026-11-08,false
+COC(OC)OC,Trimethyl orthoformate,0.2742,485.0,133.0,USD,Sigma-Aldrich,108456-500ML,https://www.sigmaaldrich.com/US/en/product/aldrich/108456,2026-11-08,false
+COS(=O)(=O)OC,Dimethyl Sulfate,6.2866,6.665,41.9,USD,Sigma-Aldrich,D186309-5ML,https://www.sigmaaldrich.com/US/en/product/sial/d186309,2026-11-08,false
+COc1cc(Cl)c([N+](=O)[O-])cc1N,4-Chloro-2-methoxy-5-nitroaniline,87.0,1.0,87.0,USD,AiFChem (an XtalPi company),XPIH9BD0767A-1G,https://www.sigmaaldrich.com/US/en/product/aifchemanxtalpicompany/XPIH9BD0767A,2026-11-08,false
+COc1cc(F)c([N+](=O)[O-])cc1C(=O)O,4-Fluoro-2-methoxy-5-nitrobenzoic acid,496.0,1.0,496.0,USD,BLD Pharmatech,BL3H160C5E2C-1G,https://www.sigmaaldrich.com/US/en/product/bldpharmatech/BL3H160C5E2C,2026-11-08,false
+CS(=O)(=O)O,Methanesulfonic Acid,1.869,37.025,69.2,USD,Sigma-Aldrich,471356-25ML,https://www.sigmaaldrich.com/US/en/product/sial/471356,2026-11-08,false
 CS(=O)(=O)c1nccc(-c2cccnc2)n1,2-(Methylsulfonyl)-4-(pyridin-3-yl)pyrimidine,2134.4,0.25,533.6,USD,Ambeed,AMBH9ABD380F,https://www.sigmaaldrich.com/US/en/product/ambeedinc/AMBH9ABD380F,2026-11-07,false
-CSc1nc2c(c(=O)n(C)c(=O)n2C)n1C,8-Methylthiocaffeine,31980.0,0.005,159.9,USD,AA Blocks,AABH9C147348-5MG,https://www.sigmaaldrich.com/US/en/product/aablocksinc/AABH9C147348,2026-11-07,false
+CSc1nc2c(c(=O)n(C)c(=O)n2C)n1C,8-Methylthiocaffeine,31980.0,0.005,159.9,USD,AA Blocks,AABH9C147348-5MG,https://www.sigmaaldrich.com/US/en/product/aablocksinc/AABH9C147348,2026-11-08,false
 CSc1nccc(-c2cccnc2)n1,2-(Methylthio)-4-(pyridin-3-yl)pyrimidine,1840.0,1.0,1840.0,USD,Synthonix,SY3H99996528,https://www.sigmaaldrich.com/US/en/product/synthonixcorporation/SY3H99996528,2026-11-07,false
-Cc1ccc(Br)c(C)c1N,"3-Bromo-2,6-dimethylaniline",57.0,1.0,57.0,USD,ChemScene,CIAH996D3484-1G,https://www.sigmaaldrich.com/US/en/product/chemscenellcpreferredpartner/CIAH996D3484,2026-11-07,false
-Cc1ccc(N)cc1Br,"Benzenamine, 3-bromo-4-methyl-",0.6,10.0,6.0,USD,ChemScene,CIAH987F58BD-10G,https://www.sigmaaldrich.com/US/en/product/chemscenellcpreferredpartner/CIAH987F58BD,2026-11-07,false
-Cc1ccc(N)cc1N,"2,4-Diaminotoluene",1.336,50.0,66.8,USD,Aldrich,101915,https://www.sigmaaldrich.com/US/en/product/aldrich/101915,2026-11-07,false
-Cc1ccc(NC(=O)c2ccc(CN3CCN(C)CC3)cc2)cc1Nc1nccc(-c2cccnc2)n1,Imatinib,6.75,5.0,33.75,USD,"AstaTech, Inc.",ATE245847465,https://www.sigmaaldrich.com/US/en/product/astatechinc/ATE245847465,2026-11-07,false
-Cc1ccc(S(=O)(=O)O)cc1.O,p-Toluenesulfonic Acid Monohydrate,7.72,5.0,38.6,USD,Sigma-Aldrich,402885-5G,https://www.sigmaaldrich.com/US/en/product/sial/402885,2026-11-07,false
+CSc1nccc(Cl)n1,4-Chloro-2-methylthiopyrimidine,5.92,10.0,59.2,USD,Sigma-Aldrich,145289-10G,https://www.sigmaaldrich.com/US/en/product/aldrich/145289,2026-11-08,false
+Cc1ccc(Br)c(C)c1N,"3-Bromo-2,6-dimethylaniline",57.0,1.0,57.0,USD,ChemScene,CIAH996D3484-1G,https://www.sigmaaldrich.com/US/en/product/chemscenellcpreferredpartner/CIAH996D3484,2026-11-08,false
+Cc1ccc(N)cc1Br,"Benzenamine, 3-bromo-4-methyl-",0.6,10.0,6.0,USD,ChemScene,CIAH987F58BD-10G,https://www.sigmaaldrich.com/US/en/product/chemscenellcpreferredpartner/CIAH987F58BD,2026-11-08,false
+Cc1ccc(N)cc1N,"2,4-Diaminotoluene",1.336,50.0,66.8,USD,Aldrich,101915,https://www.sigmaaldrich.com/US/en/product/aldrich/101915,2026-11-08,false
+Cc1ccc(NC(=O)c2ccc(CN3CCN(C)CC3)cc2)cc1Nc1nccc(-c2cccnc2)n1,Imatinib,6.75,5.0,33.75,USD,"AstaTech, Inc.",ATE245847465,https://www.sigmaaldrich.com/US/en/product/astatechinc/ATE245847465,2026-11-08,false
+Cc1ccc(S(=O)(=O)O)cc1.O,p-Toluenesulfonic Acid Monohydrate,7.72,5.0,38.6,USD,Sigma-Aldrich,402885-5G,https://www.sigmaaldrich.com/US/en/product/sial/402885,2026-11-08,false
 Cc1cccc(C)c1N,"2,6-Dimethylaniline",11.08,5.0,55.4,USD,Aldrich,D146005,https://www.sigmaaldrich.com/US/en/product/aldrich/D146005,2026-11-07,false
 Cc1cccc(C)c1NC(=O)CBr,"2-bromo-N-(2,6-dimethylphenyl)acetamide",34.6,5.0,173.0,USD,AiFChem,XPIH9BCF5BD5,https://www.sigmaaldrich.com/US/en/product/aifchemanxtalpicompany/XPIH9BCF5BD5,2026-11-07,false
-Cc1cccc(C)c1NC(=O)CCl,"2-Chloro-N-(2,6-dimethylphenyl)acetamide",9.19,10.0,91.9,USD,Aldrich,194921,https://www.sigmaaldrich.com/US/en/product/aldrich/194921,2026-11-07,false
-Cc1cccc(N)c1C,"2,3-Dimethylaniline",2.03,100.0,203.0,USD,Sigma-Aldrich,D145807-100G,https://www.sigmaaldrich.com/US/en/product/aldrich/D145807,2026-11-07,false
-ClCCNCCCl,Bis(2-chloroethyl)amine,49.45,1.0,49.45,USD,Ambeed,AMBH996F2891-1G,https://www.sigmaaldrich.com/US/en/product/ambeedinc/AMBH996F2891,2026-11-07,false
-Clc1ccnc(Cl)n1,"2,4-Dichloropyrimidine",9.77,10.0,97.7,USD,Sigma-Aldrich,143847-10G,https://www.sigmaaldrich.com/US/en/product/aldrich/143847,2026-11-07,false
-Clc1nccc(-c2c[nH]c3ccccc23)n1,3-(2-Chloropyrimidin-4-yl)-1H-indole,95.45,1.0,95.45,USD,Ambeed,AMBH2D6F71AA-1G,https://www.sigmaaldrich.com/US/en/product/ambeedinc/AMBH2D6F71AA,2026-11-07,false
+Cc1cccc(C)c1NC(=O)CCl,"2-Chloro-N-(2,6-dimethylphenyl)acetamide",9.19,10.0,91.9,USD,Aldrich,194921,https://www.sigmaaldrich.com/US/en/product/aldrich/194921,2026-11-08,false
+Cc1cccc(N)c1C,"2,3-Dimethylaniline",2.03,100.0,203.0,USD,Sigma-Aldrich,D145807-100G,https://www.sigmaaldrich.com/US/en/product/aldrich/D145807,2026-11-08,false
+ClCCNCCCl,Bis(2-chloroethyl)amine,49.45,1.0,49.45,USD,Ambeed,AMBH996F2891-1G,https://www.sigmaaldrich.com/US/en/product/ambeedinc/AMBH996F2891,2026-11-08,false
+Clc1ccnc(Cl)n1,"2,4-Dichloropyrimidine",9.77,10.0,97.7,USD,Sigma-Aldrich,143847-10G,https://www.sigmaaldrich.com/US/en/product/aldrich/143847,2026-11-08,false
+Clc1nccc(-c2c[nH]c3ccccc23)n1,3-(2-Chloropyrimidin-4-yl)-1H-indole,95.45,1.0,95.45,USD,Ambeed,AMBH2D6F71AA-1G,https://www.sigmaaldrich.com/US/en/product/ambeedinc/AMBH2D6F71AA,2026-11-08,false
 Clc1nccc(-c2cccnc2)n1,2-Chloro-4-(pyridin-3-yl)pyrimidine,116.0,1.0,116.0,USD,BLD Pharmatech,BL3H160C3B8C,https://www.sigmaaldrich.com/US/en/product/bldpharmatech/BL3H160C3B8C,2026-11-07,false
-Cn1c(=O)c2c(nc(S)n2C)n(C)c1=O,"Caffeine, 8-mercapto-",1280.5,1.0,1280.5,USD,Enamine,ENAH98EFDC89-1G,https://www.sigmaaldrich.com/US/en/product/enamine/ENAH98EFDC89,2026-11-07,false
-Cn1c(=O)c2c(ncn2C)n(C)c1=O,Caffeine,6.48,5.0,32.4,USD,Sigma-Aldrich,C0750,https://www.sigmaaldrich.com/US/en/product/sial/C0750,2026-11-07,false
-Cn1cc(-c2ccnc(Cl)n2)c2ccccc21,3-(2-chloropyrimidin-4-yl)-1-methyl-1H-indole,34.5,1.0,34.5,USD,Synthonix,SY3514242492-1G,https://www.sigmaaldrich.com/US/en/product/synthonixcorporation/SY3514242492,2026-11-07,false
-Cn1ccc2ccccc21,1-Methylindole,10.4,5.0,52.0,USD,Sigma-Aldrich,193984-5G,https://www.sigmaaldrich.com/US/en/product/aldrich/193984,2026-11-07,false
-Cn1cnc2c1c(=O)[nH]c(=O)n2C,Theobromine,2.152,25.0,53.8,USD,Sigma-Aldrich,T4500-25G,https://www.sigmaaldrich.com/US/en/product/sigma/T4500,2026-11-07,false
-Nc1nccc(-c2cccnc2)n1,4-(Pyridin-3-yl)pyrimidin-2-amine,28.75,1.0,28.75,USD,Synthonix,SY3H3D681AC0-1G,https://www.sigmaaldrich.com/US/en/product/synthonixcorporation/SY3H3D681AC0,2026-11-07,false
-O=C(C=Cc1ccccc1)C=Cc1ccccc1.O=C(C=Cc1ccccc1)C=Cc1ccccc1.O=C(C=Cc1ccccc1)C=Cc1ccccc1.[Pd].[Pd],Tris(dibenzylideneacetone)dipalladium(0),78.4,1.0,78.4,USD,Sigma-Aldrich,328774-1G,https://www.sigmaaldrich.com/US/en/product/aldrich/328774,2026-11-07,false
-O=C(Cl)C(=O)Cl,Oxalyl chloride,2.092,25.0,52.3,USD,Sigma-Aldrich,O8801-25G,https://www.sigmaaldrich.com/US/en/product/aldrich/O8801,2026-11-07,false
-O=C(Cl)CCCl,3-Chloropropionyl chloride,1.56,100.0,156.0,USD,Sigma-Aldrich,C69128-100G,https://www.sigmaaldrich.com/US/en/product/aldrich/C69128,2026-11-07,false
-O=C(Cl)CCl,Chloroacetyl chloride,7.24,5.0,36.2,USD,Aldrich,104493,https://www.sigmaaldrich.com/US/en/product/aldrich/104493,2026-11-07,false
-O=C(Cl)c1ccc(CCl)cc1,4-(Chloromethyl)benzoyl chloride,19.26,5.0,96.3,USD,Sigma-Aldrich,270784-5G,https://www.sigmaaldrich.com/US/en/product/aldrich/270784,2026-11-07,false
-O=C(O)c1cc(-c2ccc(F)cc2)ccc1O,"4'-Fluoro-4-hydroxy-[1,1'-biphenyl]-3-carboxylic acid",1298.0,1.0,1298.0,USD,ChemScene,CIAH9B138CF4-1G,https://www.sigmaaldrich.com/US/en/product/chemscenellcpreferredpartner/CIAH9B138CF4,2026-11-07,false
-O=C(O)c1ccc(CN2C(=O)c3ccccc3C2=O)cc1,"4-[(1,3-dioxo-2,3-dihydro-1H-isoindol-2-yl)methyl]benzoic acid",402.0,1.0,402.0,USD,BLD Pharmatech,BL3H9C577AAF-1G,https://www.sigmaaldrich.com/US/en/product/bldpharmatech/BL3H9C577AAF,2026-11-07,false
-O=C(O)c1ccccc1F,2-Fluorobenzoic acid,1.928,25.0,48.2,USD,Aldrich,412244,https://www.sigmaaldrich.com/US/en/product/aldrich/412244,2026-11-07,false
-O=C(O)c1ccccc1O,Salicylic Acid,0.549,100.0,54.9,USD,Sigma-Aldrich,247588,https://www.sigmaaldrich.com/US/en/product/sial/247588,2026-11-07,false
+Cn1c(=O)c2c(nc(S)n2C)n(C)c1=O,"Caffeine, 8-mercapto-",1280.5,1.0,1280.5,USD,Enamine,ENAH98EFDC89-1G,https://www.sigmaaldrich.com/US/en/product/enamine/ENAH98EFDC89,2026-11-08,false
+Cn1c(=O)c2c(ncn2C)n(C)c1=O,Caffeine,6.48,5.0,32.4,USD,Sigma-Aldrich,C0750,https://www.sigmaaldrich.com/US/en/product/sial/C0750,2026-11-08,false
+Cn1cc(-c2ccnc(Cl)n2)c2ccccc21,3-(2-chloropyrimidin-4-yl)-1-methyl-1H-indole,34.5,1.0,34.5,USD,Synthonix,SY3514242492-1G,https://www.sigmaaldrich.com/US/en/product/synthonixcorporation/SY3514242492,2026-11-08,false
+Cn1ccc2ccccc21,1-Methylindole,10.4,5.0,52.0,USD,Sigma-Aldrich,193984-5G,https://www.sigmaaldrich.com/US/en/product/aldrich/193984,2026-11-08,false
+Cn1cnc2c1c(=O)[nH]c(=O)n2C,Theobromine,2.152,25.0,53.8,USD,Sigma-Aldrich,T4500-25G,https://www.sigmaaldrich.com/US/en/product/sigma/T4500,2026-11-08,false
+Nc1nccc(-c2cccnc2)n1,4-(Pyridin-3-yl)pyrimidin-2-amine,28.75,1.0,28.75,USD,Synthonix,SY3H3D681AC0-1G,https://www.sigmaaldrich.com/US/en/product/synthonixcorporation/SY3H3D681AC0,2026-11-08,false
+O=C(C=Cc1ccccc1)C=Cc1ccccc1.O=C(C=Cc1ccccc1)C=Cc1ccccc1.O=C(C=Cc1ccccc1)C=Cc1ccccc1.[Pd].[Pd],Tris(dibenzylideneacetone)dipalladium(0),78.4,1.0,78.4,USD,Sigma-Aldrich,328774-1G,https://www.sigmaaldrich.com/US/en/product/aldrich/328774,2026-11-08,false
+O=C(Cl)C(=O)Cl,Oxalyl chloride,2.092,25.0,52.3,USD,Sigma-Aldrich,O8801-25G,https://www.sigmaaldrich.com/US/en/product/aldrich/O8801,2026-11-08,false
+O=C(Cl)CCCl,3-Chloropropionyl chloride,1.56,100.0,156.0,USD,Sigma-Aldrich,C69128-100G,https://www.sigmaaldrich.com/US/en/product/aldrich/C69128,2026-11-08,false
+O=C(Cl)CCl,Chloroacetyl chloride,7.24,5.0,36.2,USD,Aldrich,104493,https://www.sigmaaldrich.com/US/en/product/aldrich/104493,2026-11-08,false
+O=C(Cl)c1ccc(CCl)cc1,4-(Chloromethyl)benzoyl chloride,19.26,5.0,96.3,USD,Sigma-Aldrich,270784-5G,https://www.sigmaaldrich.com/US/en/product/aldrich/270784,2026-11-08,false
+O=C(O)c1cc(-c2ccc(F)cc2)ccc1O,"4'-Fluoro-4-hydroxy-[1,1'-biphenyl]-3-carboxylic acid",1298.0,1.0,1298.0,USD,ChemScene,CIAH9B138CF4-1G,https://www.sigmaaldrich.com/US/en/product/chemscenellcpreferredpartner/CIAH9B138CF4,2026-11-08,false
+O=C(O)c1ccc(CN2C(=O)c3ccccc3C2=O)cc1,"4-[(1,3-dioxo-2,3-dihydro-1H-isoindol-2-yl)methyl]benzoic acid",402.0,1.0,402.0,USD,BLD Pharmatech,BL3H9C577AAF-1G,https://www.sigmaaldrich.com/US/en/product/bldpharmatech/BL3H9C577AAF,2026-11-08,false
+O=C(O)c1ccccc1F,2-Fluorobenzoic acid,1.928,25.0,48.2,USD,Aldrich,412244,https://www.sigmaaldrich.com/US/en/product/aldrich/412244,2026-11-08,false
+O=C(O)c1ccccc1O,Salicylic Acid,0.549,100.0,54.9,USD,Sigma-Aldrich,247588,https://www.sigmaaldrich.com/US/en/product/sial/247588,2026-11-08,false
 O=C(OCc1ccccc1)c1ccccc1O,Benzyl Salicylate,0.3435,117.6,40.4,USD,Sigma-Aldrich,84260,https://www.sigmaaldrich.com/US/en/product/sial/84260,2026-11-07,false
 O=C(OO)c1cccc(Cl)c1,m-Chloroperbenzoic acid,2.272,25.0,56.8,USD,Aldrich,273031,https://www.sigmaaldrich.com/US/en/product/aldrich/273031,2026-11-07,false
-O=C([O-])[O-].[K+].[K+],Potassium Carbonate,0.66,100.0,66.0,USD,Sigma-Aldrich,209619-100G,https://www.sigmaaldrich.com/US/en/product/sigald/209619,2026-11-07,false
-O=C1CCC(=O)N1Br,N-bromobutanimide,7.16,5.0,35.8,USD,Sigma-Aldrich,B81255-5G,https://www.sigmaaldrich.com/US/en/product/aldrich/B81255,2026-11-07,false
-O=S(Cl)Cl,Thionyl Chloride,5.7388,8.155,46.8,USD,Sigma-Aldrich,230464-5ML,https://www.sigmaaldrich.com/US/en/product/sial/230464,2026-11-07,false
-[Cl-].[NH4+],Ammonium Chloride,2.384,25.0,59.6,USD,Sigma-Aldrich,213330-25G,https://www.sigmaaldrich.com/US/en/product/sigald/213330,2026-11-07,false
-[Fe],Iron Powder,0.1432,500.0,71.6,USD,Sigma-Aldrich,12310-500G-R,https://www.sigmaaldrich.com/US/en/product/sial/12310,2026-11-07,false
-c1ccc(P(c2ccccc2)c2ccc3ccccc3c2-c2c(P(c3ccccc3)c3ccccc3)ccc3ccccc23)cc1,rac-BINAP,28.2,5.0,141.0,USD,Sigma-Aldrich,481084-5G,https://www.sigmaaldrich.com/US/en/product/aldrich/481084,2026-11-07,false
+O=C([O-])[O-].[K+].[K+],Potassium Carbonate,0.66,100.0,66.0,USD,Sigma-Aldrich,209619-100G,https://www.sigmaaldrich.com/US/en/product/sigald/209619,2026-11-08,false
+O=C1CCC(=O)N1Br,N-bromobutanimide,7.16,5.0,35.8,USD,Sigma-Aldrich,B81255-5G,https://www.sigmaaldrich.com/US/en/product/aldrich/B81255,2026-11-08,false
+O=S(Cl)Cl,Thionyl Chloride,5.7388,8.155,46.8,USD,Sigma-Aldrich,230464-5ML,https://www.sigmaaldrich.com/US/en/product/sial/230464,2026-11-08,false
+OB(O)c1cccnc1,3-Pyridinylboronic Acid,129.0,1.0,129.0,USD,Sigma-Aldrich,512125-1G,https://www.sigmaaldrich.com/US/en/product/aldrich/512125,2026-11-08,false
+[Cl-].[NH4+],Ammonium Chloride,2.384,25.0,59.6,USD,Sigma-Aldrich,213330-25G,https://www.sigmaaldrich.com/US/en/product/sigald/213330,2026-11-08,false
+[Fe],Iron Powder,0.1432,500.0,71.6,USD,Sigma-Aldrich,12310-500G-R,https://www.sigmaaldrich.com/US/en/product/sial/12310,2026-11-08,false
+c1ccc(P(c2ccccc2)c2ccc3ccccc3c2-c2c(P(c3ccccc3)c3ccccc3)ccc3ccccc23)cc1,rac-BINAP,28.2,5.0,141.0,USD,Sigma-Aldrich,481084-5G,https://www.sigmaaldrich.com/US/en/product/aldrich/481084,2026-11-08,false
