@@ -34,8 +34,12 @@ API = "http://localhost:8000"
 PUBCHEM = "https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound"
 CAS_RE = re.compile(r"\d{2,7}-\d{2}-\d")
 
-# 데모에서 돌릴 타겟. 스펙이 데모 경로 3개를 말한다 (CLAUDE_HACKFNM.md "하지 말 것").
-DEFAULT_TARGETS = ["imatinib", "lidocaine", "aspirin"]
+# 데모에서 돌릴 타겟 — 홈 화면에 뜨는 다섯 개 전부. 하나라도 빠지면 그 타겟의 BOM이 가격 없이 뜬다
+DEFAULT_TARGETS = ["imatinib", "lidocaine", "aspirin", "caffeine", "osimertinib"]
+
+# /routes가 데모 타겟에 돌려주는 미리 계산된 페이로드 (chem/routes.py _demo_payload).
+# 있으면 그걸 읽는다 — 데모가 실제로 보여주는 경로가 바로 이것이다
+DEEP = ROOT / "backend/data/deep"
 
 COLUMNS = [
     # 여기까지는 채워서 나간다
@@ -96,14 +100,23 @@ def pubchem_name_cas(smiles: str) -> tuple[str | None, str | None]:
 
 
 def leaves_for(target: str) -> dict[str, dict]:
-    """타겟 이름 → {smiles: 말단 물질}. 실제 /resolve·/routes 응답에서 온다."""
-    r = post("/resolve", {"query": target, "kind": "name"}, timeout=60)
-    log(f"  {target} → {r['smiles']}")
-    routes = post("/routes", {"smiles": r["smiles"], "max_depth": 4, "time_limit_s": 30})
+    """타겟 이름 → {smiles: 말단 물질}. 데모 페이로드가 있으면 그것, 없으면 실제 /resolve·/routes 응답."""
+    demo = DEEP / f"demo_{target.lower()}.json"
+    if demo.exists():
+        routes = json.loads(demo.read_text())
+        log(f"  {target} → {demo.relative_to(ROOT)}")
+    else:
+        r = post("/resolve", {"query": target, "kind": "name"}, timeout=60)
+        log(f"  {target} → {r['smiles']}")
+        routes = post("/routes", {"smiles": r["smiles"], "max_depth": 4, "time_limit_s": 30})
     out = {}
     for route in routes["routes"]:
         for m in route["leaf_materials"]:
             out[m["smiles"]] = m
+        # 타겟 자체도 넣는다. 완성품을 사는 게 만드는 것보다 싸면 /cost가 그렇다고 말해야 한다
+        if route["steps"]:
+            t = route["steps"][-1]["product"]
+            out[t["smiles"]] = t
     log(f"  {len(routes['routes'])} routes, {len(out)} distinct materials to buy")
     return out
 

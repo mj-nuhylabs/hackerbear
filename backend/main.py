@@ -61,7 +61,7 @@ def cost(body: CostIn):
     """경로 + 목표 질량 → BOM과 합계. 순수 계산이고, 가정값은 전부 결과에 표시된다."""
     from chem.routes import ROUTES
     from cost.prices import lookup
-    from cost.stoich import bom
+    from cost.stoich import bom, buy_vs_make
 
     route = ROUTES.get(body.route_id)
     if route is None:
@@ -70,7 +70,12 @@ def cost(body: CostIn):
         raise HTTPException(422, "target_g must be greater than 0")
     leaves = route["leaf_materials"]
     prices = lookup([m["smiles"] for m in leaves])
-    return bom(route["steps"], leaves, body.target_g, prices, body.purification_factor)
+    out = bom(route["steps"], leaves, body.target_g, prices, body.purification_factor)
+    # 타겟 자체의 카탈로그 가격. 사는 게 만드는 것보다 싸면 그렇다고 알려 준다
+    target = route["steps"][-1]["product"] if route["steps"] else None
+    target_price = lookup([target["smiles"]]).get(target["smiles"]) if target else None
+    out["buy"] = buy_vs_make(target, body.target_g, target_price, out["totals"])
+    return out
 
 
 class ResolveIn(BaseModel):

@@ -1,5 +1,6 @@
 import { DASH, grams, mmol, usd } from '../lib/format'
 import { Mock, Mol } from './bits'
+import BuyVsMake from './BuyVsMake'
 import './cost.css'
 
 // Where one row's price came from. A real price links to the page it was read from, so the number can be checked;
@@ -38,6 +39,8 @@ export default function CostSheet({ cost, targetG, setTargetG, purification, set
         <h2 id="cost-title">Bill of materials</h2>
         <p className="muted">Only leaf materials are bought. Intermediates get made along the route.</p>
       </div>
+
+      <BuyVsMake buy={cost.buy} targetG={targetG} />
 
       <div className="cost-controls">
         <label className="ctl" htmlFor="target-g">

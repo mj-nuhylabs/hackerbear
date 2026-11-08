@@ -72,6 +72,59 @@ def rollup(steps: list[dict], target_g: float,
             "target": target, "warnings": warnings}
 
 
+def buy_vs_make(target: dict | None, target_g: float, price: dict | None, totals: dict) -> dict:
+    """타겟 자체를 사는 값 vs 이 경로로 만드는 재료값. 사는 게 싸면 그렇다고 말한다.
+
+    비교는 실제 지불액끼리 한다 (팩 단위 구매액 vs BOM의 purchase 합계).
+    만드는 쪽은 재료값뿐이다 — 용매·인건비·장비·시간은 없다. 그래서:
+      - buy < make         → "buy". 가격 없는 재료가 있어도 성립한다 (그 재료는 make를 더 키울 뿐이다)
+      - buy >= make, 전부 가격 있음 → "make" (재료값 기준이라는 단서를 단다)
+      - buy >= make, 가격 없는 재료 있음 → None. make가 하한일 뿐이라 결론을 못 낸다
+    타겟 가격이 없으면 비교하지 않는다 — 추정가로 채우지 않는다 (절대 규칙 3).
+    """
+    make = totals.get("purchase_cost")
+    unpriced = totals.get("unpriced_materials") or 0
+    out = {"available": False, "verdict": None, "make_cost": make,
+           "make_is_lower_bound": unpriced > 0, "unpriced_materials": unpriced}
+    if not target or not price or not price.get("pack_size_g") or price.get("pack_price") is None:
+        out["reason"] = "the target itself has no catalogue price in data/prices.csv"
+        return out
+
+    pack_g, pack_price = float(price["pack_size_g"]), float(price["pack_price"])
+    packs = math.ceil(target_g / pack_g)
+    buy = packs * pack_price
+    ppg = price.get("price_per_g")
+    out.update({
+        "available": True,
+        "smiles": target["smiles"],
+        "name": price.get("name"),
+        "packs": packs,
+        "pack_size_g": pack_g,
+        "pack_price": pack_price,
+        "price_per_g": ppg,
+        "buy_cost": buy,
+        "buy_consumption_cost": target_g * float(ppg) if ppg is not None else None,
+        "currency": price.get("currency"),
+        "supplier": price.get("supplier"),
+        "catalog_no": price.get("catalog_no"),
+        "url": price.get("url"),
+        "as_of_date": price.get("as_of_date"),
+        "price_is_mock": bool(price.get("is_mock")),
+    })
+    if make is None:
+        out["reason"] = "none of this route's materials has a price, so making it has no cost to compare"
+    elif buy < make:
+        out["verdict"] = "buy"
+        out["savings"] = make - buy
+    elif unpriced == 0:
+        out["verdict"] = "make"
+        out["savings"] = buy - make
+    else:
+        out["reason"] = (f"{unpriced} material(s) on this route have no price, so the cost of making it "
+                         f"is only a lower bound")
+    return out
+
+
 def bom(steps: list[dict], leaf_materials: list[dict], target_g: float,
         prices: dict[str, dict], purification_factor: float = DEFAULT_PURIFICATION_FACTOR) -> dict:
     """구매해야 하는 말단 물질별 BOM 한 줄씩 + 합계.

@@ -1,7 +1,10 @@
 smiles,name,price_per_g,pack_size_g,pack_price,currency,supplier,catalog_no,url,as_of_date,is_mock
+C=CC(=O)Nc1cc(Nc2nccc(-c3cn(C)c4ccccc34)n2)c(OC)cc1N(C)CCN(C)C,Osimertinib,35.0,1.0,35.0,USD,BLD Pharmatech,BL3H1F1C91A2,https://www.sigmaaldrich.com/US/en/product/bldpharmatech/BL3H1F1C91A2,2026-11-07,false
 CC(=O)Cl,Acetyl chloride,0.5688,110.4,62.8,USD,Sigma-Aldrich,00990,https://www.sigmaaldrich.com/US/en/product/sial/00990,2026-11-07,false
 CC(=O)O,Acetic Acid,0.574,104.0,59.7,USD,Sigma-Aldrich,695092,https://www.sigmaaldrich.com/US/en/product/sigald/695092,2026-11-07,false
 CC(=O)OC(C)=O,Acetic Anhydride,0.4222,108.0,45.6,USD,Sigma-Aldrich,320102,https://www.sigmaaldrich.com/US/en/product/sial/320102,2026-11-07,false
+CC(=O)Oc1ccccc1C(=O)O,Aspirin,0.296,100.0,29.6,USD,Sigma-Aldrich,A5376,https://www.sigmaaldrich.com/US/en/product/sigma/A5376,2026-11-07,false
+CCN(CC)CC(=O)Nc1c(C)cccc1C,Lidocaine,2.568,25.0,64.2,USD,Sigma-Aldrich,L7757,https://www.sigmaaldrich.com/US/en/product/sigma/L7757,2026-11-07,false
 CCNCC,Diethylamine,6.6195,3.535,23.4,USD,Sigma-Aldrich,471216,https://www.sigmaaldrich.com/US/en/product/sial/471216,2026-11-07,false
 CCOC(=O)CN(CC)CC,"Glycine, N,N-diethyl-, ethyl ester",78.0,1.0,78.0,USD,Combi-Blocks,COM945512660,https://www.sigmaaldrich.com/US/en/product/combiblocksinc/COM945512660,2026-11-07,false
 CN1CCN(Cc2ccc(C(=O)O)cc2)CC1,4-(4-Methyl-1-piperazinylmethyl)benzoic acid,11.0,5.0,55.0,USD,AiFChem,XPIH9BD03A9B,https://www.sigmaaldrich.com/US/en/product/aifchemanxtalpicompany/XPIH9BD03A9B,2026-11-07,false
@@ -9,10 +12,12 @@ COC(=O)c1ccc(CN2CCN(C)CC2)cc1,Methyl 4-((4-methylpiperazin-1-yl)methyl)benzoate,
 CS(=O)(=O)c1nccc(-c2cccnc2)n1,2-(Methylsulfonyl)-4-(pyridin-3-yl)pyrimidine,2134.4,0.25,533.6,USD,Ambeed,AMBH9ABD380F,https://www.sigmaaldrich.com/US/en/product/ambeedinc/AMBH9ABD380F,2026-11-07,false
 CSc1nccc(-c2cccnc2)n1,2-(Methylthio)-4-(pyridin-3-yl)pyrimidine,1840.0,1.0,1840.0,USD,Synthonix,SY3H99996528,https://www.sigmaaldrich.com/US/en/product/synthonixcorporation/SY3H99996528,2026-11-07,false
 Cc1ccc(N)cc1N,"2,4-Diaminotoluene",1.336,50.0,66.8,USD,Aldrich,101915,https://www.sigmaaldrich.com/US/en/product/aldrich/101915,2026-11-07,false
+Cc1ccc(NC(=O)c2ccc(CN3CCN(C)CC3)cc2)cc1Nc1nccc(-c2cccnc2)n1,Imatinib,6.75,5.0,33.75,USD,"AstaTech, Inc.",ATE245847465,https://www.sigmaaldrich.com/US/en/product/astatechinc/ATE245847465,2026-11-07,false
 Cc1cccc(C)c1N,"2,6-Dimethylaniline",11.08,5.0,55.4,USD,Aldrich,D146005,https://www.sigmaaldrich.com/US/en/product/aldrich/D146005,2026-11-07,false
 Cc1cccc(C)c1NC(=O)CBr,"2-bromo-N-(2,6-dimethylphenyl)acetamide",34.6,5.0,173.0,USD,AiFChem,XPIH9BCF5BD5,https://www.sigmaaldrich.com/US/en/product/aifchemanxtalpicompany/XPIH9BCF5BD5,2026-11-07,false
 Cc1cccc(C)c1NC(=O)CCl,"2-Chloro-N-(2,6-dimethylphenyl)acetamide",9.19,10.0,91.9,USD,Aldrich,194921,https://www.sigmaaldrich.com/US/en/product/aldrich/194921,2026-11-07,false
 Clc1nccc(-c2cccnc2)n1,2-Chloro-4-(pyridin-3-yl)pyrimidine,116.0,1.0,116.0,USD,BLD Pharmatech,BL3H160C3B8C,https://www.sigmaaldrich.com/US/en/product/bldpharmatech/BL3H160C3B8C,2026-11-07,false
+Cn1c(=O)c2c(ncn2C)n(C)c1=O,Caffeine,6.48,5.0,32.4,USD,Sigma-Aldrich,C0750,https://www.sigmaaldrich.com/US/en/product/sial/C0750,2026-11-07,false
 O=C(Cl)CCl,Chloroacetyl chloride,7.24,5.0,36.2,USD,Aldrich,104493,https://www.sigmaaldrich.com/US/en/product/aldrich/104493,2026-11-07,false
 O=C(O)c1ccccc1F,2-Fluorobenzoic acid,1.928,25.0,48.2,USD,Aldrich,412244,https://www.sigmaaldrich.com/US/en/product/aldrich/412244,2026-11-07,false
 O=C(O)c1ccccc1O,Salicylic Acid,0.549,100.0,54.9,USD,Sigma-Aldrich,247588,https://www.sigmaaldrich.com/US/en/product/sial/247588,2026-11-07,false

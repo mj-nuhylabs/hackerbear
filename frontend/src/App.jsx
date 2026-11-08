@@ -251,6 +251,7 @@ function RouteList({ routes, costs, routeId, onPick, targetG, search }) {
                   </span>
                   <span className="rc-cost">
                     <strong className="num">{usd(costs[r.id]?.totals.purchase)}</strong> for {targetG} g
+                    {costs[r.id]?.buy?.verdict === 'buy' && <span className="rc-buy"> · cheaper to buy</span>}
                   </span>
                 </span>
                 <span className="rc-score muted small">

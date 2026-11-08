@@ -65,7 +65,8 @@ export async function getRoutes(smiles, maxDepth = 4) {
 // 경로 하나의 BOM과 합계. 실제로는 POST /cost(backend/cost/stoich.py)가 data/prices.csv로 계산하고, 여기서는 UI가
 // 쓰는 모양으로 옮기기만 한다. 목업에서는 같은 수식의 JS 구현(lib/cost.js)을 demo.json 가격으로 돌린다.
 export async function getCost(route, { targetG, purification }) {
-  if (USE_MOCK) return computeCost(route, { targetG, purification, prices: demo.prices })
+  // The mock has no catalogue price for targets, so it has no buy-vs-make verdict either (null hides it)
+  if (USE_MOCK) return { ...computeCost(route, { targetG, purification, prices: demo.prices }), buy: null }
   const c = await post('/cost', { route_id: route.id, target_g: targetG, purification_factor: purification })
   const leaves = new Map(route.leaf_materials.map((m) => [m.smiles, m]))
   return {
@@ -97,6 +98,31 @@ export async function getCost(route, { targetG, purification }) {
       yieldSource: s.yield_is_assumed ? 'assumed' : 'reported',
     })),
     catalysts: [],
+    // Buy the target outright vs make it on this route (backend/cost/stoich.py buy_vs_make)
+    buy: c.buy
+      ? {
+          available: c.buy.available,
+          verdict: c.buy.verdict,
+          cost: c.buy.buy_cost ?? null,
+          makeCost: c.buy.make_cost,
+          makeIsLowerBound: c.buy.make_is_lower_bound,
+          unpriced: c.buy.unpriced_materials,
+          savings: c.buy.savings ?? null,
+          packs: c.buy.packs ?? null,
+          reason: c.buy.reason ?? null,
+          price: c.buy.available
+            ? {
+                supplier: c.buy.supplier,
+                catalog_no: c.buy.catalog_no,
+                url: c.buy.url,
+                as_of_date: c.buy.as_of_date,
+                pack_size_g: c.buy.pack_size_g,
+                pack_price: c.buy.pack_price,
+                mock: c.buy.price_is_mock,
+              }
+            : null,
+        }
+      : null,
     totals: {
       consumption: c.totals.consumption_cost,
       purchase: c.totals.purchase_cost,
