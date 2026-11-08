@@ -32,3 +32,18 @@
 .price-src .muted {
   color: var(--ink-3);
 }
+
+/* Reagents, catalysts and solvents the records state (backend/cost/inputs.py). Separate from the
+   bill of materials, because the records cover only some steps — see the section's own note. */
+.reagents { margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--line); }
+.reagents h3 { margin: 0 0 4px; font-family: var(--font-display); font-size: var(--fs-md); font-weight: 600; }
+.reag-tag {
+  margin-left: 8px; padding: 1px 6px; border-radius: var(--r-tag);
+  font-size: var(--fs-xs); font-weight: 600; text-transform: uppercase; letter-spacing: 0.03em;
+  color: var(--reported); background: var(--reported-bg); vertical-align: 1px;
+}
+.reagents > p { margin: 0 0 10px; }
+.reagents .table-wrap + p { margin: 8px 0 0; }
+.reag-name { font-weight: 500; }
+.reag-role { color: var(--ink-2); font-size: var(--fs-sm); }
+.reag-none { margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--line); }

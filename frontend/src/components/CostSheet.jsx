@@ -28,6 +28,111 @@ function PriceSource({ price }) {
   )
 }
 
+// Everything the route consumes that does not end up in the product — reagents, catalysts, solvents —
+// at the amounts the records state (backend/cost/inputs.py). Kept apart from the bill of materials: a
+// record states these only for some steps, so adding them to the material total would make a
+// well-documented route look dearer than one with no record at all. The footer says what it covers.
+function ReagentTable({ cost }) {
+  const rows = cost.reagents ?? []
+  const t = cost.totals
+  if (!rows.length) {
+    return (
+      <p className="reag-none muted small">
+        No record of this route&apos;s steps states an amount for anything outside the product, so its reagents,
+        catalysts and solvents are unknown — not zero.
+      </p>
+    )
+  }
+  const amount = (l) =>
+    l.massG != null ? grams(l.massG) : l.volumeMl != null ? `${l.volumeMl.toFixed(l.volumeMl < 10 ? 2 : 0)} mL` : DASH
+  return (
+    <div className="reagents">
+      <h3>
+        Reagents, catalysts and solvents <span className="reag-tag">recorded</span>
+      </h3>
+      <p className="muted small">
+        Scaled from the equivalents and volumes the records state, at the target amount above. Not added to the
+        totals below — the records cover {t.stepsWithInputs} of {t.stepsTotal} step{t.stepsTotal === 1 ? '' : 's'},
+        so these are what is known, not the whole of it.
+      </p>
+      <div className="table-wrap">
+        <table className="bom reag">
+          <thead>
+            <tr>
+              <th scope="col">Input</th>
+              <th scope="col">Role</th>
+              <th scope="col" className="r">
+                Equiv
+              </th>
+              <th scope="col" className="r">
+                Amount
+              </th>
+              <th scope="col" className="r">
+                Unit price
+              </th>
+              <th scope="col" className="r">
+                Consumption
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((l) => (
+              <tr key={`${l.smiles}-${l.role}`}>
+                <td>
+                  <div className="reag-name">{l.name || l.smiles}</div>
+                  <code className="bom-smiles">{l.smiles}</code>
+                </td>
+                <td className="reag-role">{(l.role || '').toLowerCase()}</td>
+                <td className="r num">{l.equiv != null ? l.equiv : DASH}</td>
+                <td className="r num">{amount(l)}</td>
+                <td className="r num">
+                  {l.price ? (
+                    <>
+                      {usd(l.price.price_per_g)}/g
+                      <PriceSource price={l.price} />
+                    </>
+                  ) : (
+                    DASH
+                  )}
+                </td>
+                <td className="r num">
+                  {l.consumption != null ? (
+                    usd(l.consumption)
+                  ) : (
+                    <span title={l.uncostedReason ?? undefined}>{DASH}</span>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <p className="muted small">
+        {t.reagentCost != null ? (
+          <>
+            <strong className="num">{usd(t.reagentCost)}</strong> of these have a price.{' '}
+          </>
+        ) : null}
+        {t.reagentUncosted > 0 && (
+          <>
+            {t.reagentUncosted} of {t.reagentLines} {t.reagentUncosted > 1 ? 'are' : 'is'} shown as {DASH}: a solvent
+            is recorded as a volume and ORD carries no density, and the rest have no price on record.{' '}
+          </>
+        )}
+        {t.reagentUnidentified > 0 && (
+          <>
+            {t.reagentUnidentified} further input{t.reagentUnidentified > 1 ? 's are' : ' is'} named in the record
+            without a structure, so {t.reagentUnidentified > 1 ? 'they are' : 'it is'} left here and kept on the step
+            itself.{' '}
+          </>
+        )}
+        Patent records list workup and extraction volumes alongside the reaction solvent, so a solvent figure is
+        everything the record poured, not the reaction concentration.
+      </p>
+    </div>
+  )
+}
+
 export default function CostSheet({ cost, targetG, setTargetG, purification, setPurification }) {
   const { lines, totals } = cost
   const priced = lines.filter((l) => l.price)
@@ -157,6 +262,8 @@ export default function CostSheet({ cost, targetG, setTargetG, purification, set
         </table>
       </div>
 
+      <ReagentTable cost={cost} />
+
       <div className="totals">
         <div className="total">
           <span className="total-k">Consumption basis</span>
@@ -202,7 +309,8 @@ export default function CostSheet({ cost, targetG, setTargetG, purification, set
           </>
         )}
         Yield uses the figure reported for the step where there is one, else the median of its closest recorded
-        reactions, else an assumed 70% — each step says which. Every equivalent is assumed to be 1.0.
+        reactions, else an assumed 70% — each step says which. Each material is counted at 1.0 equivalent; the
+        recorded equivalents are in the table above, where a record states them.
       </p>
     </section>
   )

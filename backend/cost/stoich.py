@@ -184,14 +184,29 @@ def bom(steps: list[dict], leaf_materials: list[dict], target_g: float,
     total_h = sum((s["conditions"]["time_h"] for s in steps_with_time), 0.0)
     assumed_yield_steps = sum(1 for s in steps if s.get("yield_is_assumed"))
 
+    # 생성물에 들어가지 않는 입력(시약·촉매·용매)을 레코드의 양 그대로 환산해 따로 센다 (cost/inputs.py).
+    # 재료비와 섞지 않는다: 레코드가 있는 스텝만 값이 있으므로, 더해 버리면 기록이 잘 된 경로가
+    # 기록이 없는 경로보다 비싸 보인다. 순위는 재료비로만 매긴다 (cost/rank.py 참조)
+    from . import inputs as reagent_inputs
+    rg = reagent_inputs.rollup(steps, roll["n_rxn"])
+    rg_lines, rg_cost, rg_uncosted = reagent_inputs.price_lines(rg["lines"], prices)
+
     return {
         "bom": lines,
+        "reagents": rg_lines,
         "totals": {
             "target_g": target_g,
             "consumption_cost": total_consumption if total_consumption else None,
             "purchase_cost": total_purchase if total_purchase else None,
             "currency": next((l["currency"] for l in lines if l["currency"]), None),
             "unpriced_materials": unpriced,
+            # 시약·촉매·용매. 재료비와 합치지 않고 나란히 둔다
+            "reagent_cost": rg_cost,
+            "reagent_lines": len(rg_lines),
+            "reagent_lines_uncosted": rg_uncosted,
+            "steps_with_recorded_inputs": len(rg["steps_recorded"]),
+            # 레코드가 이름만 적고 구조를 안 준 입력 ("above solution" 같은 채굴 텍스트)
+            "reagent_inputs_unidentified": rg["unidentified"],
             # 시간은 조건이 있는 스텝만 더한다. 나머지는 "미상"으로 센다 (합계에 넣지 않는다)
             "reaction_time_h": total_h if steps_with_time else None,
             "steps_without_time": len(steps) - len(steps_with_time),
@@ -204,6 +219,8 @@ def bom(steps: list[dict], leaf_materials: list[dict], target_g: float,
         "assumptions": {
             "purification_factor": purification_factor,
             "equivalents": DEFAULT_EQUIV,
+            # 시약 양은 가정하지 않는다. 레코드가 없는 스텝은 그냥 미상으로 센다
+            "steps_without_recorded_inputs": len(rg["steps_unrecorded"]),
             "steps_using_assumed_yield": assumed_yield_steps,
             "steps_total": len(steps),
         },

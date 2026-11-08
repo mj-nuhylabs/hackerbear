@@ -97,6 +97,30 @@ export async function getCost(route, { targetG, purification }) {
       yield: s.yield,
       yieldSource: s.yield_is_assumed ? 'assumed' : 'reported',
     })),
+    // 생성물에 안 들어가는 입력 — 레코드가 적어 둔 양 그대로 (backend/cost/inputs.py)
+    reagents: (c.reagents ?? []).map((l) => ({
+      smiles: l.smiles,
+      name: l.name,
+      role: l.role,
+      equiv: l.equiv,
+      massG: l.mass_g,
+      volumeMl: l.volume_ml,
+      steps: l.steps,
+      sourceIds: l.source_ids,
+      consumption: l.consumption_cost,
+      uncostedReason: l.uncosted_reason,
+      price:
+        l.price_per_g != null
+          ? {
+              price_per_g: l.price_per_g,
+              currency: l.currency,
+              supplier: l.supplier,
+              catalog_no: l.catalog_no,
+              url: l.url,
+              as_of_date: l.as_of_date,
+            }
+          : null,
+    })),
     catalysts: [],
     // Buy the target outright vs make it on this route (backend/cost/stoich.py buy_vs_make)
     buy: c.buy
@@ -129,6 +153,12 @@ export async function getCost(route, { targetG, purification }) {
       unpriced: c.totals.unpriced_materials,
       timeH: c.totals.reaction_time_h,
       untimedSteps: c.totals.steps_without_time,
+      reagentCost: c.totals.reagent_cost ?? null,
+      reagentLines: c.totals.reagent_lines ?? 0,
+      reagentUncosted: c.totals.reagent_lines_uncosted ?? 0,
+      stepsWithInputs: c.totals.steps_with_recorded_inputs ?? 0,
+      reagentUnidentified: c.totals.reagent_inputs_unidentified ?? 0,
+      stepsTotal: c.steps?.length ?? 0,
     },
   }
 }
