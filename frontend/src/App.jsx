@@ -337,15 +337,27 @@ function RouteList({ routes, costs, routeId, onPick, targetG, search }) {
                         · {Math.round((r.rank.mass_covered ?? 0) * 100)}% of mass priced
                       </span>
                     )}
-                    {r.rank.steps_missing_reactant?.length > 0 && (
-                      <span
-                        className="rc-warn"
-                        title="The record of this step lists no reactant for some of the product's atoms, so that material is not on the bill"
-                      >
-                        {' '}
-                        · record missing a reactant
-                      </span>
-                    )}
+                    {/* 두 가지가 다르다: 레코드가 반응물을 아예 안 적은 것과, 적긴 했는데 우리가
+                        시약 열에 넣은 것. 둘 다 "record missing a reactant"로 쓰면, 스텝 화면은
+                        "빠진 게 아니다"라고 말하는데 카드는 빠졌다고 말하는 모순이 된다 */}
+                    {r.rank.steps_missing_reactant?.length > 0 &&
+                      (r.rank.steps_missing_reactant.every((k) => r.steps[k]?.missing_supplied_by?.length) ? (
+                        <span
+                          className="rc-warn"
+                          title="A material that supplies part of the product is charged in the reagent column, not as a starting material. It is on the bill, but this figure counts starting materials, so the two cannot be compared straight across."
+                        >
+                          {' '}
+                          · a reagent supplies part of the product
+                        </span>
+                      ) : (
+                        <span
+                          className="rc-warn"
+                          title="The record of this step lists no reactant for some of the product's atoms, so that material is not on the bill"
+                        >
+                          {' '}
+                          · record missing a reactant
+                        </span>
+                      ))}
                   </span>
                 )}
                 <span className="rc-score muted small">
@@ -435,6 +447,27 @@ export default function App() {
   const [costs, setCosts] = useState({})
 
   // extra: { inchikey, source } for a structure Octet drew or read (api.resolve matches the mock by InChIKey).
+  // A link straight to a target: /?q=aspirin, or /?q=O=CSc1ccccc1&kind=smiles. The demo can be
+  // opened on the right screen instead of clicked to it, the link is shareable, and a headless
+  // browser can reach a results page at all — before this it could only ever photograph the home
+  // page, because running a target needed a click.
+  useEffect(() => {
+    const p = new URLSearchParams(window.location.search)
+    const q = p.get('q')
+    if (!q) return
+    setQuery(q)
+    run(q, p.get('kind') || 'auto')
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  // ...and the address bar keeps up, so what is on screen can be sent to someone else
+  useEffect(() => {
+    if (!target) return
+    const u = new URL(window.location.href)
+    u.searchParams.set('q', query || target.name || target.smiles)
+    window.history.replaceState(null, '', u)
+  }, [target])  // eslint-disable-line react-hooks/exhaustive-deps
+
   async function run(q, k = kind, extra = {}) {
     const id = ++runId.current
     setError(null)
