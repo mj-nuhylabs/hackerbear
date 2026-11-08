@@ -6,6 +6,7 @@ import { nameOf } from '../octet/engine'
 import { Mock, Mol, TIER_INFO, TierBadge } from './bits'
 import Procedure from './Procedure'
 import Analogs from './Analogs'
+import Adapted from './Adapted'
 import './analogs.css'
 
 // ORD는 용매·촉매를 구조로 적는다. 그대로 띄우면 화학자가 "C(CCC)O"를 읽어야 하므로, Octet의
@@ -222,8 +223,32 @@ export default function StepDetail({ route, stepIndex, onSelect, scale, targetG,
             <div className="kv-row">
               <dt>Precedents</dt>
               <dd>
-                <span className="num">{ev.precedent_count.toLocaleString('en-US')}</span> records
-                <span className="src">USPTO template library</span>
+                {s.recorded_step ? (
+                  <>
+                    <span className="num">{s.recorded_step.n_records.toLocaleString('en-US')}</span> records of this
+                    reaction from {s.recorded_step.n_sources} source{s.recorded_step.n_sources === 1 ? '' : 's'}
+                    <span className="src">Open Reaction Database</span>
+                    {s.recorded_step.unclassified?.length > 0 && (
+                      <p className="muted small">
+                        The record also lists {s.recorded_step.unclassified.length} organic molecule
+                        {s.recorded_step.unclassified.length > 1 ? 's' : ''} we could not classify as substrate or
+                        reagent. If any is a co-substrate, this step needs it and the cost below is a lower bound:{' '}
+                        {s.recorded_step.unclassified.map((u) => (
+                          <code key={u} className="cond-smiles">
+                            {u}
+                          </code>
+                        ))}
+                      </p>
+                    )}
+                  </>
+                ) : ev.precedent_count != null ? (
+                  <>
+                    <span className="num">{ev.precedent_count.toLocaleString('en-US')}</span> records
+                    <span className="src">USPTO template library</span>
+                  </>
+                ) : (
+                  DASH
+                )}
               </dd>
             </div>
             <div className="kv-row">
@@ -301,6 +326,8 @@ export default function StepDetail({ route, stepIndex, onSelect, scale, targetG,
       </div>
 
       <Procedure procedure={s.procedure} />
+
+      <Adapted step={s} scaleMol={scale?.nRxn} />
 
       <Analogs analogs={s.analogs} indexStats={indexStats} />
 

@@ -265,6 +265,32 @@ def scan(wanted: set[str], projections: Path = PROJECTIONS, progress=None) -> di
     return hits
 
 
+def scan_ids(wanted_ids: set[str], projections: Path = PROJECTIONS):
+    """reaction_id로 레코드를 찾아 Procedure를 하나씩 내준다. 절차문 없는 레코드는 건너뛴다.
+
+    scan()과 같은 원칙: row group마다 reaction_id 컬럼만 읽고, 맞은 행만 전체 컬럼으로 다시 읽는다.
+    생성물 정규화가 없어서 훨씬 빠르다.
+    """
+    left = set(wanted_ids)
+    for path in sorted(projections.glob("**/*.parquet")):
+        if not left:
+            return
+        try:
+            pf = pq.ParquetFile(path)
+        except Exception:
+            continue
+        for rg in range(pf.num_row_groups):
+            ids = pf.read_row_group(rg, columns=["reaction_id"]).column("reaction_id").to_pylist()
+            idx = [i for i, r in enumerate(ids) if r in left]
+            if not idx:
+                continue
+            for rec in pf.read_row_group(rg, columns=COLUMNS).take(idx).to_pylist():
+                left.discard(rec.get("reaction_id"))
+                p = parse(rec)
+                if p:
+                    yield p
+
+
 # 스텝과 레코드가 얼마나 맞는지. REPORTED로 칠 수 있는 것은 앞의 둘이다.
 MATCH_RANK = {"exact": 4, "covered": 3, "partial": 2, "product": 1}
 REPORTED_MATCHES = ("exact", "covered")

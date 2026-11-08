@@ -1,0 +1,25 @@
+/* Route list additions for the precomputed demo payload (recorded + computed routes, up to 10).
+   Kept out of index.css, which another branch is editing. Colours are index.css tokens. */
+.rc-kind {
+  margin-left: 6px;
+  padding: 1px 6px;
+  border-radius: var(--r-tag);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  vertical-align: 1px;
+}
+.rc-kind-recorded { color: var(--reported); background: var(--reported-bg); }
+.rc-kind-computed { color: var(--computed); background: var(--computed-bg); }
+
+@container routes (min-width: 440px) {
+  .route-list:is([data-n='6'], [data-n='7'], [data-n='8'], [data-n='9'], [data-n='10']) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@container routes (min-width: 880px) {
+  .route-list:is([data-n='6'], [data-n='9']) { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .route-list:is([data-n='7'], [data-n='8']) { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .route-list[data-n='10'] { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+}

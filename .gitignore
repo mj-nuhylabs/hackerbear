@@ -44,3 +44,20 @@ backend/data/analogs/
 
 # 가격 임포트가 남기는 백업 (git이 이미 이전 값을 갖고 있다)
 *.csv.bak
+
+# 정규화한 ORD 레코드 (312MB) — scripts/build_ord_canon.py가 ord_flat.parquet에서 70초면 다시 만든다
+backend/data/ord_canon.parquet
+
+# Model A 학습 입력 (683MB: 757k 반응의 fingerprint·descriptor·조건 집합)
+# scripts/build_transfer_dataset.py --stage rows / --stage pairs가 다시 만든다
+backend/data/transfer/
+
+# 밤새 돌린 작업 로그
+backend/data/logs/
+
+# 데모 타겟 5개의 심층 탐색 중간 산물 (84MB: 절차 원문 58MB, AiZynth 경로 19MB).
+# scripts/build_deep_targets.py가 다시 만든다. 예외는 아래 demo_*.json — 앱이 /routes에서
+# 그대로 서빙하므로 이게 없으면 새로 클론한 저장소에서 데모가 안 돈다 (model.pkl과 같은 이유)
+backend/data/deep/*
+!backend/data/deep/demo_*.json
+!backend/data/deep/holdout_molecules.txt

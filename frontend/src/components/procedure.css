@@ -163,3 +163,24 @@
 @media (max-width: 760px) {
   .proc-smiles { max-width: 120px; }
 }
+
+/* Recorded / adapted procedures (Adapted.jsx) */
+.proc-adapted {
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 8px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.proc-adapted > summary {
+  cursor: pointer;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px;
+  font-size: var(--fs-sm);
+}
+.proc-adapted[open] > summary {
+  margin-bottom: 6px;
+}

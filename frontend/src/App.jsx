@@ -13,6 +13,7 @@ import Home from './components/Home'
 import { ModelPanel } from './components/ModelPanel'
 import { BAR_H, DRAW_MIN, STRIP, WIDE_MIN, drawMax } from './lib/layout'
 import { engineReady, nameOf, readText } from './octet/engine'
+import './components/routes-extra.css'
 
 const KIND_TAG = { name: 'Name', cas: 'CAS number', smiles: 'SMILES' }
 // Octet's kinds of name (web/namedemo.ts kindOf), short enough to sit inside the search field; the full one is its title.
@@ -200,7 +201,16 @@ function RouteList({ routes, costs, routeId, onPick, targetG, search }) {
     <section className="panel routes" aria-labelledby="routes-title">
       <div className="panel-head">
         <h2 id="routes-title">{routes.length} routes</h2>
-        <p className="muted small">AiZynthFinder searched for {search?.search_time_s ?? '—'} s. Highest score first.</p>
+        {search?.precomputed ? (
+          <p className="muted small">
+            Recorded routes first — every step is an ORD record ({search.recorded_routes_found} found). Then
+            AiZynthFinder routes ({search.aizynth_routes_searched} searched),{' '}
+            {search.model_b === 'trained' ? 'ranked by Model B' : 'ranked by AiZynth score (Model B not trained yet)'}, one
+            per final disconnection.
+          </p>
+        ) : (
+          <p className="muted small">AiZynthFinder searched for {search?.search_time_s ?? '—'} s. Highest score first.</p>
+        )}
       </div>
       <ul className="route-list" data-n={routes.length}>
         {routes.map((r, i) => {
@@ -214,7 +224,12 @@ function RouteList({ routes, costs, routeId, onPick, targetG, search }) {
                 onClick={() => onPick(r)}
               >
                 <span className="rc-top">
-                  <span className="rc-name">Route {i + 1}</span>
+                  <span className="rc-name">
+                    Route {i + 1}
+                    {r.kind && (
+                      <span className={`rc-kind rc-kind-${r.kind}`}>{r.kind === 'recorded' ? 'recorded' : 'computed'}</span>
+                    )}
+                  </span>
                   <span className="rc-steps">
                     {r.steps.length} step{r.steps.length > 1 ? 's' : ''}
                   </span>
@@ -238,7 +253,12 @@ function RouteList({ routes, costs, routeId, onPick, targetG, search }) {
                   </span>
                 </span>
                 <span className="rc-score muted small">
-                  Score {r.aizynth_score.toFixed(3)} <span className="rc-id">{r.id}</span>
+                  {r.kind === 'recorded'
+                    ? `${r.steps.length} recorded step${r.steps.length > 1 ? 's' : ''}${r.complete === false ? ' · gap to buyable' : ''}`
+                    : r.route_rank_score != null
+                      ? `Model B ${r.route_rank_score.toFixed(2)} · AiZynth ${r.aizynth_score?.toFixed(3) ?? '—'}`
+                      : `Score ${r.aizynth_score != null ? r.aizynth_score.toFixed(3) : '—'}`}{' '}
+                  <span className="rc-id">{r.id}</span>
                 </span>
               </button>
             </li>

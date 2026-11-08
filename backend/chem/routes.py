@@ -122,13 +122,44 @@ def _finish_steps(steps: list[dict]) -> list[dict]:
     return out
 
 
+DEEP = Path(__file__).resolve().parents[1] / "data/deep"
+
+
+def _demo_payload(smiles: str) -> dict | None:
+    """데모 타겟 5개는 밤새 미리 계산한 결과(scripts/score_deep_targets.py)를 그대로 돌려준다.
+
+    기록된 경로(모든 스텝이 ORD 레코드) + 깊게 돌린 AiZynth 경로, 두 모델의 순위가 들어 있다.
+    파일이 없으면 None — 라이브 검색으로 간다.
+    """
+    from model.holdout import DEMO_TARGETS
+    from rdkit import Chem
+    m = Chem.MolFromSmiles(smiles)
+    if m is None:
+        return None
+    key = Chem.MolToSmiles(m, isomericSmiles=False)
+    for name, s in DEMO_TARGETS.items():
+        if Chem.MolToSmiles(Chem.MolFromSmiles(s), isomericSmiles=False) == key:
+            p = DEEP / f"demo_{name.lower()}.json"
+            if p.exists():
+                import json
+                return json.loads(p.read_text())
+    return None
+
+
 def search(smiles: str, max_depth: int = 4, *, time_limit_s: int = DEFAULT_TIME_LIMIT_S,
            max_routes: int = MAX_ROUTES) -> dict:
     """타겟 SMILES → {routes, search}. 경로를 못 찾으면 routes는 빈 리스트다."""
+    demo = _demo_payload(smiles)
+    if demo is not None:
+        for r in demo["routes"]:
+            ROUTES[r["id"]] = r
+        return {"routes": demo["routes"], "search": demo["search"]}
+
     f = finder()
     with _lock:
         f.config.search.time_limit = time_limit_s
-        f.config.search.max_depth = max_depth
+        # AiZynthFinder 4.x의 필드 이름은 max_transforms다. max_depth를 넣으면 조용히 무시된다
+        f.config.search.max_transforms = max_depth
         f.target_smiles = smiles
         f.tree_search()
         f.build_routes()
