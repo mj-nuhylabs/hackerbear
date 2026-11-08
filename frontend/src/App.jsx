@@ -11,6 +11,7 @@ import DrawPane, { sendToDraw } from './components/DrawPane'
 import ImagePanel from './components/ImagePanel'
 import Home from './components/Home'
 import { ModelPanel } from './components/ModelPanel'
+import { RankerPanel } from './components/RankerPanel'
 import { BAR_H, DRAW_MIN, STRIP, WIDE_MIN, drawMax } from './lib/layout'
 import { engineReady, nameOf, readText } from './octet/engine'
 import './components/routes-extra.css'
@@ -589,6 +590,8 @@ export default function App() {
                     </p>
                   </section>
                 )}
+
+                <RankerPanel />
 
                 <ModelPanel />
               </div>

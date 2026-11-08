@@ -171,6 +171,24 @@ def validation_metrics():
     return json.loads(path.read_text())
 
 
+@app.get("/rankers/metrics")
+def ranker_metrics():
+    """두 랭킹 모델의 측정 수치. 아직 학습 전이면 그 모델은 null이다 — 자리 채우는 숫자를 돌려주지 않는다.
+
+    transfer: 스텝에 맞는 기록된 절차를 고르는 모델 (model/transfer_ranker.py)
+    route:    기록된 경로를 닮은 후보 경로를 위로 올리는 모델 (model/route_ranker.py)
+    둘 다 데모 타겟 5개와 그 중간체를 학습에서 빼고(model/holdout.py) 재본 값이다.
+    """
+    def read(name):
+        p = DATA / name
+        return json.loads(p.read_text()) if p.exists() else None
+
+    transfer, route = read("transfer_ranker_metrics.json"), read("route_ranker_metrics.json")
+    if transfer is None and route is None:
+        raise HTTPException(404, "No ranker metrics yet — run `python -m model.transfer_ranker --train`.")
+    return {"transfer": transfer, "route": route}
+
+
 @app.get("/calibration/metrics")
 def calibration_metrics():
     """PNG에 적힌 것과 같은 숫자. 전부 model/calibrate.py가 홀드아웃에서 계산한 값이다."""
