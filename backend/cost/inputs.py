@@ -54,14 +54,43 @@ def best_table(step: dict) -> dict | None:
     the most amounts is the one worth scaling. Ties keep the earlier record, which is the order
     evidence/provenance.py already ranks by completeness.
     """
-    tables = [r["table"] for r in (step.get("recorded_records") or []) if r.get("table")]
-    if not tables:
+    from evidence.procedures import amount_conflicts, is_formulation
+
+    usable = []
+    for r in (step.get("recorded_records") or []):
+        if not r.get("table"):
+            continue
+        text = (r.get("procedure") or {}).get("text")
+        # The same two disqualifications the procedure panel applies. Without them this picked the
+        # record whose own figures are ten-fold apart and scaled its 10 mL of dichloromethane by
+        # 112, so the sheet asked for 1,121 mL of it to make one gram of aspirin.
+        if is_formulation(text):
+            continue
+        if amount_conflicts(text, _mw_of(r)):
+            continue
+        usable.append(r["table"])
+    if not usable:
         return None
+
     def stated(t):
         return sum(1 for r in t.get("rows") or []
                    if r.get("mass_mg") is not None or r.get("volume_ml") is not None)
-    best = max(tables, key=stated)
+    best = max(usable, key=stated)
     return best if stated(best) else None
+
+
+def _mw_of(record: dict):
+    """Reagent name as this record writes it -> molar mass from the structure it gives."""
+    from rdkit.Chem import Descriptors
+
+    table = {}
+    for r in ((record.get("procedure") or {}).get("reagents") or []):
+        nm, smi = (r.get("name") or "").strip().lower(), r.get("smiles")
+        if nm and smi:
+            m = Chem.MolFromSmiles(smi)
+            if m is not None:
+                table[nm] = Descriptors.MolWt(m)
+    return lambda name: table.get((name or "").strip().lower())
 
 
 def for_step(step: dict, n_rxn: float) -> tuple[list[dict], int]:

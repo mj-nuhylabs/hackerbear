@@ -53,6 +53,28 @@ _ASSAY = re.compile(
     re.I)
 
 
+# A record that formulates a compound is not a record of making it. US05154930 dissolves aspirin
+# in egg phosphatides to prepare a dosage form; the mining read its name, "salicylic acid acetate",
+# as salicylic acid plus acetate and emitted those as the reactants, so the structured record reads
+# exactly like an acetylation. The text is the only place the difference survives.
+_FORMULATION = re.compile(
+    r"\b(?:dosage form|dose form|pharmaceutical composition|formulation(?:s)? (?:of|was|were)|"
+    r"excipient|tablet|capsule|lozenge|suppositor|ointment|topical or oral|for oral use|"
+    r"liposome|liposomal|phosphatides|emulsion for|suspension for|unit dose|placebo)\b", re.I)
+# ... as against the verbs that only appear when a bond is being made or broken
+_SYNTHETIC = re.compile(
+    r"\b(?:was|were)\s+(?:then\s+)?(?:refluxed|heated|quenched|acylated|alkylated|coupled|"
+    r"hydrogenated|oxidi[sz]ed|reduced|brominated|chlorinated|nitrated|hydroly[sz]ed)"
+    r"|\byield(?:ed|ing)?\b|\bcrude product\b|\bthe title compound\b|\bchromatograph", re.I)
+
+
+def is_formulation(text: str | None) -> bool:
+    """Does this record read as formulating a compound rather than making it?"""
+    t = text or ""
+    f = len(_FORMULATION.findall(t))
+    return bool(f) and f > len(_SYNTHETIC.findall(t))
+
+
 def score(text: str | None) -> dict:
     """What the text looks like. Returns counts plus `experimental`, the verdict used for ordering."""
     t = (text or "").strip()

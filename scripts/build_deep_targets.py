@@ -169,11 +169,26 @@ def stage_steps():
     log(f"{len(steps):,} distinct steps")
 
     # exact records: same product, step substrates all among the record's reactants
+    # A record that already lists the product among its own reactants did not make it. US05154930
+    # is the case that showed this: it dissolves aspirin in egg phosphatides to formulate it, lists
+    # "salicylic acid acetate" on both sides, and was being cited as evidence that acetic acid and
+    # salicylic acid give aspirin. Its two masses for that same compound also produced 800 equiv.
     rf = index.df.reactants_flat.values
+    noop = 0
     for s in steps.values():
-        want = set(s["substrates"])
-        s["exact_rows"] = [int(i) for i in index.rows(s["product"]) if want <= set(rf[i])]
-    log(f"  steps with an exact record: {sum(bool(s['exact_rows']) for s in steps.values()):,}")
+        want, prod = set(s["substrates"]), s["product"]
+        rows = []
+        for i in index.rows(prod):
+            have = set(rf[i])
+            if not want <= have:
+                continue
+            if prod in have:
+                noop += 1
+                continue
+            rows.append(int(i))
+        s["exact_rows"] = rows
+    log(f"  steps with an exact record: {sum(bool(s['exact_rows']) for s in steps.values()):,} "
+        f"({noop:,} record matches dropped: the product is already among the record's reactants)")
 
     # analog candidates, batched
     rxns = list(steps)

@@ -63,7 +63,9 @@ def match(reactants: list[str], product: str) -> list[dict]:
     hits = []
     for rec in _records().get(p, []):
         have = {c for c in (canon(r) for r in (rec.get("reactants") or [])) if c}
-        if want <= have:
+        # 생성물이 그 레코드의 반응물에 이미 들어 있으면 그 레코드는 이 결합을 만든 게 아니다 —
+        # 제형·재결정·염 교환 기록이다 (US05154930: 아스피린을 레시틴에 녹인 제형 특허)
+        if want <= have and p not in have:
             hits.append(rec)
     return sorted(hits, key=_completeness, reverse=True)
 

@@ -62,6 +62,7 @@ def main():
     from cost import rank as cost_rank
     from evidence import analogs
     from evidence.adapt import adapt
+    from evidence.procedures import is_formulation
     from evidence.procedures import score as proc_score
     from evidence.recorded_routes import flat
     from model import route_ranker, transfer_ranker
@@ -160,7 +161,12 @@ def main():
         ev = step_out.get(rxn, {"recorded_records": [], "adapted_procedures": [], "analogs": [],
                                 "adapted_order": None})
         raw, cal = plaus([rxn])[0] if rxn else (None, None)
-        recs = ev["recorded_records"]
+        # A record that formulates the compound is not a record of making it, however the mining
+        # wrote its reactants. US05154930 dissolves aspirin in egg phosphatides to prepare a dosage
+        # form, and its name "salicylic acid acetate" was mined as salicylic acid plus acetate, so
+        # the structured record reads as an acetylation. It must not make a step REPORTED.
+        recs = [r for r in ev["recorded_records"]
+                if not is_formulation((r.get("procedure") or {}).get("text"))]
         y = next((r["yield_pct"] for r in recs if r.get("yield_pct") is not None), None)
         tier = "REPORTED" if recs else ("ANALOGOUS" if (precedent_count or 0) >= 10 else "COMPUTED")
         return {
@@ -365,6 +371,7 @@ def _first_procedure(recs: list[dict]) -> dict | None:
     """The record's text to show. A real preparation beats a fuller record that is only prose:
     aspirin's best-looking record offered its patent's background section, and lidocaine's offered
     an HPLC assay method (evidence/procedures.py)."""
+    from evidence.procedures import is_formulation
     from evidence.procedures import score as proc_score
 
     from evidence.procedures import amount_conflicts
