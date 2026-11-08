@@ -93,7 +93,10 @@ function Transfer({ m }) {
 }
 
 function Route({ m }) {
-  if (!m)
+  // 측정 수치는 route_ranker.py가 쓰는 metrics 파일의 `test` 아래에 있다 (transfer 쪽과 같은 모양).
+  // 예전에 이 블록을 한 단계 위에서 읽어서, 모델이 멀쩡히 학습돼 있는데도 표가 전부 —로 떴다.
+  const t = m?.test
+  if (!t)
     return (
       <div>
         <h3>Ranking the routes</h3>
@@ -104,8 +107,8 @@ function Route({ m }) {
         </p>
       </div>
     )
-  const me = m.methods?.model
-  const az = m.methods?.aizynth_state_score
+  const me = t.methods?.model
+  const az = t.methods?.aizynth_state_score
   return (
     <div>
       <h3>Ranking the routes</h3>
@@ -114,20 +117,20 @@ function Route({ m }) {
         patent. Scored on held-out patents.
       </p>
       <dl className="kv">
-        <Row label="Held-out targets">{count(m.n_targets)}</Row>
+        <Row label="Held-out targets">{count(t.n_targets)}</Row>
         <Row label="Reported route ranked first">
           <strong>{pct(me?.top1_final)}</strong> vs {pct(az?.top1_final)} by AiZynth score
         </Row>
         <Row label="In the top 5">
           {pct(me?.top5_final)} vs {pct(az?.top5_final)}
         </Row>
-        <Row label="Best possible">{pct(m.ceiling_any_final)}</Row>
+        <Row label="Best possible">{pct(t.ceiling_any_final)}</Row>
       </dl>
       <p className="muted small">
         {versus(me?.top1_final, az?.top1_final, 'AiZynthFinder’s own score') ?? '—'}{' '}
         {ceilingNote(
           me?.top1_final,
-          m.ceiling_any_final,
+          t.ceiling_any_final,
           'of targets have the reported route among the candidates the search returned',
         )}
       </p>
