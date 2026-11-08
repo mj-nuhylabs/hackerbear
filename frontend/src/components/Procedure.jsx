@@ -179,7 +179,13 @@ export default function Procedure({ procedure }) {
 
       {procedure.text && (
         <>
-          <p className="proc-verbatim">Verbatim from the source record — not written or summarised by a model.</p>
+          {/* ORD 레코드의 절차문은 원문 그대로다. 손으로 옮겨 적은 레코드(scripts/import_scifinder.py)는
+              숫자가 전부 출처의 것이어도 "원문 그대로"가 아니다 — 그 차이를 숨기지 않는다 */}
+          <p className="proc-verbatim">
+            {procedure.transcribed
+              ? 'Transcribed from the cited source — every quantity is the source’s, but this is not a verbatim extract. Check it against the DOI above.'
+              : 'Verbatim from the source record — not written or summarised by a model.'}
+          </p>
           <blockquote className="proc-text">{procedure.text}</blockquote>
         </>
       )}

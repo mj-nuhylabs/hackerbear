@@ -185,7 +185,7 @@ def read_rdf(path: Path) -> list[dict]:
 
 
 def to_record(raw: dict, n: int, label: str = "SciFinder export",
-              prefix: str = "scifinder") -> tuple[dict | None, dict | None, str]:
+              prefix: str = "scifinder", verbatim: bool = False) -> tuple[dict | None, dict | None, str]:
     """One export row → (index row, procedure row, reason it was rejected)."""
     product = _canon(_text(raw.get("product_smiles"))) or (
         cas_to_smiles(_text(raw.get("product_cas"))) if _text(raw.get("product_cas")) else None)
@@ -232,7 +232,9 @@ def to_record(raw: dict, n: int, label: str = "SciFinder export",
         proc = {"reaction_id": rid, "rxn_smiles": ".".join(reactants) + ">>" + product,
                 "reactants": reactants, "product": product, "text": text, "reagents": [],
                 "workups": [], "temperature_c": temp, "time_h": t_h, "yield_pct": y,
-                "url": url, "organization": citation or patent or doi}
+                "url": url, "organization": citation or patent or doi,
+                # the UI must not call a retyped procedure verbatim (frontend Procedure.jsx)
+                "transcribed": not verbatim}
     return row, proc, ""
 
 
@@ -244,6 +246,10 @@ def main():
                     help="what this export is, shown as the dataset name (e.g. 'Open-access literature')")
     ap.add_argument("--id-prefix", default="scifinder",
                     help="prefix for reaction ids, so a record says where it came from")
+    ap.add_argument("--verbatim", action="store_true",
+                    help="the procedure column holds the source's own words, extracted not retyped. "
+                         "Off by default: a transcription is marked as one, because 'verbatim' is a "
+                         "claim about how the text was produced, not about whether its numbers are right")
     ap.add_argument("--dry-run", action="store_true")
     a = ap.parse_args()
 
@@ -258,7 +264,7 @@ def main():
 
     rows, procs, rejected = [], [], {}
     for i, raw in enumerate(raws, 1):
-        row, proc, why = to_record(raw, i, a.source_label, a.id_prefix)
+        row, proc, why = to_record(raw, i, a.source_label, a.id_prefix, a.verbatim)
         if row is None:
             rejected[why] = rejected.get(why, 0) + 1
             continue
