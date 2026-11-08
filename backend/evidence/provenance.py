@@ -94,6 +94,23 @@ def evidence_from(records: list[dict], precedent_count: int, tier: str) -> dict:
     }
 
 
+def _catalyst(rec: dict) -> dict:
+    """The catalyst as the record names it, and its structure only where the two agree.
+
+    US07544831B2 names its catalyst "zirconia" and attaches a tetramethoxy diaryl oxane to it.
+    Drawing that is worse than drawing nothing: the name is right and the structure is a
+    resolver's mistake, so the name is kept and the structure dropped (evidence/identity.py).
+    """
+    from .identity import mismatch
+
+    name = next((r.get("name") for r in ((rec.get("procedure") or {}).get("reagents") or [])
+                 if (r.get("role") or "").upper() == "CATALYST" and r.get("name")), None)
+    smiles = rec.get("catalysts") if isinstance(rec.get("catalysts"), str) else None
+    why = mismatch(name, smiles)
+    return {"catalyst": None if why else smiles, "catalyst_name": name,
+            "catalyst_structure_dropped": why}
+
+
 def conditions_from(records: list[dict]) -> dict | None:
     """이 반응의 조건. 항목마다 그 값을 적어 둔 첫 레코드에서 가져오고, 출처도 항목별로 단다.
 
@@ -107,24 +124,33 @@ def conditions_from(records: list[dict]) -> dict | None:
     """
     fields = {"temperature_c": "temperature_c", "time_h": "time_h",
               "solvent": "solvents", "catalyst": "catalysts"}
-    out: dict = {"catalyst_loading": None}
-    sources: dict[str, str] = {}
-    for key, col in fields.items():
-        out[key] = None
-        for r in records:
-            v = r.get(col) if col in r else r.get(key)
-            if v is not None and v != "":
-                out[key] = v
-                if r.get("reaction_id"):
-                    sources[key] = r["reaction_id"]
-                break
-    if all(out[k] is None for k in fields):
+
+    def read(r: dict) -> dict:
+        return {k: (r.get(col) if col in r else r.get(k)) or None for k, col in fields.items()}
+
+    def stated(r: dict) -> int:
+        return sum(1 for v in read(r).values() if v is not None)
+
+    best = max(records, key=stated) if records else None
+    if best is None or stated(best) == 0:
         return None
-    ids = set(sources.values())
-    out["sources"] = sources
-    out["source_id"] = next(iter(ids)) if len(ids) == 1 else None
-    # 값들이 한 레코드에서 온 게 아니다 — UI가 반드시 구분해 보여줘야 한다
-    out["mixed"] = len(ids) > 1
+    out = {**read(best), "catalyst_loading": None,
+           "source_id": best.get("reaction_id"), "mixed": False, **_catalyst(best)}
+
+    # 다른 레코드가 적어 둔 **다른** 조건은 대안으로 따로 보여준다. 항목별로 긁어다 합치면
+    # 서로 다른 실험 네 개가 조건 하나로 뜬다 — 아스피린 스텝이 그랬다: 무용매 90 °C(지르코니아)에
+    # 5분과 다이클로로메테인(얼음욕 피리딘 반응)이 섞여서, 아무도 돌린 적 없는 절차가 됐다.
+    alts = []
+    for r in records:
+        if r is best or not r.get("reaction_id"):
+            continue
+        v = read(r)
+        if stated(r) and any(v[k] is not None and v[k] != out[k] for k in fields):
+            alts.append({**v, "source_id": r["reaction_id"],
+                         "patent": r.get("patent"), "doi": r.get("doi")})
+        if len(alts) >= 4:
+            break
+    out["alternatives"] = alts
     return out
 
 

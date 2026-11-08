@@ -34,7 +34,9 @@ function Conditions({ c }) {
     ['Temperature', c?.temperature_c != null ? `${sig(c.temperature_c)} °C` : null, false, 'temperature_c'],
     ['Time', c?.time_h != null ? `${sig(c.time_h)} h` : null, false, 'time_h'],
     ['Solvent', c?.solvent, true, 'solvent'],
-    ['Catalyst', c?.catalyst, true, 'catalyst'],
+    // 촉매는 레코드가 적어 둔 이름이 먼저다. 구조가 이름과 안 맞으면 백엔드가 구조를 버린다
+    // (backend/evidence/identity.py) — "zirconia"에 엉뚱한 유기물 구조가 붙어 있던 경우
+    ['Catalyst', c?.catalyst ?? c?.catalyst_name ?? null, !!c?.catalyst, 'catalyst'],
   ]
   return (
     <>
@@ -50,13 +52,10 @@ function Conditions({ c }) {
                 from analog
               </span>
             )}
-            {/* 항목마다 출처가 다르면 한 실험의 조건이 아니다 — 어느 레코드에서 왔는지 값 옆에 붙인다 */}
-            {v != null && c?.mixed && c?.sources?.[key] && (
-              <span
-                className="cond-src"
-                title={`From record ${c.sources[key]}. This step's records state the conditions separately, so these values are from different runs of the same reaction — not one procedure.`}
-              >
-                {c.sources[key].replace(/^ord-/, '').slice(0, 6)}
+            {/* 구조가 이름과 안 맞아서 버린 경우. 이름만 보여주고 왜인지 말해 준다 */}
+            {key === 'catalyst' && c?.catalyst_structure_dropped && (
+              <span className="cond-src" title={c.catalyst_structure_dropped}>
+                name only
               </span>
             )}
           </dd>
@@ -259,6 +258,25 @@ export default function StepDetail({ route, stepIndex, onSelect, scale, targetG,
           </div>
           <Conditions c={s.conditions} />
         </dl>
+        {/* 다른 레코드가 적어 둔 조건. 위의 값과 섞지 않는다 — 각각 다른 실험이다 */}
+        {s.conditions?.alternatives?.length > 0 && (
+          <p className="cond-alts muted small">
+            Other records of this reaction report{' '}
+            {s.conditions.alternatives
+              .map((a) =>
+                [
+                  a.temperature_c != null ? `${sig(a.temperature_c)} °C` : null,
+                  a.time_h != null ? `${sig(a.time_h)} h` : null,
+                  a.solvent ? 'a solvent' : null,
+                ]
+                  .filter(Boolean)
+                  .join(', '),
+              )
+              .filter(Boolean)
+              .join(' · ')}
+            . They are separate runs, so they are not merged into the conditions above.
+          </p>
+        )}
       </div>
 
       <Procedure procedure={s.procedure} ourMmol={scale?.nRxn != null ? scale.nRxn * 1000 : null} />
