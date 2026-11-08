@@ -1,0 +1,254 @@
+{
+  "model": "LGBMRanker(lambdarank)",
+  "question": "of the nearest recorded reactions, whose recorded conditions match what was recorded for this substrate",
+  "label": {
+    "relevance": "0-3 from Jaccard of recorded condition sets (solvents, catalysts, reagents, non-substrate reactants) at 0.25/0.5/0.75; minus 1 if both temperatures recorded and differ by > 30 C"
+  },
+  "candidates": "top 50 by DRFP Tanimoto, excluding the query itself, its patent and held-out demo molecules",
+  "split": "query product Murcko scaffold, 70/15/15",
+  "train_queries": 149540,
+  "val_queries": 24901,
+  "test_queries": 24756,
+  "best_iteration": 326,
+  "test": {
+    "model": {
+      "queries": 24756,
+      "top1_relevance_mean": 1.0346,
+      "top1_relevance_ge2_rate": 0.331,
+      "top1_relevance_ge1_rate": 0.5217,
+      "ndcg_at_1": 0.3992,
+      "ndcg_at_5": 0.4316,
+      "by_nearest_similarity": {
+        "0.8-1.0": {
+          "queries": 4004,
+          "top1_relevance_ge2_rate": 0.4555
+        },
+        "0.6-0.8": {
+          "queries": 5027,
+          "top1_relevance_ge2_rate": 0.4414
+        },
+        "0.4-0.6": {
+          "queries": 7875,
+          "top1_relevance_ge2_rate": 0.3239
+        },
+        "0.0-0.4": {
+          "queries": 7850,
+          "top1_relevance_ge2_rate": 0.2037
+        }
+      }
+    },
+    "nearest_similarity (current app)": {
+      "queries": 24756,
+      "top1_relevance_mean": 0.7537,
+      "top1_relevance_ge2_rate": 0.2339,
+      "top1_relevance_ge1_rate": 0.3957,
+      "ndcg_at_1": 0.2808,
+      "ndcg_at_5": 0.2956,
+      "by_nearest_similarity": {
+        "0.8-1.0": {
+          "queries": 4004,
+          "top1_relevance_ge2_rate": 0.3359
+        },
+        "0.6-0.8": {
+          "queries": 5027,
+          "top1_relevance_ge2_rate": 0.3296
+        },
+        "0.4-0.6": {
+          "queries": 7875,
+          "top1_relevance_ge2_rate": 0.2221
+        },
+        "0.0-0.4": {
+          "queries": 7850,
+          "top1_relevance_ge2_rate": 0.1325
+        }
+      }
+    },
+    "consensus_only": {
+      "queries": 24756,
+      "top1_relevance_mean": 0.8045,
+      "top1_relevance_ge2_rate": 0.2481,
+      "top1_relevance_ge1_rate": 0.4388,
+      "ndcg_at_1": 0.2901,
+      "ndcg_at_5": 0.3173,
+      "by_nearest_similarity": {
+        "0.8-1.0": {
+          "queries": 4004,
+          "top1_relevance_ge2_rate": 0.3611
+        },
+        "0.6-0.8": {
+          "queries": 5027,
+          "top1_relevance_ge2_rate": 0.342
+        },
+        "0.4-0.6": {
+          "queries": 7875,
+          "top1_relevance_ge2_rate": 0.2378
+        },
+        "0.0-0.4": {
+          "queries": 7850,
+          "top1_relevance_ge2_rate": 0.1408
+        }
+      }
+    },
+    "random": {
+      "queries": 24756,
+      "top1_relevance_mean": 0.4555,
+      "top1_relevance_ge2_rate": 0.1285,
+      "top1_relevance_ge1_rate": 0.2758,
+      "ndcg_at_1": 0.159,
+      "ndcg_at_5": 0.1863,
+      "by_nearest_similarity": {
+        "0.8-1.0": {
+          "queries": 4004,
+          "top1_relevance_ge2_rate": 0.207
+        },
+        "0.6-0.8": {
+          "queries": 5027,
+          "top1_relevance_ge2_rate": 0.1794
+        },
+        "0.4-0.6": {
+          "queries": 7875,
+          "top1_relevance_ge2_rate": 0.1168
+        },
+        "0.0-0.4": {
+          "queries": 7850,
+          "top1_relevance_ge2_rate": 0.0675
+        }
+      }
+    },
+    "oracle (ceiling)": {
+      "queries": 24756,
+      "top1_relevance_mean": 2.0802,
+      "top1_relevance_ge2_rate": 0.7145,
+      "top1_relevance_ge1_rate": 0.9138,
+      "ndcg_at_1": 1.0,
+      "ndcg_at_5": 1.0,
+      "by_nearest_similarity": {
+        "0.8-1.0": {
+          "queries": 4004,
+          "top1_relevance_ge2_rate": 0.8666
+        },
+        "0.6-0.8": {
+          "queries": 5027,
+          "top1_relevance_ge2_rate": 0.8168
+        },
+        "0.4-0.6": {
+          "queries": 7875,
+          "top1_relevance_ge2_rate": 0.7248
+        },
+        "0.0-0.4": {
+          "queries": 7850,
+          "top1_relevance_ge2_rate": 0.561
+        }
+      }
+    }
+  },
+  "test_queries_with_a_match": {
+    "queries": 17688,
+    "results": {
+      "model": {
+        "queries": 17688,
+        "top1_relevance_mean": 1.3824,
+        "top1_relevance_ge2_rate": 0.4632,
+        "top1_relevance_ge1_rate": 0.6645,
+        "ndcg_at_1": 0.4449,
+        "ndcg_at_5": 0.4794
+      },
+      "nearest_similarity (current app)": {
+        "queries": 17688,
+        "top1_relevance_mean": 1.0116,
+        "top1_relevance_ge2_rate": 0.3274,
+        "top1_relevance_ge1_rate": 0.5106,
+        "ndcg_at_1": 0.3158,
+        "ndcg_at_5": 0.3303
+      },
+      "consensus_only": {
+        "queries": 17688,
+        "top1_relevance_mean": 1.0836,
+        "top1_relevance_ge2_rate": 0.3473,
+        "top1_relevance_ge1_rate": 0.5717,
+        "ndcg_at_1": 0.3286,
+        "ndcg_at_5": 0.3614
+      },
+      "random": {
+        "queries": 17688,
+        "top1_relevance_mean": 0.6091,
+        "top1_relevance_ge2_rate": 0.1798,
+        "top1_relevance_ge1_rate": 0.3575,
+        "ndcg_at_1": 0.1749,
+        "ndcg_at_5": 0.2039
+      },
+      "oracle (ceiling)": {
+        "queries": 17688,
+        "top1_relevance_mean": 2.6325,
+        "top1_relevance_ge2_rate": 1.0,
+        "top1_relevance_ge1_rate": 1.0,
+        "ndcg_at_1": 1.0,
+        "ndcg_at_5": 1.0
+      }
+    }
+  },
+  "feature_importance_gain_top15": [
+    [
+      "tan_prod",
+      536709.5
+    ],
+    [
+      "cons_top5",
+      201061.7
+    ],
+    [
+      "c_n_cond",
+      153970.1
+    ],
+    [
+      "cons_rank",
+      132613.4
+    ],
+    [
+      "sim_rel_top",
+      97324.5
+    ],
+    [
+      "d_n_substrates",
+      90098.5
+    ],
+    [
+      "sim_gap_top",
+      84124.0
+    ],
+    [
+      "tan_sub1",
+      81444.7
+    ],
+    [
+      "cons_mean",
+      76853.2
+    ],
+    [
+      "rank",
+      72100.1
+    ],
+    [
+      "sim",
+      47311.8
+    ],
+    [
+      "d_tpsa",
+      41696.0
+    ],
+    [
+      "tan_sub2",
+      36786.1
+    ],
+    [
+      "cons_wmean",
+      30680.9
+    ],
+    [
+      "q_heavy_atoms",
+      25465.4
+    ]
+  ],
+  "holdout": "the 5 demo targets and their recorded route molecules (model/holdout.py)",
+  "generated": "2026-11-07"
+}

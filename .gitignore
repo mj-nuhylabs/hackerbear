@@ -61,3 +61,7 @@ backend/data/logs/
 backend/data/deep/*
 !backend/data/deep/demo_*.json
 !backend/data/deep/holdout_molecules.txt
+
+# 중간 점검용으로 학습한 모델 B (후보 500개·1000개 시점). 새벽 본 학습이 route_ranker.pkl을
+# 따로 쓰므로 이건 남겨둘 이유가 없다
+backend/data/route_ranker_early*
