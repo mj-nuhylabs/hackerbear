@@ -47,7 +47,7 @@ function savedDrawWidth() {
 
 // Octet's name for the structure: its IUPAC namer, checked by reading the name back. Code, not a model; '—' when it
 // has none.
-function OctetName({ smiles }) {
+function OctetName({ smiles, fallback = '—' }) {
   const [name, setName] = useState(undefined) // undefined while Octet's engine loads
   useEffect(() => {
     let live = true
@@ -60,7 +60,7 @@ function OctetName({ smiles }) {
     }
   }, [smiles])
   if (name === undefined) return <span className="muted">Octet is loading…</span>
-  return name ?? '—'
+  return name ?? fallback
 }
 
 // What the search field holds, as Octet's offline reader sees it: a thumbnail and the kind of name, the name it
@@ -148,8 +148,11 @@ function TargetCard({ target, onDraw }) {
     <section className="panel target" aria-labelledby="target-title">
       <Mol compound={target} size="lg" />
       <div className="target-head">
+        {/* 이름을 타이핑해 들어온 경우에만 target.name이 있다. SMILES나 그림으로 들어오면 비어 있어서
+            예전에는 "Unnamed structure"가 떴다 — 바로 아래 kv 행에서는 Octet이 이름을 대고 있는데도.
+            같은 네이머를 제목에도 쓴다 (결정론적 코드, 모델이 아니다). 그것도 없을 때만 —로 둔다. */}
         <h2 id="target-title" className="target-name">
-          {target.name ?? 'Unnamed structure'}
+          {target.name ?? <OctetName key={target.smiles} smiles={target.smiles} fallback="Unnamed structure" />}
         </h2>
         <button type="button" className="ghost-btn" onClick={onDraw}>
           Add to drawing
@@ -229,6 +232,15 @@ function RouteList({ routes, costs, routeId, onPick, targetG, search }) {
                     Route {i + 1}
                     {r.kind && (
                       <span className={`rc-kind rc-kind-${r.kind}`}>{r.kind === 'recorded' ? 'recorded' : 'computed'}</span>
+                    )}
+                    {/* 비용 순서를 제치고 자리를 받은 경로 — 왜 여기 있는지 말해 준다 */}
+                    {r.rank?.slot === 'best_evidence' && (
+                      <span
+                        className="rc-slot"
+                        title="Held a place in the top three because every step of it is an ORD record with the patent procedure, even though cheaper routes exist. It is not ranked here on cost."
+                      >
+                        best evidence
+                      </span>
                     )}
                   </span>
                   <span className="rc-steps">

@@ -221,7 +221,8 @@ def main():
             spec = [(s["product"], g["steps"][s["product"]][s["option"]]["substrates"]) for s in r["steps"]]
             leaves = [(m, _recorded_leaf(m, status)) for m, status in r["leaves"].items()]
             lr, summ = lite_route(spec, leaves, r["complete"], None)
-            cands.append((cost_rank.key(lr, summ) + (0,), "recorded", frozenset(map(flat, spec[-1][1])), j))
+            cands.append((cost_rank.key(lr, summ) + (0,), "recorded", frozenset(map(flat, spec[-1][1])), j,
+                          _sound(summ, r["complete"])))
 
         # AiZynth routes
         p = DEEP / f"aizynth_{slug}.json"
@@ -239,11 +240,21 @@ def main():
                 _walk_light(rd, spec, leaves)
                 complete = all(ins for _, ins in leaves)
                 lr, summ = lite_route(spec, [(m, stock_label(m, ins)) for m, ins in leaves], complete, mb[i])
-                cands.append((cost_rank.key(lr, summ) + (1,), "computed", frozenset(map(flat, spec[-1][1])), i))
+                cands.append((cost_rank.key(lr, summ) + (1,), "computed", frozenset(map(flat, spec[-1][1])), i,
+                              _sound(summ, complete)))
 
-        # one route per final disconnection, across both kinds, cheapest first
+        # One route per final disconnection, cheapest first — except that the best-evidenced route
+        # keeps a slot of its own. A recorded route is one where every step is an ORD record, so it
+        # carries the patent procedure for each step; without this it loses its place whenever a
+        # cheaper computed route happens to break the same bond, and imatinib's top ten ended up
+        # with no recorded route at all. The cheapest route still leads; this one sits right below.
         cands.sort(key=lambda c: c[0])
         picked, seen_final = [], set()
+        # The reserved route has to be worth reserving: a record that omits a reactant is not good
+        # evidence, it is bad mining, and a cost built on a minority of the route's mass says more
+        # about what is missing than about the chemistry. Both are already in the sort key, so a
+        # candidate that passes it on its own merits is the one to hold a slot for.
+        best_recorded = next((c for c in cands if c[1] == "recorded" and c[4]), None)
         for c in cands:
             if c[2] in seen_final:
                 continue
@@ -251,10 +262,15 @@ def main():
             picked.append(c)
             if len(picked) >= SHOW_ROUTES:
                 break
+        # a place in the top three, not ahead of the runner-up: the cheapest two still lead
+        if best_recorded is not None and best_recorded not in picked:
+            picked.insert(min(2, len(picked)), best_recorded)
+        picked = picked[:SHOW_ROUTES]
+        reserved_idx = next((i for i, c in enumerate(picked) if c is best_recorded), None)
 
         # ---------------- full payloads for the routes shown
         routes = []
-        for _key, kind, _final, j in picked:
+        for pos, (_key, kind, _final, j, _sound_flag) in enumerate(picked):
             if kind == "recorded":
                 r = rec["routes"][j]
                 st = []
@@ -274,7 +290,18 @@ def main():
                                "complete": all(l["in_stock"] for l in leaves.values()),
                                "aizynth_score": round(state[j], 3),
                                "route_rank_score": round(mb[j], 4) if mb[j] is not None else None})
+            routes[-1]["_reserved"] = pos == reserved_idx
         routes = cost_rank.rank(routes, price_table)
+        # rank() sorts on cost alone, so put the reserved route back right under the cheapest
+        held = next((r for r in routes if r.pop("_reserved", False)), None)
+        for r in routes:
+            r.pop("_reserved", None)
+        if held is not None and routes and routes[0] is not held:
+            routes.remove(held)
+            routes.insert(min(2, len(routes)), held)      # a place in the top three, not the top two
+            held["rank"]["slot"] = "best_evidence"
+        if routes:
+            routes[0]["rank"]["slot"] = "cheapest"
         n_kind = {"recorded": 0, "computed": 0}
         for r in routes:
             n_kind[r["kind"]] += 1
@@ -311,6 +338,14 @@ def _conditions(recs: list[dict]) -> dict | None:
     """Per-field, from the first record stating each — evidence/provenance.conditions_from."""
     from evidence.provenance import conditions_from
     return conditions_from(recs)
+
+
+def _sound(summ: dict, complete: bool) -> bool:
+    """Is this route worth holding a slot for? It has to reach buyable materials, its records have
+    to name every reactant (chem/balance.py), and its cost has to rest on most of what it buys.
+    Aspirin's recorded acetylation fails the second: the record never lists the acetic anhydride,
+    so it reads as $0.62/g, and reserving a slot for it put that straight back at the top."""
+    return bool(complete) and not summ["steps_missing_reactant"] and summ["bound_covers_most"]
 
 
 def _recorded_leaf(smiles: str, status: str | None) -> dict:

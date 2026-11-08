@@ -25,6 +25,7 @@ CONFIG = Path(__file__).resolve().parents[1] / "data/aizynth/config.yml"
 ASSUMED_YIELD = 0.70          # 문헌값이 없을 때만. 반드시 assumed로 표시한다
 MAX_ROUTES = 5
 DEFAULT_TIME_LIMIT_S = 45
+SEARCH_SEED = 0               # 같은 분자는 언제 검색해도 같은 경로가 나와야 한다 (finder() 참조)
 
 _finder = None
 _lock = threading.Lock()
@@ -38,9 +39,17 @@ def finder():
     if _finder is None:
         with _lock:
             if _finder is None:
+                import random
+
+                import numpy as np
                 from aizynthfinder.aizynthfinder import AiZynthFinder
 
                 from .stock import use_with_zinc
+                # MCTS가 확장할 노드를 random.choice / np.random.choice로 고른다. 씨앗을 안 박으면
+                # 같은 분자를 두 번 검색했을 때 다른 경로가 나올 수 있다 — 화학자가 "아까 있던 화합물이
+                # 사라졌다"고 느끼는 원인이다. 결과가 매번 같아야 검증도 된다.
+                random.seed(SEARCH_SEED)
+                np.random.seed(SEARCH_SEED)
                 f = AiZynthFinder(configfile=str(CONFIG))
                 # ZINC만으로는 EtOH·MeI·CS2를 못 사서 탐색이 그걸 "합성"한다 (chem/stock.py)
                 use_with_zinc(f)
