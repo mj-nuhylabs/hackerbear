@@ -248,12 +248,23 @@ class Purchasable:
         return "zinc" if k in self._zinc else None
 
 
-class RecordIndex:
-    """product (non-isomeric main fragment) → ORD records that make it. Loads ~2.4M rows."""
+EXTRA_RECORDS = DATA / "scifinder/records.parquet"
 
-    def __init__(self, path: Path = ORD_CANON):
+
+class RecordIndex:
+    """product (non-isomeric main fragment) → records that make it. Loads ~2.4M ORD rows, plus any
+    imported by scripts/import_scifinder.py — ORD has no record at all of the product for half the
+    demo's steps, so a licensed export is the only way those steps ever become REPORTED."""
+
+    def __init__(self, path: Path = ORD_CANON, extra: Path | None = EXTRA_RECORDS):
         df = pd.read_parquet(path, columns=COLUMNS)
-        df = df[~df.is_noop].reset_index(drop=True)
+        if extra and extra.exists():
+            ex = pd.read_parquet(extra)
+            missing = [c for c in COLUMNS if c not in ex.columns]
+            for c in missing:
+                ex[c] = None
+            df = pd.concat([df, ex[COLUMNS]], ignore_index=True)
+        df = df[~df.is_noop.fillna(False).astype(bool)].reset_index(drop=True)
         self.df = df
         prod = df.product_main_flat.values
         order = np.argsort(prod, kind="stable")

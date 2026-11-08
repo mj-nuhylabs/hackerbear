@@ -68,3 +68,7 @@ backend/data/route_ranker_early*
 
 # 데모 재구축 중간 산물 (scripts/rebuild_deep_targets.sh가 끝나면 data/deep/로 옮기고 지운다)
 backend/data/deep_next/
+
+# SciFinder 등 라이선스 있는 검색에서 내보낸 레코드. 검색을 돌린 사람에게 라이선스가 있는 자료이므로
+# 저장소에 올리지 않는다 (scripts/import_scifinder.py)
+backend/data/scifinder/
