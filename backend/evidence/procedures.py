@@ -35,12 +35,20 @@ MIN_OPERATIONS = 1
 _QUANTITY = re.compile(
     r"\d+(?:\.\d+)?\s*(?:mg|g|kg|µL|ul|mL|ml|L|mmol|mol|equiv|eq\b|wt%|%|°\s*C|º\s*C|K\b|h\b|hr|hours?|min(?:utes?)?|days?)",
     re.I)
+_BENCH_VERBS = (r"add|stir|heat|cool|filter|extract|concentrate|dry|wash|pour|quench|dissolve|"
+                r"reflux|weigh|measure|collect|combine|dilute|separate|transfer|swirl|"
+                r"recrystalli[sz]e|evaporate|treat|charge|degas|scratch|chill")
 _OPERATION = re.compile(
+    # past tense, how a paper writes up a run that happened
     r"\b(?:was|were|is|are)\s+(?:then\s+)?(?:added|stirred|heated|cooled|filtered|extracted|"
     r"concentrated|dried|washed|poured|quenched|dissolved|treated|evaporated|refluxed|"
     r"recrystalli[sz]ed|chromatographed|degassed|charged|collected|combined|diluted|separated)"
-    r"|\b(?:add|stir|heat|cool|filter|extract|concentrate|dry|wash|pour|quench|dissolve|reflux)ed\b",
-    re.I)
+    rf"|\b(?:{_BENCH_VERBS})ed\b"
+    # imperative, how a laboratory manual writes the same operations: "Weigh about 1 gram...",
+    # "Add 3 drops of concentrated phosphoric acid". Only at the start of a sentence or clause,
+    # so an "add" inside a noun phrase does not count.
+    rf"|(?:^|[.;:]\s+|\band\s+|\bthen\s+)(?:{_BENCH_VERBS})\b",
+    re.I | re.M)
 # phrases a patent uses when describing chemistry in general rather than one run
 _GENERAL = re.compile(
     r"\b(?:commercially|generally|typically|usually|in general|may be (?:used|prepared|employed)|"

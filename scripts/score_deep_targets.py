@@ -169,6 +169,8 @@ def main():
                 if not is_formulation((r.get("procedure") or {}).get("text"))]
         y = next((r["yield_pct"] for r in recs if r.get("yield_pct") is not None), None)
         tier = "REPORTED" if recs else ("ANALOGOUS" if (precedent_count or 0) >= 10 else "COMPUTED")
+        # conditions first, so the procedure can be the same run rather than a different record
+        _cond = _conditions(recs) or analogs.conditions_from(ev["analogs"])
         return {
             "rxn_smiles": rxn or (".".join(reactants) + ">>" + product),
             "template_id": template_id, "classification": classification,
@@ -179,11 +181,11 @@ def main():
                          "url": next((r["url"] for r in recs if r.get("url")), None)},
             "recorded_records": recs,
             # the procedure panel shows the most complete recorded record of this very reaction
-            "procedure": _first_procedure(recs),
+            "procedure": _first_procedure(recs, (_cond or {}).get("source_id")),
             # Same order as chem/routes.py: this reaction's own records, then the closest recorded
             # analog (flagged from_analog so the UI never passes it off as this reaction's own).
             # Without the fallback the precomputed demo showed fewer conditions than a live search.
-            "conditions": _conditions(recs) or analogs.conditions_from(ev["analogs"]),
+            "conditions": _cond,
             "analogs": ev["analogs"],
             "adapted_procedures": ev["adapted_procedures"],
             "adapted_order": ev["adapted_order"],
@@ -367,10 +369,11 @@ def main():
             f"{sum(r['kind'] == 'computed' for r in routes)} computed routes")
 
 
-def _first_procedure(recs: list[dict]) -> dict | None:
-    """The record's text to show. A real preparation beats a fuller record that is only prose:
-    aspirin's best-looking record offered its patent's background section, and lidocaine's offered
-    an HPLC assay method (evidence/procedures.py)."""
+def _first_procedure(recs: list[dict], prefer_id: str | None = None) -> dict | None:
+    """The record's text to show. The conditions panel above it names one run, so the procedure is
+    that run's where it has text — otherwise the two describe different experiments. Failing that,
+    a real preparation beats a fuller record that is only prose: aspirin's best-looking record
+    offered its patent's background section, and lidocaine's an HPLC assay (evidence/procedures.py)."""
     from evidence.procedures import is_formulation
     from evidence.procedures import score as proc_score
 
@@ -383,7 +386,8 @@ def _first_procedure(recs: list[dict]) -> dict | None:
     # Prefer one that does not contradict itself, before anything else about it.
     for r in with_text:
         r["_conflicts"] = amount_conflicts(r["procedure"]["text"], _mw_lookup(r["procedure"]))
-    best = max(with_text, key=lambda r: (not r["_conflicts"],
+    same_run = next((r for r in with_text if r.get("reaction_id") == prefer_id and not r["_conflicts"]), None)
+    best = same_run or max(with_text, key=lambda r: (not r["_conflicts"],
                                          proc_score(r["procedure"]["text"])["experimental"],
                                          r["procedure"].get("yield_pct") is not None,
                                          r["procedure"].get("temperature_c") is not None,

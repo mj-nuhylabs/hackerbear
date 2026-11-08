@@ -135,12 +135,33 @@ def conditions_from(records: list[dict]) -> dict | None:
         y = r.get("yield_pct")
         return float(y) if y is not None and 0 < y <= 100 else -1.0
 
-    # A yield is the only thing in a record that says the run worked, so it outranks how many
-    # fields the entry happens to carry. Without this, a patent's catalyst-screening table wins by
-    # row count: six of aspirin's eleven records are one table from US07544831B2, each stating a
-    # temperature and a solid acid catalyst, so "most fields" picked a sulfated-zirconia entry and
-    # presented a specialist green-chemistry variant as the conditions for making aspirin.
-    best = max(records, key=lambda r: (worked(r), stated(r))) if records else None
+    def lean(r: dict) -> float:
+        """Negated solvent per mmol of substrate, so that less of it sorts first.
+
+        A record that exists is not a record of the best way. US07842696B2 acetylates salicylic
+        acid in 10 mL of dichloromethane per 0.72 mmol with 1.1 equivalents of pyridine, for 4
+        hours, and gets 76% — which at a gram of aspirin is about 113 mL of dichloromethane before
+        the extraction. The classic preparation uses the acetic anhydride as its own solvent, three
+        drops of phosphoric acid and 15 minutes. They are not competing on how well they work; one
+        is making aspirin and the other is acetylating something on the way to a different paper.
+        How much material a run consumes per mmol is the part of that difference a record states.
+        """
+        t = r.get("table") or {}
+        lim = t.get("limiting_recorded_mmol")
+        if not lim:
+            return 0.0
+        vol = sum((row.get("volume_ml") or 0.0) for row in (t.get("rows") or [])
+                  if not row.get("is_substrate"))
+        return -(vol * (t.get("scale_mmol") or 1.0) / lim)
+
+    def timed(r: dict) -> int:
+        """A procedure with no time cannot be run; one that states it can."""
+        return 1 if read(r)["time_h"] is not None else 0
+
+    # Least material, then a stated time, then a reported yield, then how much the entry happens
+    # to carry. A yield says the run worked; it does not say the run was a sensible way to get
+    # there, and a run nobody timed cannot be followed at all.
+    best = max(records, key=lambda r: (lean(r), timed(r), worked(r), stated(r))) if records else None
     if best is None or stated(best) == 0:
         return None
     out = {**read(best), "catalyst_loading": None,
@@ -173,7 +194,9 @@ def _by_source(records: list[dict], read) -> list[dict]:
     """
     groups: dict[str, dict] = {}
     for r in records:
-        key = r.get("patent") or r.get("doi") or r.get("dataset")
+        key = (r.get("patent") or r.get("doi")
+               or ((r.get("procedure") or {}).get("organization"))
+               or r.get("dataset"))
         if not key:
             continue
         v = read(r)
