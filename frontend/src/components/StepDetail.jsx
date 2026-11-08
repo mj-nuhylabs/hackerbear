@@ -28,17 +28,18 @@ function Structure({ smiles }) {
   return <code className="cond-smiles">{smiles}</code>
 }
 
+// 벤치에서 바로 필요한 조건 칸들. 값이 없으면 — 로 남긴다.
 function Conditions({ c }) {
   const rows = [
-    ['Solvent', c?.solvent, true],
     ['Temperature', c?.temperature_c != null ? `${sig(c.temperature_c)} °C` : null, false],
     ['Time', c?.time_h != null ? `${sig(c.time_h)} h` : null, false],
+    ['Solvent', c?.solvent, true],
     ['Catalyst', c?.catalyst, true],
   ]
   return (
     <>
       {rows.map(([k, v, isStructure]) => (
-        <div className="kv-row" key={k}>
+        <div className="bench-cell" key={k}>
           <dt>{k}</dt>
           <dd>
             {v == null ? DASH : isStructure ? <Structure smiles={v} /> : v}
@@ -59,9 +60,11 @@ function Conditions({ c }) {
 // 비용 계산에 들어간 수율과 그 출처. 세 가지뿐이다 — 이 반응의 레코드, 가까운 유사 반응, 가정값.
 // 유사 반응에서 왔으면 하나의 숫자가 아니라 퍼짐을 같이 보여준다: 측정된 평균 오차가 ±20%p라서
 // "62%"만 띄우면 화학자가 ±5%p쯤으로 읽는다 (scripts/validate_analogs.py).
+const yieldBasis = (step) => step.yield_basis?.basis ?? (step.reported_yield != null ? 'reported' : 'assumed')
+
 function YieldUsed({ step }) {
   const b = step.yield_basis ?? {}
-  const basis = b.basis ?? (step.reported_yield != null ? 'reported' : 'assumed')
+  const basis = yieldBasis(step)
   const label = { reported: 'reported', analogs: 'from analogs', assumed: 'assumed' }[basis]
   const spread =
     basis === 'analogs' && b.yield_pct_min != null && b.yield_pct_max != null
@@ -211,6 +214,42 @@ export default function StepDetail({ route, stepIndex, onSelect, scale, targetG,
         </svg>
         <Mol compound={s.product} size="sm" caption={caption(s.product)} />
       </div>
+      {/* 만들 때 바로 봐야 하는 것부터: 스케일, 수율, 조건 → 절차 → 내 스케일로 환산한 양 */}
+      <div className="run-step">
+        <h3>Run this step</h3>
+        <dl className="bench-grid">
+          <div className="bench-cell bench-scale">
+            <dt>Scale</dt>
+            <dd>
+              <span className="num">{mmol(scale?.nRxn)}</span> mmol
+            </dd>
+            <span className="muted small">to end up with {targetG} g of target</span>
+          </div>
+          <div className="bench-cell">
+            <dt>Yield used in costing</dt>
+            <dd>
+              <YieldUsed step={s} />
+            </dd>
+            {yieldBasis(s) !== 'reported' && (
+              <span className="muted small">
+                Reported {pct(s.reported_yield)}
+                {s.reported_yield != null && isMock('reported_yield') && <Mock what="Reported yield" />}
+              </span>
+            )}
+          </div>
+          <Conditions c={s.conditions} />
+        </dl>
+      </div>
+
+      <Procedure procedure={s.procedure} />
+
+      <Adapted step={s} scaleMol={scale?.nRxn} />
+
+      <div className="step-ref-head">
+        <h3>Evidence and checks</h3>
+        <p className="muted small">Where this step comes from and how far to trust it.</p>
+      </div>
+
       <p className="rxn-smiles">
         <code>{s.rxn_smiles}</code>
       </p>
@@ -280,26 +319,6 @@ export default function StepDetail({ route, stepIndex, onSelect, scale, targetG,
         </div>
 
         <div className="block">
-          <h3>Yield and conditions</h3>
-          <dl className="kv">
-            <div className="kv-row">
-              <dt>Reported yield</dt>
-              <dd>
-                {pct(s.reported_yield)}
-                {s.reported_yield != null && isMock('reported_yield') && <Mock what="Reported yield" />}
-              </dd>
-            </div>
-            <div className="kv-row">
-              <dt>Used in costing</dt>
-              <dd>
-                <YieldUsed step={s} />
-              </dd>
-            </div>
-            <Conditions c={s.conditions} />
-          </dl>
-        </div>
-
-        <div className="block">
           <h3>Structural plausibility {isMock('plausibility_calibrated') && <Mock what="Plausibility" />}</h3>
           <Bar label="Model raw score" value={s.plausibility_raw} />
           <Bar label="Calibrated" value={s.plausibility_calibrated} emphasize />
@@ -315,19 +334,7 @@ export default function StepDetail({ route, stepIndex, onSelect, scale, targetG,
             reactions with recorded outcomes, in the model panel below.
           </p>
         </div>
-
-        <div className="block">
-          <h3>Scale at this step</h3>
-          <p className="scale-num">
-            <span className="num">{mmol(scale?.nRxn)}</span> mmol
-          </p>
-          <p className="muted small">What you have to run to end up with {targetG} g of target.</p>
-        </div>
       </div>
-
-      <Procedure procedure={s.procedure} />
-
-      <Adapted step={s} scaleMol={scale?.nRxn} />
 
       <Analogs analogs={s.analogs} indexStats={indexStats} />
 
