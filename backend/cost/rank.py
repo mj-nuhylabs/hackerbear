@@ -60,6 +60,15 @@ def summary(route: dict, table: dict[str, dict] | None = None,
     # How much of what the route buys the cost actually covers, by mass rather than by count.
     # Counting materials treats a 41 mg catalyst and a 3 kg starting material alike; mass says
     # how much of the route a bound really accounts for.
+    # Coverage is about price, and only price. Folding "did a record state the equivalents" into it
+    # was a mistake: almost no route has recorded equivalents, so almost every route scored zero,
+    # the gate stopped separating anything, and the order fell back to raw cost — which hands first
+    # place to whichever route has the most unpriced materials. Lidocaine's documented route lost
+    # its place to a two-step bromination costed on one priced material out of two.
+    #
+    # Equivalents are handled instead by costing every route the same way, in bom(): the ranked
+    # figure is stoichiometric, so routes are comparable, and the figure at the equivalents a record
+    # actually used is carried beside it for the routes that have one.
     mass_all = sum(l["mass_g"] or 0.0 for l in b["bom"])
     mass_priced = sum(l["mass_g"] or 0.0 for l in b["bom"] if l["consumption_cost"] is not None)
     covered = (mass_priced / mass_all) if mass_all else 0.0
@@ -74,6 +83,8 @@ def summary(route: dict, table: dict[str, dict] | None = None,
         "cost_known": known,
         "unpriced_materials": unpriced,
         "mass_covered": round(covered, 4),
+        "mass_priced": round((mass_priced / mass_all) if mass_all else 0.0, 4),
+        "assumed_equivalents": sum(1 for l in b["bom"] if not l.get("equiv_from_record")),
         # a bound built on most of the route's mass is worth comparing on cost (see the sort key)
         "bound_covers_most": covers_most,
         "materials": n_mat,

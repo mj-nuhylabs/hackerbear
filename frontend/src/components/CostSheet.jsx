@@ -271,6 +271,18 @@ export default function CostSheet({ cost, targetG, setTargetG, purification, set
           <span className="muted small">What the material you actually use is worth</span>
           {gap && <span className="total-gap small">{gap}</span>}
         </div>
+        {/* 레코드가 적어 둔 당량으로 다시 계산한 값. 순위는 양론 기준값으로 매긴다 — 그래야
+            당량이 기록된 경로가 기록이 없는 경로보다 비싸 보이지 않는다 (backend/cost/rank.py) */}
+        {totals.asRecorded != null && (
+          <div className="total">
+            <span className="total-k">At the recorded equivalents</span>
+            <span className="total-v num">{total(totals.asRecorded)}</span>
+            <span className="muted small">What it costs if you follow the procedure, not the bare stoichiometry</span>
+            <span className="total-gap small">
+              The figure routes are ranked on is the stoichiometric one, so every route is compared the same way
+            </span>
+          </div>
+        )}
         <div className="total total-main">
           <span className="total-k">Actual purchase</span>
           <span className="total-v num">{total(totals.purchase)}</span>

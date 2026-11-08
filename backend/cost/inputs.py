@@ -93,6 +93,35 @@ def _mw_of(record: dict):
     return lambda name: table.get((name or "").strip().lower())
 
 
+def substrate_equivalents(step: dict) -> dict[str, float]:
+    """Our substrate → the equivalents the record actually used, where it states them.
+
+    The cost engine charged every reactant at 1.0 equivalent. Aspirin's record uses 4.03
+    equivalents of acetic anhydride, so a gram of aspirin needs 3.34 g of it and the bill was
+    asking for 0.83 g. Equivalents are a ratio, so they carry across scale untouched; this is the
+    part of a recorded procedure that generalises, and the only part worth taking from it.
+
+    Only rows the table paired to one of our substrates are returned, and only from a table that
+    passes the same checks as the reagent roll-up.
+    """
+    t = best_table(step)
+    ours = {c for c in (_canon(r.get("smiles")) for r in (step.get("reactants") or [])) if c}
+    out: dict[str, float] = {}
+    for r in (t or {}).get("rows") or []:
+        eq = r.get("equiv")
+        if not eq or eq <= 0:
+            continue
+        # Match on structure, not on the table's substrate flag. Acetic anhydride appears in
+        # 20,833 ORD records, so substrates_of calls it a reagent — correctly, in general. In
+        # aspirin's acetylation it is one of the two reactants, and the record's 4.03 equivalents
+        # of it are exactly the number the bill needs.
+        for cand in (_canon(r.get("our_smiles")), _canon(r.get("recorded_smiles"))):
+            if cand and cand in ours:
+                out[cand] = max(out.get(cand, 0.0), float(eq))
+                break
+    return out
+
+
 def for_step(step: dict, n_rxn: float) -> tuple[list[dict], int]:
     """Non-substrate inputs of one step at n_rxn moles of reaction, and how many were skipped for
     having no structure. ([], 0) when nothing is recorded.

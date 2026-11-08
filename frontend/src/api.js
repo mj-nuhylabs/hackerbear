@@ -89,6 +89,8 @@ export async function getCost(route, { targetG, purification }) {
             }
           : null,
       consumption: l.consumption_cost,
+      equiv: l.equiv,
+      equivFromRecord: l.equiv_from_record,
       packs: l.packs,
       purchase: l.purchase_cost,
     })),
@@ -153,6 +155,7 @@ export async function getCost(route, { targetG, purification }) {
       unpriced: c.totals.unpriced_materials,
       timeH: c.totals.reaction_time_h,
       untimedSteps: c.totals.steps_without_time,
+      asRecorded: c.totals.consumption_cost_as_recorded ?? null,
       reagentCost: c.totals.reagent_cost ?? null,
       reagentLines: c.totals.reagent_lines ?? 0,
       reagentUncosted: c.totals.reagent_lines_uncosted ?? 0,

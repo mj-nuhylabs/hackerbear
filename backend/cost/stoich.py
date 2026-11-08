@@ -27,7 +27,8 @@ def _mw(c: dict) -> float | None:
 
 
 def rollup(steps: list[dict], target_g: float,
-           purification_factor: float = DEFAULT_PURIFICATION_FACTOR) -> dict:
+           purification_factor: float = DEFAULT_PURIFICATION_FACTOR,
+           use_recorded_equivalents: bool = False) -> dict:
     """스텝(출발물질→타겟 위상 순서) + 목표 질량 → 말단 물질별 필요 몰수.
 
     마지막 스텝의 생성물을 타겟으로 본다. 중간체는 앞 스텝으로 재귀적으로 전달된다.
@@ -44,6 +45,7 @@ def rollup(steps: list[dict], target_g: float,
     n_needed: dict[str, float] = {target["smiles"]: target_g / mw_t}
     n_rxn: dict[int, float] = {}
     catalysts: dict[str, float] = {}
+    equivalents_used: dict[str, dict] = {}
 
     # 타겟 쪽(마지막 스텝)부터 거꾸로
     for i in range(len(steps) - 1, -1, -1):
@@ -59,9 +61,17 @@ def rollup(steps: list[dict], target_g: float,
             continue
         rxn = need / (y * purification_factor)
         n_rxn[i] = rxn
+        # 당량은 레코드가 적어 둔 값을 쓴다. 비율이라 규모가 바뀌어도 그대로 간다 — 절차에서
+        # 일반화되는 부분이 이것이다. 레코드가 없으면 1.0이고, 어느 쪽인지 equivalents_used에 남긴다
+        from .inputs import substrate_equivalents
+        recorded_eq = substrate_equivalents(s) if use_recorded_equivalents else {}
+        stated_eq = substrate_equivalents(s)
         # 같은 반응물이 두 번 적혀 있으면 그 횟수가 stoich가 된다
         for smi, stoich in Counter(r["smiles"] for r in s["reactants"]).items():
-            n_needed[smi] = n_needed.get(smi, 0.0) + rxn * stoich * DEFAULT_EQUIV
+            eq = recorded_eq.get(smi, DEFAULT_EQUIV)
+            equivalents_used.setdefault(smi, {"equiv": stated_eq.get(smi, DEFAULT_EQUIV),
+                                              "from_record": smi in stated_eq})
+            n_needed[smi] = n_needed.get(smi, 0.0) + rxn * stoich * eq
         cond = s.get("conditions") or {}
         loading = cond.get("catalyst_loading")
         cat = cond.get("catalyst")
@@ -69,7 +79,7 @@ def rollup(steps: list[dict], target_g: float,
             catalysts[cat] = catalysts.get(cat, 0.0) + rxn * float(loading)
 
     return {"n_needed": n_needed, "n_rxn": n_rxn, "catalysts": catalysts,
-            "target": target, "warnings": warnings}
+            "equivalents": equivalents_used, "target": target, "warnings": warnings}
 
 
 def buy_vs_make(target: dict | None, target_g: float, price: dict | None, totals: dict) -> dict:
@@ -163,6 +173,8 @@ def bom(steps: list[dict], leaf_materials: list[dict], target_g: float,
             "mw": mw,
             "moles": moles,
             "mass_g": mass_g,
+            "equiv": (roll["equivalents"].get(smi) or {}).get("equiv"),
+            "equiv_from_record": (roll["equivalents"].get(smi) or {}).get("from_record", False),
             "in_stock": mat.get("in_stock"),
             # 왜 구매 가능으로 봤는지 (chem/stock.py): priced / commodity(ORD 흔한 시약) / zinc
             "stock_status": mat.get("stock_status"),
@@ -180,6 +192,23 @@ def bom(steps: list[dict], leaf_materials: list[dict], target_g: float,
             "as_of_date": (p or {}).get("as_of_date"),
             "price_is_mock": bool((p or {}).get("is_mock")),
         })
+
+    # The same bill again at the equivalents the records state, where they do. Ranking uses the
+    # stoichiometric figure above so every route is compared on one basis; this is what the route
+    # actually costs if you follow the procedure, and it is the larger, truer number.
+    as_recorded = None
+    if any(l.get("equiv_from_record") for l in lines):
+        roll2 = rollup(steps, target_g, purification_factor, use_recorded_equivalents=True)
+        total2 = 0.0
+        intermediates2 = {s["product"]["smiles"] for s in steps}
+        for smi, moles in roll2["n_needed"].items():
+            if smi in intermediates2:
+                continue
+            mat = by_smiles.get(smi, {"smiles": smi})
+            mw2, p2 = _mw(mat), prices.get(smi)
+            if mw2 and p2 and p2.get("price_per_g") is not None:
+                total2 += moles * mw2 * float(p2["price_per_g"])
+        as_recorded = total2 or None
 
     steps_with_time = [s for s in steps if (s.get("conditions") or {}).get("time_h") is not None]
     total_h = sum((s["conditions"]["time_h"] for s in steps_with_time), 0.0)
@@ -201,6 +230,8 @@ def bom(steps: list[dict], leaf_materials: list[dict], target_g: float,
             "purchase_cost": total_purchase if total_purchase else None,
             "currency": next((l["currency"] for l in lines if l["currency"]), None),
             "unpriced_materials": unpriced,
+            # 레코드가 적어 둔 당량으로 다시 계산한 값. 순위는 위의 양론 기준값으로 매긴다
+            "consumption_cost_as_recorded": as_recorded,
             # 시약·촉매·용매. 재료비와 합치지 않고 나란히 둔다
             "reagent_cost": rg_cost,
             "reagent_lines": len(rg_lines),
@@ -219,7 +250,12 @@ def bom(steps: list[dict], leaf_materials: list[dict], target_g: float,
                   for i, s in enumerate(steps)],
         "assumptions": {
             "purification_factor": purification_factor,
+            # 레코드가 당량을 적어 둔 반응물은 그 값으로, 나머지는 1.0으로 계산했다
             "equivalents": DEFAULT_EQUIV,
+            "materials_at_recorded_equivalents":
+                sum(1 for v in roll["equivalents"].values() if v["from_record"]),
+            "materials_at_assumed_equivalents":
+                sum(1 for v in roll["equivalents"].values() if not v["from_record"]),
             # 시약 양은 가정하지 않는다. 레코드가 없는 스텝은 그냥 미상으로 센다
             "steps_without_recorded_inputs": len(rg["steps_unrecorded"]),
             "steps_using_assumed_yield": assumed_yield_steps,
