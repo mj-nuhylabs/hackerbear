@@ -131,8 +131,12 @@ def charges(step: dict, table: dict | None, factor: float) -> list[dict]:
 # reports them in the same breath as the isolation ("...and distilled. B.p. 101 C/15 mm Hg; nD20
 # 1.5862"), and they are measurements of the source's own material, not instructions.
 _DATA = re.compile(r"(?:\b(?:1H|13C|19F|31P|29Si|11B)\s*NMR\b|\bPMR\b|\bHRMS\b|\bLCMS\b|\bESI?[+-]|"
-                   r"\bm/z\b|\bMH\+|\bIR\s*\(|\bm\.?p\.?\s*\d|\bmelting point\b|"
-                   r"\bb\.?p\.?\s*\d|\bboiling point\b|\bn_?D\s*\d|\bn\s*\d\d/D\b|"
+                   r"\bm/z\b|\bMH\+|\bIR\s*\(|\bm\.?p\.?\s*\d|"
+                   # "melting point" and "boiling point" spelled out are prose, not a data label:
+                   # cutting the sentence there left caffeine's data line reading "melting point
+                   # with that of an authentic caffeine standard, m.p. 234-236 C". The abbreviation
+                   # followed by a number is where the data actually starts.
+                   r"\bb\.?p\.?\s*\d|\bn_?D\s*\d|\bn\s*\d\d/D\b|"
                    r"\[α\]|\bAnal\.\s*Calcd)", re.I)
 
 

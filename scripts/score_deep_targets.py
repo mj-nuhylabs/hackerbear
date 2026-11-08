@@ -499,7 +499,14 @@ def _protocol_for(recs, ev, cond, rxn_smiles, product=None):
     if table is None:
         table = next((r.get("table") for r in recs if r.get("table")), None)
     proc = _first_procedure(recs, sid)
-    y = next((r["yield_pct"] for r in recs if r.get("yield_pct") is not None), None)
+    # The yield belongs to the run the rest of the sheet came from. Taking the first yield in the
+    # list instead printed 62% on osimertinib's step 3 — US08946235B2's 140 C run — above a work-up
+    # quoted from the 85 C run in the same patent that ends "(79.4 g, 96%)", and beside the 96% the
+    # step itself reports. One step, one page, two yields. Same rule as the step's own yield_basis.
+    y = next((r["yield_pct"] for r in recs
+              if r.get("reaction_id") == sid and r.get("yield_pct") is not None), None)
+    if y is None:
+        y = next((r["yield_pct"] for r in recs if r.get("yield_pct") is not None), None)
     analog = None
 
     # Most steps have no record of that exact reaction, and every one of them has a record of the
