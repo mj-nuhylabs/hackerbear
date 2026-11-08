@@ -34,9 +34,9 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "backend"))
 
-# SYNTHPATH_DEEP_DIR lets a rebuild write somewhere other than the live demo inputs (the retrain
+# SYNPATH_DEEP_DIR lets a rebuild write somewhere other than the live demo inputs (the retrain
 # loop re-runs score_deep_targets.py on whatever is in data/deep/ at any moment)
-DEEP = Path(os.environ.get("SYNTHPATH_DEEP_DIR") or ROOT / "backend/data/deep")
+DEEP = Path(os.environ.get("SYNPATH_DEEP_DIR") or ROOT / "backend/data/deep")
 ADAPT_K = 3             # nearest recorded reactions shown in the step panel
 # ...but this many are looked at when choosing the one to build the sheet from. They are
 # ordered by Model A, not by similarity, so the first three are not the three closest: a step
@@ -100,8 +100,8 @@ def main():
 
     def desc(s):
         if s not in _desc_cache:
-            # 스텝의 분자는 화면에 이름으로 뜬다 — 여기서만 이름을 찾는다.
-            # lite()는 후보 경로 수천 개를 훑으므로 켜지 않는다
+            # Step molecules are shown by name on screen; names are looked up only here.
+            # Not enabled in lite(), which scans thousands of candidate routes
             _desc_cache[s] = describe(s, look_up_name=True)
         return _desc_cache[s]
 
@@ -244,7 +244,7 @@ def main():
                             if y is not None else {"basis": "assumed", "value": 0.70}),
             "plausibility_raw": raw, "plausibility_calibrated": cal,
             "recorded_step": recorded_info,
-            # 이 스텝을 우리 규모로 돌리는 순서표. 숫자는 전부 레코드/환산표에서 온다 (evidence/protocol.py)
+            # Run order for performing this step at our scale. All numbers come from records / the conversion table (evidence/protocol.py)
             "protocol": _proto,
             # atoms of the product no listed reactant supplies (chem/balance.py): the record is missing
             # a reactant, so this step's material is not on the bill and the route's cost is a lower bound

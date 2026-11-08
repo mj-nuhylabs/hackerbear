@@ -4,7 +4,7 @@
 // The thumbs follow the view from its store, as the camera does: a pan or zoom draws no React render here, so the
 // canvas draws again no slower than with no bars.
 import { useLayoutEffect, useRef, useState } from "react";
-import { frameHeight, frameWidth } from "./synthpath"; // SynthPath: the editor's width is its pane's, not the window's
+import { frameHeight, frameWidth } from "./synpath"; // SynPath: the editor's width is its pane's, not the window's
 import { bar, dragShift, pageShift, type Bar } from "./scroll";
 import type { Store } from "./store";
 

@@ -1,7 +1,7 @@
 // The document's style: its page, its drawing style and its text defaults. Saved in the file, so a drawing looks
 // the same wherever it is opened. Journal presets use each publisher's house numbers (lengths in points).
 import type { Style } from "./render.ts";
-import { inHost } from "./synthpath";
+import { inHost } from "./synpath";
 
 // Pages in mm, portrait. Half: a half-width manuscript column. ACS columns: 3.25 in and 7 in wide, 9.5 in tall.
 // Slides: PowerPoint's Widescreen (13.333 x 7.5 in, its default) and On-screen Show (10 x 7.5 in), stored portrait like
@@ -90,8 +90,8 @@ export const PRESETS: Record<string, Drawn> = {
   "New Document (ChemDraw)": { bond: 30, line: 1, bold: 4, margin: 2, hash: 2.7, spacing: 12, labelFont: "Arial", labelSize: 10, captionFont: "Arial", captionSize: 12 },
   "New Slide (ChemDraw)": { bond: 30, line: 1.6, bold: 4, margin: 2, hash: 2.7, spacing: 15, labelFont: "Arial", labelSize: 12, captionFont: "Arial", captionSize: 16 },
 };
-// SynthPath: new drawings follow the system's light or dark ("system", one of Octet's own backgrounds), so the
-// drawing sheet matches SynthPath's theme. Exports are drawn on white whatever the page (export.ts).
+// SynPath: new drawings follow the system's light or dark ("system", one of Octet's own backgrounds), so the
+// drawing sheet matches SynPath's theme. Exports are drawn on white whatever the page (export.ts).
 export const DEFAULT_STYLE: DocStyle = { preset: "ACS Document 1996", page: "A4", custom: [180, 120], landscape: false, edges: true, grid: "bond", background: "system", colour: "#000000", terminalLabels: false, carbonLabels: false, hideH: false, interpret: true, chainAngle: 120, scale: 1, ...PRESETS["ACS Document 1996"] };
 // The lengths and sizes a document scale multiplies (bond spacing is a percent, so it stays).
 export const SCALED = ["bond", "line", "bold", "margin", "hash", "labelSize", "captionSize"] as const;
@@ -166,7 +166,7 @@ export function elementColours(token?: (name: string) => string): Record<string,
   if (!token) {
     const probe = document.createElement("div");
     probe.dataset.theme = "light";
-    // SynthPath: read inside .octet-host, where Octet's tokens are scoped.
+    // SynPath: read inside .octet-host, where Octet's tokens are scoped.
     return inHost((parent) => {
       parent.append(probe);
       const css = getComputedStyle(probe), values = elementColours((name) => css.getPropertyValue(`--atom-${name}`).trim());

@@ -1,4 +1,4 @@
-// Octet Draw's editor (vendor/octet-draw, Apache-2.0, Sam Ellis), rendered in SynthPath's Draw panel. This module
+// Octet Draw's editor (vendor/octet-draw, Apache-2.0, Sam Ellis), rendered in SynPath's Draw panel. This module
 // loads only when the panel first opens: the editor with Indigo's wasm and Octet's data is about 25 MB.
 //
 // Octet's stylesheets are scoped to .octet-host (vite.config.js). The editor unmounts when the panel closes; Octet
@@ -12,7 +12,7 @@ import '../../vendor/octet-draw/brand/tokens.css' // before Editor, which reads 
 import { Component } from 'react'
 import Editor, { keepNow } from '../../vendor/octet-draw/src/Editor'
 import { toInchiKey, toSmiles } from '../../vendor/octet-draw/src/chem'
-import { synthpath } from '../../vendor/octet-draw/src/synthpath'
+import { synpath } from '../../vendor/octet-draw/src/synpath'
 
 class Guard extends Component {
   state = { failed: false }
@@ -47,12 +47,12 @@ export default function OctetEditor() {
   )
 }
 
-// The structure SynthPath searches: the selection, or the whole drawing when nothing is selected. Octet's Indigo
+// The structure SynPath searches: the selection, or the whole drawing when nothing is selected. Octet's Indigo
 // engine writes the SMILES (without the CXSMILES part, as Octet's own Search PubChem sends it) and the InChIKey.
 export function readDrawing() {
-  const s = synthpath.state
+  const s = synpath.state
   if (!s?.loaded) return { problem: 'Octet is still loading its structure engine.' }
-  const mol = synthpath.part?.()
+  const mol = synpath.part?.()
   if (!mol?.atoms.length) return { problem: s.selected ? 'The selection holds no structure.' : 'Draw a structure first.' }
   let smiles, inchikey
   try {

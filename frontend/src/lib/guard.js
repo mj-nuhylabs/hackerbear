@@ -1,5 +1,5 @@
-// LLM 출력 가드의 목업 버전. 실제 강제는 backend/evidence/guards.py에서 한다.
-// 설명문에 구조식, 숫자+단위, DOI, 특허번호가 섞이면 통과시키지 않는다.
+// Mock version of the LLM output guard. The real enforcement is in backend/evidence/guards.py.
+// If an explanation contains a structure, number+unit, DOI, or patent number, it does not pass.
 
 const UNIT = /\d+(?:[.,]\d+)?\s*(?:%|°\s*C|℃|mmol|mol\b|mg\b|kg\b|g\b|mL|µL|L\b|M\b|h\b|hr|min|equiv|eq\b|USD|\$)/i
 const DOI = /\b10\.\d{4,9}\/\S+/

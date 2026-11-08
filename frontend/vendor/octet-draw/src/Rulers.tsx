@@ -2,7 +2,7 @@
 // top-left corner, in the user's unit, with a mark where the pointer is and a band across the selection. They are
 // window chrome over the canvas, so they are never exported or printed.
 import { useMemo } from "react";
-import { frameHeight, frameWidth } from "./synthpath"; // SynthPath: the editor's width is its pane's, not the window's
+import { frameHeight, frameWidth } from "./synpath"; // SynPath: the editor's width is its pane's, not the window's
 import { rulerTicks } from "./grid";
 import type { RulerUnit } from "./settings";
 

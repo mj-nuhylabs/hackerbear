@@ -1,11 +1,11 @@
-"""채운 가격 시트를 data/prices.csv에 넣는다.
+"""Import the filled-in price sheet into data/prices.csv.
 
-**출처 없는 가격은 거부한다.** 절대 규칙 2 — UI에 뜨는 모든 숫자는 출처가 있어야 한다.
-가격만 적혀 있고 supplier와 url이 없으면 그 줄은 들어가지 않고, 왜 거부됐는지 출력한다.
-이 검사는 사람이 성실한지 믿지 않기 위해 있다. 새벽 두 시에는 아무도 성실하지 않다.
+**Prices without a source are rejected.** Absolute rule 2: every number shown in the UI must have a source.
+A row with a price but no supplier and url is not imported, and the reason for rejection is printed.
+This check exists so we do not have to trust that people are diligent. At 2 a.m. nobody is.
 
-들어간 줄은 is_mock=false, as_of_date=오늘이 된다. 기존 예시 줄은 건드리지 않는다 —
-같은 SMILES면 교체되고, 아니면 예시인 채로 남아 UI에 'example' 배지가 그대로 붙는다.
+Imported rows get is_mock=false and as_of_date=today. Existing example rows are left alone:
+a row with the same SMILES is replaced; otherwise it stays an example and keeps its 'example' badge in the UI.
 
     .venv/bin/python -I scripts/import_prices.py [--sheet ...] [--dry-run]
 """
@@ -22,7 +22,7 @@ ROOT = Path(__file__).resolve().parents[1]
 SHEET = ROOT / "backend/data/prices_to_fill.csv"
 PRICES = ROOT / "backend/data/prices.csv"
 
-# prices.csv의 컬럼. catalog_no·url은 출처를 적는 칸이다 (cost/prices.py가 읽어 UI로 보낸다)
+# Columns of prices.csv. catalog_no and url are where the source goes (cost/prices.py reads them and sends them to the UI)
 COLUMNS = ["smiles", "name", "price_per_g", "pack_size_g", "pack_price",
            "currency", "supplier", "catalog_no", "url", "as_of_date", "is_mock"]
 
@@ -47,7 +47,7 @@ def canon(smiles: str) -> str | None:
 
 
 def check(row: dict) -> tuple[dict | None, str | None]:
-    """한 줄 → (가격 행, 거부 사유). 둘 중 하나는 None이다."""
+    """One row -> (price row, rejection reason). Exactly one of the two is None."""
     ppg = num(row.get("price_per_g"))
     pack_g = num(row.get("pack_size_g"))
     pack_price = num(row.get("pack_price"))
@@ -55,9 +55,9 @@ def check(row: dict) -> tuple[dict | None, str | None]:
     url = (row.get("url") or "").strip()
 
     if ppg is None and pack_price is None:
-        return None, "empty"                      # 안 채운 줄. 조용히 넘어간다
+        return None, "empty"                      # row not filled in; skip silently
 
-    # 여기부터는 가격이 적힌 줄이다. 출처가 없으면 들어갈 수 없다
+    # From here on the row has a price. Without a source it cannot be imported
     if not supplier:
         return None, "a price with no supplier"
     if not url:
@@ -65,7 +65,7 @@ def check(row: dict) -> tuple[dict | None, str | None]:
     if not url.startswith(("http://", "https://")):
         return None, f"the url is not a link: {url!r}"
 
-    # 둘 중 하나만 적혀 있으면 나머지를 계산한다 — 사람이 둘 다 적을 필요는 없다
+    # If only one of the two is given, compute the other; people need not enter both
     if ppg is None and pack_g and pack_price is not None:
         ppg = pack_price / pack_g
     if pack_price is None and pack_g and ppg is not None:
@@ -122,7 +122,7 @@ def main():
         else:
             rejected.append((row.get("name") or row.get("smiles", ""), why))
 
-    # 기존 파일을 읽어 둔다. 같은 SMILES는 교체, 나머지는 그대로 (예시 줄은 예시로 남는다)
+    # Read the existing file first. Same SMILES is replaced; the rest stays as is (example rows stay examples)
     existing: dict[str, dict] = {}
     if a.prices.exists():
         for row in csv.DictReader(a.prices.open(newline="")):

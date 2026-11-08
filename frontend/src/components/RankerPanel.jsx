@@ -1,11 +1,11 @@
-// 두 랭킹 모델이 얼마나 쓸만한지 — 백엔드가 /rankers/metrics로 준 수치를 그대로 띄운다.
+// How useful the two ranking models are -- show the numbers the backend gave via /rankers/metrics as they are.
 //
-// ModelPanel과 같은 원칙이다: 판정 문장을 하드코딩하지 않는다. "기준선을 이겼다"는 **오늘 학습한
-// 모델**에 대한 말이라, 재학습해서 뒤집히면 문장도 뒤집혀야 한다. 그래서 숫자에서 끌어낸다.
+// Same principle as ModelPanel: verdict sentences are not hardcoded. "Beat the baseline" is a statement about **the model
+// trained today**, so if retraining flips it, the sentence must flip too. So we derive it from the numbers.
 //
-// 천장(oracle, ceiling)을 같이 띄우는 것이 이 패널의 핵심이다. 모델은 **검색이 찾아온 후보 중에서만**
-// 고를 수 있어서, 후보에 정답이 없으면 아무리 잘 골라도 못 맞힌다. 그 한계를 숨기면 점수가 실제보다
-// 좋아 보인다.
+// Showing the ceiling (oracle) alongside is the core of this panel. A model can pick **only from the candidates search
+// found**, so if the answer is not among the candidates, no amount of good picking gets it right. Hiding that limit makes
+// the score look better than it is.
 import { useEffect, useState } from 'react'
 
 const LOADING = undefined
@@ -15,7 +15,7 @@ const pct = (v, digits = 1) => (v == null || Number.isNaN(v) ? '—' : `${(Numbe
 const num = (v, digits = 3) => (v == null || Number.isNaN(v) ? '—' : Number(v).toFixed(digits))
 const count = (v) => (v == null ? '—' : Number(v).toLocaleString())
 
-// 기준선 대비 몇 배인지. 숫자에서 나오므로 재학습하면 같이 바뀐다.
+// How many times the baseline. It comes from the numbers, so it changes with retraining.
 function versus(model, base, label) {
   if (model == null || !base) return null
   const ratio = model / base
@@ -33,9 +33,9 @@ function versus(model, base, label) {
   )
 }
 
-// 천장을 몇 퍼센트나 잡았는지. 천장은 "후보 안에 정답이 들어 있는 경우의 비율"이고, 그 정답이
-// 무엇인지는 모델마다 다르다 — 그래서 문장을 호출부에서 받는다. 두 모델에 같은 문구를 쓰면
-// 한쪽은 거짓말이 된다.
+// What percent of the ceiling was reached. The ceiling is "the fraction of cases where the answer is among the candidates", and what
+// that answer is differs per model -- so the sentence is passed in by the caller. Using the same wording for both models
+// would make it a lie for one of them.
 function ceilingNote(got, ceiling, what) {
   if (got == null || !ceiling) return null
   return (
@@ -93,8 +93,8 @@ function Transfer({ m }) {
 }
 
 function Route({ m }) {
-  // 측정 수치는 route_ranker.py가 쓰는 metrics 파일의 `test` 아래에 있다 (transfer 쪽과 같은 모양).
-  // 예전에 이 블록을 한 단계 위에서 읽어서, 모델이 멀쩡히 학습돼 있는데도 표가 전부 —로 떴다.
+  // The measured numbers are under `test` in the metrics file that route_ranker.py writes (same shape as the transfer side).
+  // This block used to be read one level up, so the table showed — everywhere even though the model was trained fine.
   const t = m?.test
   if (!t)
     return (

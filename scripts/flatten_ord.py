@@ -1,17 +1,17 @@
 """ORD projections parquet → one flat table (backend/data/ord_flat.parquet).
 
-읽는 곳은 `backend/data/ord/projections/` 하나다. ORD의 projections 아티팩트는 이미 평면화돼
-있고(단위가 컬럼명에 접혀 있다: setpoint_kelvin, reaction_time_seconds), 분자 식별자도 `smiles`로
-풀려 있다. 그래서 protobuf를 거치지 않는다 — 예전 버전은 reaction.proto의 FileDescriptorProto를
-파싱해 data/*.parquet의 protobuf를 풀었는데, projections가 같은 2,428,291행을 그대로 담고 있어
-그 경로는 통째로 불필요하다. (evidence/corpus.py도 같은 projections를 읽는다.)
+It reads one place only: `backend/data/ord/projections/`. The ORD projections artifact is already flattened
+(units are folded into column names: setpoint_kelvin, reaction_time_seconds), and molecule identifiers are
+also resolved to `smiles`, so we skip protobuf. An earlier version parsed the FileDescriptorProto in reaction.proto
+to decode the protobuf in data/*.parquet, but projections holds the same 2,428,291 rows,
+so that path is entirely unnecessary. (evidence/corpus.py reads the same projections.)
 
-여기서 나오는 값은 전부 레코드에 적힌 것이거나 그것으로 환산한 값이다. 없으면 None이다.
+Every value that comes out is written in the record or converted from it. If absent, it is None.
 
-주의 — 반응 SMILES가 두 종류다:
-  rxn_smiles           inputs의 REACTANT role 컴포넌트 + 원하는 생성물로 조립. **원자 매핑 없음.**
-  rxn_smiles_reported  레코드의 반응 레벨 identifier. **97~99%가 원자 매핑을 달고 있다.**
-후자를 키로 조인하거나 중복 제거할 거면 반드시 매핑을 먼저 떼야 한다.
+Note: there are two kinds of reaction SMILES:
+  rxn_smiles           assembled from the REACTANT-role components of inputs + the desired product. **No atom mapping.**
+  rxn_smiles_reported  the reaction-level identifier of the record. **97-99% carry atom mapping.**
+If you join or deduplicate on the latter, strip the mapping first.
 
 usage: .venv/bin/python scripts/flatten_ord.py [--workers 10]
 """
@@ -26,15 +26,15 @@ import pyarrow.parquet as pq
 ROOT = Path(__file__).resolve().parents[1]
 PROJECTIONS = ROOT / "backend/data/ord/projections"
 OUT = ROOT / "backend/data/ord_flat.parquet"
-# projections 파일 메타데이터에는 ord.source_dataset_id만 있고 사람이 읽는 이름이 없다.
-# data/(protobuf)의 ord.name을 미리 뽑아둔 맵. 없으면 dataset_name이 None이 될 뿐 나머지는 그대로 동작한다.
+# The projections file metadata has only ord.source_dataset_id, no human-readable name.
+# A map of ord.name from data/ (protobuf), extracted in advance. If missing, dataset_name is just None and everything else works.
 NAMES = ROOT / "backend/data/ord/dataset_names.json"
 
 COLUMNS = ["reaction_id", "smiles", "inputs", "conditions", "outcomes", "provenance"]
 
 
 def _items(m):
-    """projections의 map 컬럼은 to_pylist()에서 [(key, value), ...] 또는 dict로 나온다."""
+    """Map columns in projections come out of to_pylist() as [(key, value), ...] or dict."""
     if m is None:
         return []
     return list(m.items()) if isinstance(m, dict) else list(m)
@@ -76,8 +76,8 @@ def _row(r: dict) -> dict:
     pv = r.get("provenance") or {}
     return {
         "reaction_id": r.get("reaction_id"),
-        "rxn_smiles": rxn,                       # REACTANT role로 조립. 원자 매핑 없음
-        "rxn_smiles_reported": r.get("smiles"),  # 반응 레벨 identifier. 대부분 원자 매핑 있음
+        "rxn_smiles": rxn,                       # assembled from REACTANT roles. No atom mapping
+        "rxn_smiles_reported": r.get("smiles"),  # reaction-level identifier. Mostly atom-mapped
         "reactants": ".".join(reactants) or None,
         "reagents": ".".join(by_role.get("REAGENT", [])) or None,
         "catalysts": ".".join(by_role.get("CATALYST", [])) or None,

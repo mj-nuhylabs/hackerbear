@@ -1,11 +1,11 @@
-"""UI 목업용 데이터 생성기.
+"""Data generator for the UI mockup.
 
-실제 값: 구조(SVG), 정규 SMILES, MW, InChIKey (RDKit) / 경로·템플릿·선례 수 (AiZynthFinder + USPTO 템플릿 라이브러리)
-         / 이름→SMILES, CAS (PubChem PUG REST)
-예시값: 가격, 출처 ID, 문헌 수율, 반응 조건, 타당성 점수, 설명문, 갭 — 각 레코드의 `mock` 필드에 명시
+Real values: structure (SVG), canonical SMILES, MW, InChIKey (RDKit) / routes, templates, precedent counts (AiZynthFinder + USPTO template library)
+         / name->SMILES, CAS (PubChem PUG REST)
+Example values: price, source ID, literature yield, reaction conditions, plausibility score, explanation text, gaps; each is listed in the record's `mock` field
 
-사용: .venv/bin/python scripts/make_mock_data.py imatinib lidocaine celecoxib
-출력: frontend/src/mock/demo.json
+Usage: .venv/bin/python scripts/make_mock_data.py imatinib lidocaine celecoxib
+Output: frontend/src/mock/demo.json
 """
 import hashlib
 import json
@@ -26,7 +26,7 @@ OUT = ROOT / "frontend/src/mock/demo.json"
 ANALOGOUS_MIN_PRECEDENTS = 10
 MAX_ROUTES = 5
 
-# 다크/라이트 양쪽에서 읽히는 원자 색. 탄소(검정)는 SVG에서 currentColor로 치환
+# Atom colors that read on both dark and light. Carbon (black) is replaced with currentColor in the SVG
 PALETTE = {
     0: (0, 0, 0), 6: (0, 0, 0), 1: (0, 0, 0),
     7: (0.24, 0.45, 0.88), 8: (0.86, 0.26, 0.22), 9: (0.16, 0.62, 0.56),
@@ -101,19 +101,19 @@ def mock_price(smiles: str) -> dict:
     }
 
 
-# gaps(이 템플릿이 시도되지 않은 기질 클래스)는 여기서 만들지 않는다.
+# gaps (substrate classes this template has not been tried on) are not generated here.
 #
-# 전에는 GAP_POOL에서 템플릿 해시로 골라 넣었다. 숫자가 아니라 **문헌에 대한 주장**이라
-# 더 나빴다 — "이 템플릿은 ortho,ortho-이치환 아릴에 시도된 적이 없다"는 코퍼스를 세어 봐야
-# 알 수 있는 사실인데 해시로 뽑고 있었다 (절대 규칙 1·2).
+# It used to be picked from GAP_POOL by template hash. It is a claim about the literature, not a number,
+# which made it worse: "this template has never been tried on ortho,ortho-disubstituted aryls" is a fact
+# you only know by counting the corpus, and we were drawing it from a hash (absolute rules 1 and 2).
 #
-# 라이브 /routes는 gaps를 아예 내보내지 않고, UI는 없으면 "— Not computed for this step yet."을
-# 띄운다. 그 정직한 빈 상태가 이미 있으므로 여기서도 비워 두는 것이 맞다.
-# 진짜로 채우려면 코퍼스에서 템플릿별 기질 클래스를 세야 한다 (GET /gaps, 미구현).
+# Live /routes does not emit gaps at all, and when they are missing the UI shows "— Not computed for this step yet."
+# That honest empty state already exists, so leaving it empty here is the right thing.
+# To fill it for real, count substrate classes per template in the corpus (GET /gaps, not implemented).
 
 
 def walk(node: dict, steps: list, leaves: dict):
-    """AiZynth route dict(타겟→말단)를 후위 순회 → steps는 출발물질→타겟 위상 순서."""
+    """Post-order traversal of the AiZynth route dict (target->leaves); steps come out in topological order, starting material->target."""
     if node["type"] != "mol":
         return
     if not node.get("children"):
@@ -136,9 +136,9 @@ def walk(node: dict, steps: list, leaves: dict):
         "product": product,
         "evidence": {
             "tier": tier,
-            # AiZynthFinder 템플릿 테이블에는 특허번호가 없다(컬럼이 retro_template, template_hash,
-            # classification, library_occurence 넷뿐). 지어내지 않고 비워 둔다 —
-            # 실제 출처는 scripts/attach_procedures.py가 ORD 레코드에서 붙인다.
+            # The AiZynthFinder template table has no patent numbers (it has only four columns: retro_template, template_hash,
+            # classification, library_occurence). We leave it empty rather than invent one;
+            # the real source is attached from ORD records by scripts/attach_procedures.py.
             "source_ids": [],
             "precedent_count": occ,
             "url": None,
@@ -147,9 +147,9 @@ def walk(node: dict, steps: list, leaves: dict):
         "conditions": None,
         "reported_yield": None,
         "assumed_yield": 0.7,
-        # 타당성 점수는 여기서 만들지 않는다. scripts/bake_plausibility.py가 학습된 모델로 채운다.
-        # (절차·출처가 scripts/attach_procedures.py로 붙는 것과 같은 구조다.)
-        # 비어 있으면 UI는 "—"를 띄운다. 채워질 때까지는 그게 맞는 표시다.
+        # The plausibility score is not generated here. scripts/bake_plausibility.py fills it with the trained model.
+        # (Same structure as procedures/sources being attached by scripts/attach_procedures.py.)
+        # When empty the UI shows "—". Until it is filled, that is the correct display.
         "plausibility_raw": None,
         "plausibility_calibrated": None,
         "mock": [],
@@ -186,7 +186,7 @@ def main(names: list[str]):
                 "leaf_materials": list(leaves.values()),
                 "aizynth_score": round(float(sc.get("state score", next(iter(sc.values())))), 3),
             })
-        # 다단계 경로를 우선 보여주되 점수 순서 유지
+        # Show multi-step routes first, but keep score order
         routes = sorted(routes, key=lambda r: (-min(len(r["steps"]), 3), -r["aizynth_score"]))[:MAX_ROUTES]
         routes.sort(key=lambda r: -r["aizynth_score"])
         for r in routes:
@@ -202,7 +202,7 @@ def main(names: list[str]):
             "routes": routes,
         })
 
-    # 증거 등급·조건·수율은 여기서 만들지 않는다. scripts/attach_procedures.py가 ORD 레코드에서 붙인다.
+    # Evidence tier, conditions and yield are not generated here. scripts/attach_procedures.py attaches them from ORD records.
 
     OUT.parent.mkdir(parents=True, exist_ok=True)
     OUT.write_text(json.dumps({

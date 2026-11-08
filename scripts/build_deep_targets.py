@@ -35,9 +35,9 @@ sys.path.insert(0, str(ROOT / "backend"))
 
 from model.holdout import ALL_TARGETS, slug  # noqa: E402
 
-# SYNTHPATH_DEEP_DIR lets a rebuild write somewhere other than the live demo inputs (the retrain
+# SYNPATH_DEEP_DIR lets a rebuild write somewhere other than the live demo inputs (the retrain
 # loop re-runs score_deep_targets.py on whatever is in data/deep/ at any moment)
-DEEP = Path(os.environ.get("SYNTHPATH_DEEP_DIR") or ROOT / "backend/data/deep")
+DEEP = Path(os.environ.get("SYNPATH_DEEP_DIR") or ROOT / "backend/data/deep")
 CONFIG = ROOT / "backend/data/aizynth/config.yml"
 ITERATIONS = 5000
 TIME_LIMIT_S = 1500

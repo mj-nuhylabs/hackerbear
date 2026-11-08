@@ -2,11 +2,11 @@ import { useEffect, useState } from 'react'
 import { DASH, sig } from '../lib/format'
 import './analogs.css'
 
-// 이 패널의 값은 전부 ORD 레코드에 적힌 것이거나 그것으로 계산한 것이다.
-// 유사도는 DRFP 비트의 Tanimoto — 코드 계산값이고, 모델이 매긴 점수가 아니다.
+// Every value in this panel is either written in an ORD record or computed from one.
+// Similarity is the Tanimoto of DRFP bits -- a code-computed value, not a score assigned by a model.
 
-// 표시용 라벨. 수율에 쓰는 문턱은 evidence/analogs.py의 YIELD_MIN_SIMILARITY(0.6)이고, 그 아래
-// 구간에서는 고정 70%가 더 정확하다는 게 측정 결과다 — 그 숫자는 Accuracy가 백엔드에서 읽어 띄운다.
+// Display label. The threshold used for yield is YIELD_MIN_SIMILARITY (0.6) in evidence/analogs.py; below that
+// range, measurement shows a fixed 70% is more accurate -- Accuracy reads that number from the backend and shows it.
 const BANDS = [
   [0.8, 'near-identical'],
   [0.6, 'close'],
@@ -18,7 +18,7 @@ const bandOf = (s) => BANDS.find(([lo]) => s >= lo)[1]
 const pctRange = (a) => {
   if (a.yield_median == null) return null
   const mid = `${Math.round(a.yield_median)}%`
-  // 같은 반응을 여러 번 돌린 기록이 있으면 퍼짐을 같이 보여준다. 하나면 그 값뿐이다.
+  // If the same reaction was run several times, show the spread too. With one run, it is just that value.
   if (a.yield_min == null || a.yield_max == null || Math.round(a.yield_min) === Math.round(a.yield_max))
     return mid
   return `${mid} (${Math.round(a.yield_min)}–${Math.round(a.yield_max)}%, ${a.n_yields} runs)`
@@ -65,8 +65,8 @@ function Analog({ a }) {
   )
 }
 
-// 수율 오차는 백엔드가 잰 값을 그대로 읽는다. 문장을 하드코딩하지 않는 이유는 ModelPanel과 같다 —
-// 인덱스를 다시 만들면 숫자가 바뀌고, 그러면 문장도 같이 바뀌어야 한다.
+// The yield error is read straight from what the backend measured. The reason we do not hardcode the sentence is the same as in ModelPanel --
+// rebuilding the index changes the numbers, and then the sentence has to change with them.
 function Accuracy({ topSimilarity }) {
   const [m, setM] = useState(undefined)
   useEffect(() => {

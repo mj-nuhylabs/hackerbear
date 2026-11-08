@@ -1,25 +1,25 @@
-"""구조 그림 → SMILES. **격리된 venv(vendor/osr-venv)에서 돈다.**
+"""Structure image -> SMILES. **Runs in an isolated venv (vendor/osr-venv).**
 
-DECIMER는 TensorFlow를 끌고 오는데, 그걸 메인 venv에 넣으면 RDKit/AiZynthFinder가 쓰는 numpy와
-충돌할 수 있다. 그래서 따로 venv를 두고 서브프로세스로 부른다 (backend/chem/image.py).
+DECIMER pulls in TensorFlow, and putting that in the main venv could conflict with the numpy that
+RDKit/AiZynthFinder use. So it has its own venv and is called as a subprocess (backend/chem/image.py).
 
-이 스크립트는 모델이 뱉은 SMILES를 그대로 넘긴다. 검증·정규화는 RDKit이 있는 메인 venv에서 한다.
+This script passes through the SMILES the model emits as is. Validation and normalization happen in the main venv, where RDKit lives.
 
-모델을 올리는 데 25초쯤 걸린다. 요청마다 새로 띄우면 못 쓰므로 --serve로 상주시킨다.
+Loading the model takes about 25 seconds. Relaunching per request is unusable, so --serve keeps it resident.
 
 usage:
-  vendor/osr-venv/bin/python scripts/osr_predict.py IMAGE [IMAGE ...]   한 번 돌고 끝
-  vendor/osr-venv/bin/python scripts/osr_predict.py --serve             stdin에서 경로를 한 줄씩 받는다
-출력: 한 줄에 JSON 하나 {"path":..., "smiles":..., "confidence":..., "error":...}
---serve는 모델을 다 올린 뒤 {"ready": true}를 먼저 한 줄 찍는다.
+  vendor/osr-venv/bin/python scripts/osr_predict.py IMAGE [IMAGE ...]   run once and exit
+  vendor/osr-venv/bin/python scripts/osr_predict.py --serve             read paths from stdin, one per line
+Output: one JSON per line {"path":..., "smiles":..., "confidence":..., "error":...}
+--serve prints {"ready": true} on one line first, after the model is fully loaded.
 """
 import json
 import sys
 
 
 def load():
-    """DECIMER 버전에 따라 신뢰도까지 주는 함수가 있기도 하고 없기도 하다."""
-    import DECIMER  # noqa: N811  (패키지 이름이 대문자다)
+    """Depending on the DECIMER version, a function that also returns confidence may or may not exist."""
+    import DECIMER  # noqa: N811  (the package name is uppercase)
 
     with_conf = getattr(DECIMER, "predict_SMILES_with_confidence", None)
     plain = getattr(DECIMER, "predict_SMILES", None)
@@ -29,11 +29,11 @@ def load():
 
 
 def predict(path, plain, with_conf):
-    """(smiles, confidence) — 신뢰도는 못 구하면 None. 지어내지 않는다."""
+    """(smiles, confidence); confidence is None if unavailable. Nothing is invented."""
     if with_conf is not None:
         try:
             out = with_conf(path)
-            # 버전에 따라 [(token, conf), ...] 이거나 (smiles, conf)
+            # Depending on the version, either [(token, conf), ...] or (smiles, conf)
             if isinstance(out, tuple) and len(out) == 2 and isinstance(out[0], str):
                 return out[0], float(out[1])
             if isinstance(out, list) and out and isinstance(out[0], (list, tuple)):
@@ -41,7 +41,7 @@ def predict(path, plain, with_conf):
                 confs = [float(c) for _, c in out if c is not None]
                 return smiles, (min(confs) if confs else None)
         except Exception:
-            pass  # 아래 plain으로 넘어간다
+            pass  # fall through to plain below
     if plain is None:
         raise RuntimeError("no usable DECIMER entry point")
     return plain(path), None
@@ -63,7 +63,7 @@ def main(argv):
     plain, with_conf = load()
     if argv[:1] == ["--serve"]:
         emit({"ready": True})
-        for line in sys.stdin:  # 한 줄에 이미지 경로 하나
+        for line in sys.stdin:  # one image path per line
             p = line.strip()
             if p:
                 emit(one(p, plain, with_conf))

@@ -1,4 +1,4 @@
-"""FastAPI 앱, 라우트만."""
+"""FastAPI app, routes only."""
 import json
 from pathlib import Path
 
@@ -10,15 +10,15 @@ from pydantic import BaseModel
 from chem.image_routes import router as image_router
 from chem.resolve import ResolveError, resolve as resolve_query
 
-# 저장소 루트의 .env (ANTHROPIC_API_KEY). 셸에 이미 있는 값은 덮어쓰지 않는다
+# .env at the repo root (ANTHROPIC_API_KEY). Values already in the shell are not overwritten
 load_dotenv(Path(__file__).resolve().parents[1] / ".env")
 
 DATA = Path(__file__).resolve().parent / "data"
 
-app = FastAPI(title="SynthPath")
+app = FastAPI(title="SynPath")
 
-# POST /recognise — 구조 그림 → SMILES. DECIMER는 vendor/osr-venv에서 서브프로세스로 돈다
-# (TensorFlow를 메인 venv에 올리지 않으려고). import는 가볍다 — TF를 끌고 오지 않는다
+# POST /recognise -- structure drawing -> SMILES. DECIMER runs as a subprocess in vendor/osr-venv
+# (to keep TensorFlow out of the main venv). The import is light -- it does not pull in TF
 app.include_router(image_router)
 
 
@@ -34,9 +34,9 @@ class ExplainIn(BaseModel):
 
 @app.post("/explain")
 def explain(body: ExplainIn):
-    """스텝 설명문. LLM은 산문만 쓰고, 출력은 evidence/guards.py를 통과해야 나간다.
+    """Step explanation. The LLM writes prose only, and its output must pass evidence/guards.py before it goes out.
 
-    가드에 걸리거나 키가 없으면 available=false와 사유를 돌려준다 — 지어낸 문장을 돌려주지 않는다.
+    If the guard trips or there is no key, return available=false with the reason -- never return an invented sentence.
     """
     from chem.routes import ROUTES
     from llm.explain import explain as generate
@@ -53,12 +53,12 @@ def explain(body: ExplainIn):
 class CostIn(BaseModel):
     route_id: str
     target_g: float = 1.0
-    purification_factor: float = 0.9   # 가정값. UI가 조절하고 라벨을 붙인다
+    purification_factor: float = 0.9   # assumed value. The UI adjusts it and attaches a label
 
 
 @app.post("/cost")
 def cost(body: CostIn):
-    """경로 + 목표 질량 → BOM과 합계. 순수 계산이고, 가정값은 전부 결과에 표시된다."""
+    """Route + target mass -> BOM and totals. Pure calculation; every assumed value is marked in the result."""
     from chem.routes import ROUTES
     from cost.prices import lookup
     from cost.stoich import bom, buy_vs_make
@@ -71,7 +71,7 @@ def cost(body: CostIn):
     leaves = route["leaf_materials"]
     prices = lookup([m["smiles"] for m in leaves])
     out = bom(route["steps"], leaves, body.target_g, prices, body.purification_factor)
-    # 타겟 자체의 카탈로그 가격. 사는 게 만드는 것보다 싸면 그렇다고 알려 준다
+    # Catalog price of the target itself. If buying is cheaper than making, tell the user
     target = route["steps"][-1]["product"] if route["steps"] else None
     target_price = lookup([target["smiles"]]).get(target["smiles"]) if target else None
     out["buy"] = buy_vs_make(target, body.target_g, target_price, out["totals"])
@@ -91,7 +91,7 @@ class RoutesIn(BaseModel):
 
 @app.post("/routes")
 def routes(body: RoutesIn):
-    """타겟 SMILES → 경로 목록. 경로·선례는 AiZynthFinder, 점수는 model/, 출처는 evidence/."""
+    """Target SMILES -> list of routes. Routes/precedents from AiZynthFinder, scores from model/, sources from evidence/."""
     from chem.routes import search
     try:
         return search(body.smiles, body.max_depth, time_limit_s=body.time_limit_s)
@@ -101,9 +101,9 @@ def routes(body: RoutesIn):
 
 @app.post("/resolve")
 def resolve(body: ResolveIn):
-    """이름/CAS/SMILES → 정규 SMILES + MW + InChIKey + SVG.
+    """Name/CAS/SMILES -> canonical SMILES + MW + InChIKey + SVG.
 
-    구조는 RDKit 계산값, 이름↔구조는 PubChem 응답 그대로. 못 읽으면 404다 — 비슷한 걸 돌려주지 않는다.
+    Structure is RDKit-computed, name<->structure is the PubChem response verbatim. 404 if unreadable -- no look-alike is returned.
     """
     try:
         return resolve_query(body.query, body.kind)
@@ -119,10 +119,10 @@ class AnalogsIn(BaseModel):
 
 @app.post("/analogs")
 def analogs_for_step(body: AnalogsIn):
-    """스텝 하나의 가까운 ORD 반응들. 전부 레코드값이고, 유사도만 코드 계산값이다.
+    """Nearest ORD reactions for one step. All are record values; only the similarity is code-computed.
 
-    인덱스가 없으면 available=false와 사유를 돌려준다 — 빈 리스트로 "선례 없음"처럼 보이게
-    하지 않는다. 둘은 다른 얘기다.
+    If there is no index, return available=false with the reason -- do not let an empty list look like
+    "no precedent". They are different things.
     """
     from chem.routes import ROUTES
     from evidence import analogs
@@ -142,7 +142,7 @@ def analogs_for_step(body: AnalogsIn):
 
 @app.get("/analogs/metrics")
 def analog_metrics():
-    """유사 반응 수율이 고정 가정값을 이기는지 재본 수치. 구간별 오차까지 그대로 돌려준다."""
+    """Measurement of whether analog-reaction yields beat the fixed assumed value. Returns the per-bin error as is."""
     path = DATA / "analog_validation.json"
     if not path.exists():
         raise HTTPException(404, "No analog validation yet — run `python scripts/validate_analogs.py`.")
@@ -151,7 +151,7 @@ def analog_metrics():
 
 @app.get("/calibration")
 def calibration():
-    """reliability diagram PNG. 학습 전이면 404 — 자리 채우는 그림을 돌려주지 않는다."""
+    """Reliability diagram PNG. 404 before training -- no placeholder image is returned."""
     png = DATA / "calibration.png"
     if not png.exists():
         raise HTTPException(404, "No calibration diagram yet — run `python -m model.train`.")
@@ -160,7 +160,7 @@ def calibration():
 
 @app.get("/validation")
 def validation():
-    """외부 검증 그림 — 기록된 실제 결과에 대고 재본 결과. 결과가 나쁘면 나쁜 대로 띄운다."""
+    """External validation figure -- measured against recorded real outcomes. Shown as is, even if the result is bad."""
     png = DATA / "external_validation.png"
     if not png.exists():
         raise HTTPException(404, "No external validation yet — run `python scripts/validate_external.py`.")
@@ -169,7 +169,7 @@ def validation():
 
 @app.get("/validation/metrics")
 def validation_metrics():
-    """구조적 타당성 점수가 실제 반응 결과를 맞히는지 재본 수치. 전부 코드 계산값이다."""
+    """Measurement of whether the structural plausibility score predicts real reaction outcomes. All code-computed values."""
     path = DATA / "external_validation.json"
     if not path.exists():
         raise HTTPException(404, "No external validation yet — run `python scripts/validate_external.py`.")
@@ -178,11 +178,11 @@ def validation_metrics():
 
 @app.get("/rankers/metrics")
 def ranker_metrics():
-    """두 랭킹 모델의 측정 수치. 아직 학습 전이면 그 모델은 null이다 — 자리 채우는 숫자를 돌려주지 않는다.
+    """Measured numbers for the two ranking models. If not yet trained, that model is null -- no placeholder numbers are returned.
 
-    transfer: 스텝에 맞는 기록된 절차를 고르는 모델 (model/transfer_ranker.py)
-    route:    기록된 경로를 닮은 후보 경로를 위로 올리는 모델 (model/route_ranker.py)
-    둘 다 데모 타겟 5개와 그 중간체를 학습에서 빼고(model/holdout.py) 재본 값이다.
+    transfer: model that picks the recorded procedure that fits a step (model/transfer_ranker.py)
+    route:    model that lifts candidate routes resembling recorded routes (model/route_ranker.py)
+    Both are measured with the 5 demo targets and their intermediates held out of training (model/holdout.py).
     """
     def read(name):
         p = DATA / name
@@ -196,7 +196,7 @@ def ranker_metrics():
 
 @app.get("/calibration/metrics")
 def calibration_metrics():
-    """PNG에 적힌 것과 같은 숫자. 전부 model/calibrate.py가 홀드아웃에서 계산한 값이다."""
+    """The same numbers as written on the PNG. All computed by model/calibrate.py on the holdout."""
     path = DATA / "metrics.json"
     if not path.exists():
         raise HTTPException(404, "No metrics yet — run `python -m model.train`.")

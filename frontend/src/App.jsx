@@ -29,7 +29,7 @@ const OCTET_KIND = {
   Abbreviation: 'Abbreviation',
 }
 
-const DRAW_W_KEY = 'synthpath.drawWidth'
+const DRAW_W_KEY = 'synpath.drawWidth'
 const subscribeResize = (f) => {
   addEventListener('resize', f)
   return () => removeEventListener('resize', f)
@@ -148,9 +148,9 @@ function TargetCard({ target, onDraw }) {
     <section className="panel target" aria-labelledby="target-title">
       <Mol compound={target} size="lg" />
       <div className="target-head">
-        {/* 이름을 타이핑해 들어온 경우에만 target.name이 있다. SMILES나 그림으로 들어오면 비어 있어서
-            예전에는 "Unnamed structure"가 떴다 — 바로 아래 kv 행에서는 Octet이 이름을 대고 있는데도.
-            같은 네이머를 제목에도 쓴다 (결정론적 코드, 모델이 아니다). 그것도 없을 때만 —로 둔다. */}
+        {/* target.name exists only when the user typed a name. Coming in via SMILES or a drawing leaves it empty,
+            so it used to show "Unnamed structure" -- even though the kv row right below has Octet supplying a name.
+            The same namer is used for the title (deterministic code, not a model). Only when that fails too do we show —. */}
         <h2 id="target-title" className="target-name">
           {target.name ?? <OctetName key={target.smiles} smiles={target.smiles} fallback="Unnamed structure" />}
         </h2>
@@ -205,8 +205,8 @@ function RouteList({ routes, costs, routeId, onPick, targetG, search }) {
     <section className="panel routes" aria-labelledby="routes-title">
       <div className="panel-head">
         <h2 id="routes-title">{routes.length} routes</h2>
-        {/* 순서는 backend/cost/rank.py가 정한다: 모든 스텝에 실험 절차가 있는 가장 싼 경로가 선두,
-            그 아래가 최저가. 절차가 없는 스텝은 수율도 가정값이라 비용이 같은 종류의 숫자가 아니다 */}
+        {/* Order is set by backend/cost/rank.py: the cheapest route where every step has a lab procedure goes first,
+            then the rest by lowest cost. Steps without a procedure also have an assumed yield, so their cost is not the same kind of number */}
         <p className="muted small">
           The route you can actually run comes first: the cheapest one with a written preparation for every step,
           marked <strong>runnable</strong>. The lowest cost per gram sits below it, marked <strong>cheapest</strong> —
@@ -225,8 +225,8 @@ function RouteList({ routes, costs, routeId, onPick, targetG, search }) {
       <ul className="route-list" data-n={routes.length}>
         {routes.map((r, i) => {
           const c = tierCounts(r)
-          // 절차가 있는 스텝 수. 등급 배지는 "이 반응에 선례가 얼마나 있나"를 말하지, "이걸 어떻게
-          // 돌리나"를 말하지 않는다 — ANALOGOUS 스텝도 양을 적을 수 있는 레코드가 없으면 시트가 없다
+          // Number of steps that have a procedure. The tier badge says "how much precedent does this reaction have", not "how do you
+          // run it" -- an ANALOGOUS step still has no sheet if there is no record with amounts we can write down
           const withSheet = r.steps.filter((s) => s.protocol?.charges?.length).length
           return (
             <li key={r.id}>
@@ -251,8 +251,8 @@ function RouteList({ routes, costs, routeId, onPick, targetG, search }) {
                         {r.kind === 'recorded' ? 'all steps recorded' : 'AiZynthFinder'}
                       </span>
                     )}
-                    {/* 비용 순서를 제치고 자리를 받은 경로 — 왜 여기 있는지 말해 준다 */}
-                    {/* 비용 1위를 제치고 선두에 선 경로 — 모든 스텝에 실험 절차가 있다 */}
+                    {/* A route that was moved ahead of the cost order -- tell the reader why it is here */}
+                    {/* A route placed first ahead of the cheapest -- every step has a lab procedure */}
                     {r.rank?.slot === 'runnable' && (
                       <span
                         className="rc-slot rc-slot-runnable"
@@ -311,7 +311,7 @@ function RouteList({ routes, costs, routeId, onPick, targetG, search }) {
                     {c.COMPUTED > 0 && <span className="rc-warn"> · {c.COMPUTED} thin on precedent</span>}
                   </span>
                   <span className="rc-cost">
-                    {/* 가격 없는 재료가 있으면 합계는 하한이다 — CostSheet와 같이 ≥를 붙인다 */}
+                    {/* If any material has no price, the total is a lower bound -- add ≥ just like CostSheet */}
                     <strong className="num">
                       {costs[r.id]?.totals.purchase != null && costs[r.id].totals.unpriced > 0 ? '≥ ' : ''}
                       {usd(costs[r.id]?.totals.purchase)}
@@ -337,9 +337,9 @@ function RouteList({ routes, costs, routeId, onPick, targetG, search }) {
                         · {Math.round((r.rank.mass_covered ?? 0) * 100)}% of mass priced
                       </span>
                     )}
-                    {/* 두 가지가 다르다: 레코드가 반응물을 아예 안 적은 것과, 적긴 했는데 우리가
-                        시약 열에 넣은 것. 둘 다 "record missing a reactant"로 쓰면, 스텝 화면은
-                        "빠진 게 아니다"라고 말하는데 카드는 빠졌다고 말하는 모순이 된다 */}
+                    {/* These are two different cases: the record did not list a reactant at all, versus the record listed it but we
+                        put it in the reagent column. Calling both "record missing a reactant" would make the step view say
+                        "nothing is missing" while the card says it is missing -- a contradiction */}
                     {r.rank.steps_missing_reactant?.length > 0 &&
                       (r.rank.steps_missing_reactant.every((k) => r.steps[k]?.missing_supplied_by?.length) ? (
                         <span
@@ -437,7 +437,7 @@ export default function App() {
   const [drawW, setDrawW] = useState(savedDrawWidth)
   const [imageOpen, setImageOpen] = useState(false)
   const winW = useSyncExternalStore(subscribeResize, windowWidth)
-  // Wide enough for Octet Draw and SynthPath side by side; narrower, the drawing pane covers the results while open.
+  // Wide enough for Octet Draw and SynPath side by side; narrower, the drawing pane covers the results while open.
   const wide = winW >= WIDE_MIN
   const paneW = Math.max(DRAW_MIN, Math.min(drawW, drawMax()))
   const [runKind, setRunKind] = useState(kind)
@@ -622,7 +622,7 @@ export default function App() {
       <header className="appbar">
         <div className="appbar-lead">
           <button type="button" className="wordmark wordmark-btn" onClick={goHome} title="Home">
-            SynthPath
+            SynPath
           </button>
           <button
             type="button"

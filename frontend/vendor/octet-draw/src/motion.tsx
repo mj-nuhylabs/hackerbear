@@ -1,13 +1,13 @@
 // Motion in script, from the same tokens as the CSS (brand/tokens.css): animations made with element.animate(), and
 // Exit, which lets an overlay leave with a motion instead of vanishing in one frame.
 import { cloneElement, createContext, isValidElement, useContext, useEffect, useReducer, useRef } from "react";
-import { inHost } from "./synthpath"; // SynthPath
+import { inHost } from "./synpath"; // SynPath
 
 export const reduced = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
 // A motion token (--motion-fast, --motion, --motion-slow) as Web Animations timing, with the brand's ease-out.
 // The build writes 150ms as .15s, so a value in seconds becomes milliseconds here.
 export function timing(token = "--motion") {
-  // SynthPath: the tokens are scoped to .octet-host, so they are read there (synthpath.ts).
+  // SynPath: the tokens are scoped to .octet-host, so they are read there (synpath.ts).
   const [value, ease] = inHost((h) => { const root = getComputedStyle(h); return [root.getPropertyValue(token).trim(), root.getPropertyValue("--ease-out").trim()]; });
   return { duration: parseFloat(value) * (/\ds$/.test(value) ? 1000 : 1) || 180, easing: ease || "ease-out" };
 }

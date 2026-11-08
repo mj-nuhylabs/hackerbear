@@ -1,10 +1,10 @@
-"""데모 경로의 각 스텝에 ORD 실험 절차를 붙인다.
+"""Attach ORD experimental procedures to each step of the demo routes.
 
-ORD projections를 훑어 스텝 생성물과 같은 화합물을 만드는 레코드를 찾고, 반응물 집합이 얼마나 맞는지로
-등급을 매겨 demo.json에 넣는다. 붙는 값은 전부 레코드에 적힌 것이거나 그것으로 계산한 것이다.
-맞는 레코드가 없으면 아무것도 넣지 않는다 — UI는 "코퍼스에 선례 없음"으로 띄운다.
+Scans the ORD projections for records that make the same compound as the step product, grades them by how well
+the reactant set matches, and writes them into demo.json. Every attached value is written in the record or computed from it.
+If no record matches, nothing is added; the UI shows "no precedent in corpus".
 
-사용: .venv/bin/python -I scripts/attach_procedures.py
+Usage: .venv/bin/python -I scripts/attach_procedures.py
 """
 import json
 import sys
@@ -33,8 +33,8 @@ def main():
     wanted = wanted_products(demo)
     print(f"{len(wanted)} distinct step products to look for")
 
-    # 캐시는 "찾아본 생성물 목록"까지 들고 있어야 한다. 경로가 바뀌어 새 생성물이 생겼는데
-    # 캐시만 믿으면 그 스텝은 영영 절차가 안 붙는다.
+    # The cache must also hold the list of products already looked up. If a route changes and a new product appears
+    # but we trust only the cache, that step never gets a procedure.
     cached = json.loads(CACHE.read_text()) if CACHE.exists() else None
     if cached is not None and set(cached.get("looked_for", [])) >= wanted:
         hits = cached["records"]
@@ -52,7 +52,7 @@ def main():
         CACHE.write_text(json.dumps({"looked_for": sorted(wanted), "records": hits}, ensure_ascii=False))
         print(f"wrote {CACHE.relative_to(ROOT)}")
 
-    # dict를 Procedure처럼 다루기 위한 얇은 래퍼
+    # Thin wrapper so a dict can be used like a Procedure
     class P(dict):
         __getattr__ = dict.get
 
@@ -72,8 +72,8 @@ def main():
                 if kind not in REPORTED_MATCHES:
                     continue
 
-                # 생성물이 같고 스텝 반응물이 레코드에 다 들어 있다 = 스펙의 REPORTED 조건.
-                # 여기서부터 붙는 값은 추정이 아니라 레코드값이므로 example 표시를 떼어낸다.
+                # Same product and all step reactants present in the record = the spec's REPORTED condition.
+                # From here on the attached values are record values, not estimates, so drop the example flag.
                 ev = s["evidence"]
                 ev["tier"] = "REPORTED"
                 ev["source_ids"] = [best["reaction_id"]]
@@ -85,8 +85,8 @@ def main():
 
                 rg = best.get("reagents") or []
                 by_role = lambda role: next((r for r in rg if (r.get("role") or "") == role), None)  # noqa: E731
-                # ORD의 inputs 키는 사람이 붙인 역할명일 때도 있고 기계가 만든 것일 때도 있다
-                # (m1_m5_m2_m3_m4_m6 같은). 화합물명이 있으면 그걸 쓴다.
+                # ORD input keys are sometimes human-assigned role names and sometimes machine-generated
+                # (like m1_m5_m2_m3_m4_m6). Use the compound name when there is one.
                 named = lambda r: (r.get("name") or r.get("label")) if r else None  # noqa: E731
                 solvent, cat = by_role("SOLVENT"), by_role("CATALYST")
                 cond = {
@@ -98,7 +98,7 @@ def main():
                     "source_id": best["reaction_id"],
                 }
                 if any(cond[k] is not None for k in ("solvent", "temperature_c", "time_h", "catalyst")):
-                    s["conditions"] = cond  # mock 플래그 없음 — 전부 레코드값
+                    s["conditions"] = cond  # no mock flag: all record values
                 s["mock"] = [m for m in s.get("mock", []) if m not in ("reported_yield", "conditions")]
 
     DEMO.write_text(json.dumps(demo, ensure_ascii=False, indent=1))

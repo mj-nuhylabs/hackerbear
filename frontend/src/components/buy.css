@@ -1,4 +1,4 @@
-/* 완성품을 사는 값 vs 만드는 재료값 — BOM 패널 맨 위의 한 블록 (BuyVsMake.jsx). */
+/* Price of buying the finished product vs. the cost of the materials to make it -- the one block at the top of the BOM panel (BuyVsMake.jsx). */
 
 .bvm { margin: 0 0 14px; }
 .bvm p { margin: 0; max-width: 80ch; }
@@ -12,7 +12,7 @@
 }
 .bvm a:hover { color: var(--accent); }
 
-/* 사는 게 싸다 — 이 패널에서 가장 먼저 읽혀야 하는 줄이다 */
+/* Buying is cheaper -- this has to be the first line read in this panel */
 .bvm-buy {
   padding: 12px 14px;
   border: 1px solid var(--reported);
@@ -32,5 +32,5 @@
 
 .bvm-quiet { margin-top: -6px; }
 
-/* 경로 카드의 비용 옆 꼬리표 (App.jsx). CostSheet가 import하므로 이 파일은 항상 로드돼 있다 */
+/* The tag next to the cost on a route card (App.jsx). CostSheet imports this, so this file is always loaded */
 .rc-buy { color: var(--reported); font-weight: 600; }

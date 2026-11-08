@@ -1,11 +1,11 @@
-"""구조 그림 → 화합물. DECIMER를 격리 venv에서 상주시켜 부른다.
+"""Structure drawing -> compound. Keeps DECIMER resident in an isolated venv and calls it over a pipe.
 
-왜 서브프로세스인가: DECIMER는 TensorFlow를 끌고 오는데 그걸 메인 venv에 넣으면 RDKit/
-AiZynthFinder가 쓰는 numpy와 충돌할 수 있다. vendor/osr-venv에 따로 깔고 파이프로 말한다.
-모델 로딩이 25초쯤 걸리므로 프로세스를 띄워둔 채 재사용한다.
+Why a subprocess: DECIMER pulls in TensorFlow, and putting that in the main venv can clash with the numpy
+used by RDKit/AiZynthFinder. It is installed separately in vendor/osr-venv and spoken to over pipes.
+Model loading takes about 25 s, so the process is kept alive and reused.
 
-읽어낸 구조는 **모델의 추측이지 레코드가 아니다.** 그대로 경로 탐색에 넘기지 말고
-사용자에게 보여주고 확인받아야 한다 (UI의 역할).
+The structure it reads is **a model guess, not a record.** Do not pass it straight to route search;
+show it to the user and get confirmation first (the UI's job).
 """
 from __future__ import annotations
 
@@ -24,7 +24,7 @@ RDLogger.DisableLog("rdApp.*")
 ROOT = Path(__file__).resolve().parents[2]
 PYTHON = ROOT / "vendor/osr-venv/bin/python"
 SCRIPT = ROOT / "scripts/osr_predict.py"
-STARTUP_TIMEOUT_S = 180   # 모델을 처음 받을 때는 오래 걸린다
+STARTUP_TIMEOUT_S = 180   # first-time model download can take a while
 PREDICT_TIMEOUT_S = 120
 
 
@@ -34,11 +34,11 @@ class NotInstalled(RuntimeError):
 
 @dataclass
 class Recognised:
-    smiles: str | None          # 정규화된 것. 모델 출력이 파싱되지 않으면 None
-    raw_smiles: str | None      # 모델이 뱉은 원문
+    smiles: str | None          # normalized; None if the model output does not parse
+    raw_smiles: str | None      # raw model output
     inchikey: str | None
     mw: float | None
-    svg: str | None             # 읽어낸 구조를 다시 그린 그림 — 사용자가 원본과 대조할 용도
+    svg: str | None             # redrawn picture of the parsed structure, for the user to compare with the original
     confidence: float | None
     error: str | None
 
@@ -51,12 +51,12 @@ class Recognised:
             "svg": self.svg,
             "confidence": self.confidence,
             "error": self.error,
-            "read_by": "DECIMER",   # 출처를 숨기지 않는다
+            "read_by": "DECIMER",   # do not hide the source
         }
 
 
 class _Engine:
-    """osr_predict.py --serve 를 하나 띄워두고 한 번에 한 요청씩 보낸다."""
+    """Start one osr_predict.py --serve and send it one request at a time."""
 
     def __init__(self) -> None:
         self._proc: subprocess.Popen | None = None
@@ -73,12 +73,12 @@ class _Engine:
             [str(PYTHON), str(SCRIPT), "--serve"],
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
-            stderr=subprocess.DEVNULL,   # TF가 stderr로 쏟아내는 로그는 버린다
+            stderr=subprocess.DEVNULL,   # discard the logs TF spews to stderr
             text=True,
             bufsize=1,
             cwd=str(ROOT),
         )
-        # 모델이 올라올 때까지 기다린다
+        # wait until the model is loaded
         timer = threading.Timer(STARTUP_TIMEOUT_S, proc.kill)
         timer.start()
         try:
@@ -119,7 +119,7 @@ def _svg(mol) -> str:
 
 
 def recognise(image_path: str | Path) -> Recognised:
-    """그림 한 장에서 구조를 읽는다. 읽히지 않으면 error를 채워 돌려준다 — 추측으로 채우지 않는다."""
+    """Read the structure from one drawing. If unreadable, return with error set -- never fill in a guess."""
     path = Path(image_path)
     if not path.exists():
         return Recognised(None, None, None, None, None, None, f"no such file: {path}")
@@ -135,7 +135,7 @@ def recognise(image_path: str | Path) -> Recognised:
 
     mol = Chem.MolFromSmiles(raw)
     if mol is None:
-        # 모델이 문법에 안 맞는 문자열을 뱉는 일이 있다. 고쳐 쓰지 않고 실패로 보고한다.
+        # The model sometimes emits strings that are not valid grammar. Report failure instead of patching them.
         return Recognised(None, raw, None, None, None, out.get("confidence"), "the structure read from the image is not valid")
 
     return Recognised(

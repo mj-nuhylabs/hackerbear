@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import './imagepanel.css'
 
-// 그림에서 읽어낸 구조는 모델의 추측이지 레코드가 아니다. 그래서 원본과 나란히 놓고
-// 사용자가 "맞다"고 한 뒤에만 경로 탐색으로 넘긴다. 자동으로 검색하지 않는다.
+// A structure read from an image is a model's guess, not a record. So we place it next to the original and
+// pass it to route search only after the user says "correct". We never search automatically.
 
 const ENDPOINT = '/api/recognise'
 
@@ -19,7 +19,7 @@ export default function ImagePanel({ open, onClose, onSearch, busy }) {
     if (!open && d.open) d.close()
   }, [open])
 
-  // 미리보기용 object URL은 파일이 바뀌거나 패널이 닫힐 때 돌려준다
+  // Release the preview object URL when the file changes or the panel closes
   useEffect(() => () => file && URL.revokeObjectURL(file.url), [file])
 
   function reset() {
@@ -52,7 +52,7 @@ export default function ImagePanel({ open, onClose, onSearch, busy }) {
       }
       setState({ status: 'done', data })
     } catch (e) {
-      // 목업만 띄워둔 상태에서는 백엔드가 없다. 숨기지 말고 그대로 말한다.
+      // With only the mock running there is no backend. Do not hide it; say so plainly.
       setState({
         status: 'error',
         message: `${e.message}. Reading a structure from an image runs the model in the backend — start it with: cd backend && ../.venv/bin/uvicorn main:app --port 8000`,

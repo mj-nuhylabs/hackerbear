@@ -1,24 +1,24 @@
-// 비용 엔진 — CLAUDE_HACKFNM.md "비용 엔진 수식"을 그대로 옮김.
-// 목업 전용 JS 구현. 실제 버전은 backend/cost/stoich.py가 POST /cost로 계산한다.
+// Cost engine -- a direct port of the "cost engine formula" in CLAUDE_HACKFNM.md.
+// Mock-only JS implementation. In the real app backend/cost/stoich.py computes it via POST /cost.
 
-const DEFAULT_STOICH = 1 // STUB: 반응식 계수. 코퍼스 레코드에서 채워질 예정
-const DEFAULT_EQUIV = 1 // STUB: 당량. 문헌 조건에서 채워질 예정
+const DEFAULT_STOICH = 1 // STUB: reaction stoichiometric coefficient. To be filled from corpus records
+const DEFAULT_EQUIV = 1 // STUB: equivalents. To be filled from literature conditions
 
 export function computeCost(route, { targetG, purification, prices }) {
   const steps = route.steps
-  const need = new Map() // smiles → 필요 몰수
+  const need = new Map() // smiles → moles needed
   const add = (smi, n) => need.set(smi, (need.get(smi) ?? 0) + n)
 
-  // 1. 타겟 요구 몰수
+  // 1. Moles of target required
   const target = steps[steps.length - 1].product
   add(target.smiles, targetG / target.mw)
 
-  // 2–5. 타겟 쪽 스텝부터 역방향 (steps는 출발물질 → 타겟 위상 정렬)
+  // 2-5. Backward from the target-side step (steps are topologically sorted starting material -> target)
   const stepScale = new Array(steps.length)
   const catalysts = []
   for (let i = steps.length - 1; i >= 0; i--) {
     const s = steps[i]
-    // 수율 0이나 음수가 들어오면 0으로 나누게 된다. 쓸 수 없는 값이면 가정값으로 물러선다.
+    // A yield of 0 or negative would divide by zero. If the value is unusable, fall back to the assumed value.
     const reported = s.reported_yield > 0 ? s.reported_yield : null
     const y = reported ?? s.assumed_yield
     const nRxn = (need.get(s.product.smiles) ?? 0) / (y * purification)
@@ -28,7 +28,7 @@ export function computeCost(route, { targetG, purification, prices }) {
     if (loading) catalysts.push({ step: i, name: s.conditions.catalyst, n: nRxn * loading })
   }
 
-  // 6. 말단 물질 비용 — 소비량 기준과 실제 구매액을 분리
+  // 6. Cost of terminal materials -- consumption-based and actual purchase amount kept separate
   const lines = route.leaf_materials.map((leaf) => {
     const n = need.get(leaf.smiles) ?? 0
     const massG = n * leaf.mw
@@ -45,11 +45,11 @@ export function computeCost(route, { targetG, purification, prices }) {
     }
   })
 
-  // 가격 있는 줄만 더한다. 하나도 없으면 0이 아니라 null이다 (backend/cost/stoich.py와 같다) — $0.00은 거짓말이다
+  // Sum only lines that have a price. If none do, the result is null, not 0 (same as backend/cost/stoich.py) -- $0.00 would be a lie
   const sum = (k) => (lines.some((l) => l[k] != null) ? lines.reduce((a, l) => a + (l[k] ?? 0), 0) : null)
   const unpriced = lines.filter((l) => !l.price).length
 
-  // 총 소요 시간: 문헌에 시간이 있는 스텝만 합산
+  // Total time: sum only steps that have a time in the literature
   const timed = steps.filter((s) => s.conditions?.time_h != null)
   return {
     lines,

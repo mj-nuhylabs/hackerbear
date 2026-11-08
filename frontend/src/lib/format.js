@@ -1,6 +1,6 @@
 export const DASH = '—'
 
-// 유효숫자 n자리
+// n significant figures
 export function sig(x, n = 3) {
   if (x == null || !Number.isFinite(x)) return DASH
   if (x === 0) return '0'
@@ -13,6 +13,6 @@ export const grams = (g) => (g == null ? DASH : g < 1 ? `${sig(g * 1000)} mg` : 
 export const usd = (x) =>
   x == null ? DASH : '$' + x.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 export const pct = (x) => (x == null ? DASH : `${Math.round(x * 100)}%`)
-// 시간. 1시간 미만은 분으로 — 기록된 5분 반응이 "0.0833 h"로 뜨면 읽을 수가 없다
+// Time. Under 1 hour, use minutes -- a recorded 5-minute reaction showing as "0.0833 h" is unreadable
 export const hours = (h) => (h == null ? DASH : h < 1 ? `${sig(h * 60)} min` : `${sig(h)} h`)
 export const shortHash = (h) => (h ? h.slice(0, 10) : DASH)

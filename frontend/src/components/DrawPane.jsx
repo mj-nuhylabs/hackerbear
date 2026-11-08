@@ -1,11 +1,11 @@
 import { lazy, Suspense, useEffect, useMemo, useState } from 'react'
-import { setFrame, synthpath } from '../../vendor/octet-draw/src/synthpath'
+import { setFrame, synpath } from '../../vendor/octet-draw/src/synpath'
 import { BAR_H, DRAW_MIN, STRIP, drawMax } from '../lib/layout'
 
 // Octet Draw (vendor/octet-draw, Apache-2.0), built into the page as a pane pinned to the window's left edge, full
-// height: its top-left corner is the window's, so Octet's pointer and overlay coordinates hold as they are. SynthPath's
+// height: its top-left corner is the window's, so Octet's pointer and overlay coordinates hold as they are. SynPath's
 // app bar lies over its top and this pane's status bar under it; Octet lays itself out between them
-// (synthpath.ts frameTop/frameHeight/frameWidth). On a wide window the results sit to its right; on a narrow one the
+// (synpath.ts frameTop/frameHeight/frameWidth). On a wide window the results sit to its right; on a narrow one the
 // pane covers them while it is open.
 const loadEditor = () => import('../octet/OctetEditor.jsx')
 const OctetEditor = lazy(loadEditor)
@@ -13,8 +13,8 @@ const OctetEditor = lazy(loadEditor)
 // Puts a structure on the canvas (to the right of the drawing, selected): now if the editor is open, else when it
 // next opens.
 export function sendToDraw(smiles) {
-  if (synthpath.load) synthpath.load(smiles)
-  else synthpath.inbox = smiles
+  if (synpath.load) synpath.load(smiles)
+  else synpath.inbox = smiles
 }
 
 const same = (a, b) => a?.loaded === b?.loaded && a?.atoms === b?.atoms && a?.selected === b?.selected
@@ -34,13 +34,13 @@ export default function DrawPane({ open, side, width, onWidth, onSearch, busy })
   }, [open, side, width])
 
   useEffect(() => {
-    synthpath.changed = () => {
-      const next = synthpath.state && { ...synthpath.state }
+    synpath.changed = () => {
+      const next = synpath.state && { ...synpath.state }
       setState((prev) => (same(prev, next) ? prev : next))
       setProblem(null)
     }
     return () => {
-      synthpath.changed = undefined
+      synpath.changed = undefined
     }
   }, [])
 

@@ -2,12 +2,12 @@ import { sig } from '../lib/format'
 import CompoundName from './CompoundName'
 import './procedure.css'
 
-// 이 스텝을 **우리 규모로** 돌리는 순서표. 문장을 모델이 쓰지 않는다:
-//   양   evidence/adapt.py가 레코드의 당량으로 환산한 값 (액체는 chem/density.py로 부피)
-//   순서 레코드가 입력을 적어 둔 순서 — 기질, 시약, 촉매, 용매
-//   조건 그 레코드 하나 (evidence/provenance.conditions_from)
-//   후처리 원문 그대로 — 환산할 수 있는 게 없다
-// 없는 값은 없다고 적는다. 그럴듯한 값으로 채우지 않는다 (절대 규칙 3).
+// The step-by-step sheet for running this step **at our scale**. A model does not write the sentences:
+//   amounts     values converted from the record's equivalents by evidence/adapt.py (liquids as volume via chem/density.py)
+//   order       the order in which the record lists inputs -- substrate, reagent, catalyst, solvent
+//   conditions  that one record (evidence/provenance.conditions_from)
+//   workup      verbatim -- nothing in it can be converted
+// What is missing is stated as missing. We do not fill it with a plausible value (absolute rule 3).
 const mass = (mg) => (mg >= 1000 ? `${sig(mg / 1000)} g` : `${sig(mg)} mg`)
 const vol = (ml) => (ml < 1 ? `${sig(ml * 1000)} µL` : `${sig(ml)} mL`)
 const hours = (h) => (h < 1 ? `${sig(h * 60)} min` : `${sig(h)} h`)
@@ -43,8 +43,8 @@ function Charge({ c, factor }) {
 }
 
 export default function Protocol({ protocol, factor, targetG }) {
-  // 시트가 없는 스텝은 비워 두지 않는다. 왜 없는지 적는다 — 레코드가 이 반응을 쓴 적이 없다는
-  // 사실 자체가 화학자가 알아야 할 정보다 (backend/evidence/procedures.adapts_to)
+  // A step with no sheet is not left blank. We say why -- the fact that no record has ever used this reaction
+  // is itself information a chemist needs (backend/evidence/procedures.adapts_to)
   if (!protocol?.charges?.length) {
     if (!protocol?.no_sheet_because) return null
     return (
@@ -70,7 +70,7 @@ export default function Protocol({ protocol, factor, targetG }) {
           {sig(here)} mmol{targetG ? ` · for ${targetG} g of product` : ''}
         </span>
       </div>
-      {/* 다른 기질의 레코드에서 옮겨 온 시트. 이 반응의 선례가 아니라는 것을 먼저 말한다 */}
+      {/* A sheet carried over from a record with a different substrate. First say that it is not a precedent for this reaction */}
       {an && (
         <p className="protocol-analog small">
           This is not a record of this reaction. It is{' '}
@@ -80,7 +80,7 @@ export default function Protocol({ protocol, factor, targetG }) {
           {an.patent ? ` Record: ${an.patent}.` : ''}
         </p>
       )}
-      {/* 레코드가 돌린 규모와의 배수. 50 mg짜리를 1 g으로 올리면 모든 양이 20배가 된다 */}
+      {/* The multiple relative to the scale the record ran. Scaling 50 mg up to 1 g makes every amount 20x */}
       {protocol.record_scale_mmol > 0 && here / protocol.record_scale_mmol >= 5 && (
         <p className="protocol-scaleup muted small">
           This record was run at {sig(protocol.record_scale_mmol)} mmol. Everything below is that run multiplied by{' '}
@@ -88,8 +88,8 @@ export default function Protocol({ protocol, factor, targetG }) {
           excess on a small scale becomes a large volume here, and the work-up was not written for it.
         </p>
       )}
-      {/* 반대 방향도 같은 문제다. 1 mol 제법을 9 mmol로 내리면 촉매가 1 µL가 되고, 감압 증류로
-          거두게 되어 있던 분리가 이 양에서는 같은 조작이 아니다 */}
+      {/* The reverse direction is the same problem. Scaling a 1 mol procedure down to 9 mmol makes the catalyst 1 µL, and a separation
+          meant to be collected by vacuum distillation is not the same operation at this amount */}
       {protocol.record_scale_mmol > 0 && protocol.record_scale_mmol / here >= 5 && (
         <p className="protocol-scaleup muted small">
           This record was run at {sig(protocol.record_scale_mmol)} mmol. Everything below is that run scaled down{' '}

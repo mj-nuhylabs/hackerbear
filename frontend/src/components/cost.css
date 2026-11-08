@@ -1,12 +1,12 @@
-/* 가격 출처 — BOM의 단가 밑에 붙는 한 줄.
-   index.css가 아니라 여기 두는 이유: analogs.css와 같다. 컴포넌트가 쓰는 스타일은 컴포넌트 옆에 둔다. */
+/* Price source -- one line under the unit price in the BOM.
+      Why it lives here and not in index.css: same as analogs.css. Styles a component uses sit next to the component. */
 
 .price-src {
   font-size: var(--fs-xs, 11px);
   font-weight: 400;
   line-height: 1.3;
   margin-top: 2px;
-  /* 단가 칸은 우측 정렬(.r)이다. 공급사 이름이 길어도 그 정렬을 깨지 않는다 */
+  /* The unit price column is right-aligned (.r). A long supplier name must not break that alignment */
   max-width: 14ch;
   margin-left: auto;
   overflow-wrap: anywhere;
@@ -23,7 +23,7 @@
   border-bottom-color: var(--accent);
 }
 
-/* 가격 없는 재료가 있으면 합계는 하한이다. 숫자 바로 밑에서 그렇다고 말한다 */
+/* If any material has no price, the total is a lower bound. Say so right under the number */
 .total-gap {
   color: var(--warn);
   margin-top: 2px;

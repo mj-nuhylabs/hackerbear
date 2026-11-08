@@ -6,7 +6,7 @@
 // drag pans it, a Shift-drag makes one multiplet of the peaks it covers, and a double-click shows all of it. Expanded,
 // the panel fills the canvas with the structure beside the spectrum (the canvas's own drawing, shown again).
 import { useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from "react";
-import { host, inHost } from "./synthpath"; // SynthPath: portals go in the editor's own element
+import { host, inHost } from "./synpath"; // SynPath: portals go in the editor's own element
 import { createPortal } from "react-dom";
 import { ArrowsIn, ArrowsOut, ChartLine, CopySimple, LinkBreak, ListBullets, Tag, Trash, X } from "@phosphor-icons/react";
 import { acsText, detailsTable, multiplicity, quality, type Nucleus, type Prediction, type Signal } from "./nmr";
@@ -38,7 +38,7 @@ export type RowLabel = { x: number; a: number; b: number; shift: string; rest: s
 const FONT = 11, GAP = 3, BAND = 10, STUB = 3; // px: the labels' size, the gap over the ink, the slants' band, the stubs
 const oneLine = (l: RowLabel) => (l.rest ? `${l.shift} (${l.rest})` : l.shift);
 // A label's width in px in the font the panel draws it in, with its digits all as wide (tabular, as the plot sets them).
-const PANEL_FONT = inHost((h) => getComputedStyle(h).getPropertyValue("--font-sans")); // SynthPath: tokens live on .octet-host
+const PANEL_FONT = inHost((h) => getComputedStyle(h).getPropertyValue("--font-sans")); // SynPath: tokens live on .octet-host
 const widthOf = (t: string, size: number) => textWidth(t.replace(/\d/g, "0"), size, false, false, PANEL_FONT);
 // Whether a lane's labels turn (Labels), their widths across the row, and the room they need over the lane. dot: room
 // for the linked mark over a turned label.

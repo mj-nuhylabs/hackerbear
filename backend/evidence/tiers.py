@@ -1,15 +1,16 @@
-"""증거 등급 판정.
+"""Evidence tier assignment.
 
-REPORTED   코퍼스에 동일 반응 레코드 존재 (정규화 SMILES로 반응물 집합 + 생성물 일치)
-ANALOGOUS  템플릿이 적용됐고, 그 템플릿의 문헌 선례가 ANALOGOUS_MIN_PRECEDENTS건 이상
-COMPUTED   선례가 그보다 적거나, 타당성 점수가 PLAUSIBILITY_MIN 미만
+REPORTED   an identical reaction record exists in the corpus (reactant set + product match on canonical SMILES)
+ANALOGOUS  a template was applied and it has at least ANALOGOUS_MIN_PRECEDENTS literature precedents
+COMPUTED   fewer precedents than that, or plausibility score below PLAUSIBILITY_MIN
 
-점수가 None이면(모델 없음/정규화 실패) 등급을 깎지 않는다. 선례 수만으로 판정한다.
-"없음"을 "낮음"으로 바꿔 읽지 않기 위해서다 (절대 규칙 3).
+If the score is None (no model / normalization failed), the tier is not downgraded; it is decided by precedent count
+alone.
+This is so that "missing" is never read as "low" (absolute rule 3).
 
-PLAUSIBILITY_MIN이 깎는 것은 **구조적으로 미심쩍은 스텝**이지 "실험이 안 될 스텝"이 아니다.
-점수는 실제 반응 결과를 맞히지 못한다(scripts/validate_external.py: ROC-AUC 0.47). 그래서
-이 임계값은 "템플릿이 엉뚱하게 적용된 것 같다"는 신호로만 쓰고, 등급을 올리는 데는 쓰지 않는다.
+What PLAUSIBILITY_MIN downgrades is a **structurally doubtful step**, not a step "that will not work in the lab".
+The score does not predict real reaction outcomes (scripts/validate_external.py: ROC-AUC 0.47). So
+this threshold is used only as a "the template looks misapplied" signal, never to raise a tier.
 """
 from __future__ import annotations
 
@@ -20,20 +21,21 @@ EvidenceTier = Literal["REPORTED", "ANALOGOUS", "COMPUTED"]
 ANALOGOUS_MIN_PRECEDENTS = 10
 PLAUSIBILITY_MIN = 0.5
 
-# 선례가 아주 많은데도 점수가 낮아 COMPUTED로 내려가는 스텝이 있다. 버그가 아니라 결정이다.
+# Some steps have very many precedents but a low score and drop to COMPUTED. This is a decision, not a bug.
 #
-# 실측 (6개 분자 40스텝): 선례 10건 이상인데 점수 0.5 미만이 8개.
-#   파라세타몰 탈메틸화  선례 13,100  점수 0.227
-#   리도카인 스텝        선례  3,983  점수 0.453
-#   mCPBA 설폭사이드화   선례    655  점수 0.478
-# 그리고 scripts/head2head.py 기준 산화 클래스는 1.33M 모델에서 0.637로, 가장 약한 쪽이다.
+# Measured (6 molecules, 40 steps): 8 steps with 10+ precedents but score below 0.5.
+#   paracetamol demethylation  precedents 13,100  score 0.227
+#   lidocaine step             precedents  3,983  score 0.453
+#   mCPBA sulfoxidation         precedents    655  score 0.478
+# Also, per scripts/head2head.py the oxidation class is the weakest for the 1.33M model, at 0.637.
 #
-# "선례가 많으면 낮은 점수를 무시한다"는 규칙을 넣을지 검토했고, **넣지 않기로 했다.**
-# 이유: UI가 선례 수와 점수를 **둘 다** 보여준다. 선례 13,100 옆에 점수 0.227이 그대로 뜨므로,
-# 화학자는 모델과 문헌이 엇갈린다는 사실 자체를 보고 직접 판단할 수 있다. 한쪽을 골라 숨기면
-# 그 판단 재료가 사라진다. 임계값을 조정해 데모를 보기 좋게 만드는 것과도 구분되지 않는다.
+# We considered a rule "ignore a low score when precedents are many" and **decided not to add it.**
+# Reason: the UI shows precedent count and score **both**. With 13,100 precedents next to a score of 0.227, the
+# chemist sees that the model and the literature disagree and can judge for themselves. Picking one and hiding
+# the other removes the material for that judgment, and is indistinguishable from tuning the threshold to
+# make the demo look good.
 #
-# 바꾸려면 이 숫자들보다 나은 근거를 먼저 만들 것. 그냥 보기 안 좋다는 이유로는 바꾸지 않는다.
+# To change this, first produce better evidence than these numbers. "It looks bad" is not a reason to change it.
 
 
 def decide(
@@ -42,7 +44,7 @@ def decide(
     precedent_count: int,
     plausibility_calibrated: float | None = None,
 ) -> EvidenceTier:
-    """스텝 하나의 증거 등급. 입력은 전부 코퍼스 조회 결과이거나 모델 출력이다."""
+    """Evidence tier of one step. Inputs are all corpus lookup results or model output."""
     if has_corpus_record:
         return "REPORTED"
     if precedent_count < ANALOGOUS_MIN_PRECEDENTS:

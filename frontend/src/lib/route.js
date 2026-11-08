@@ -1,5 +1,5 @@
-// 경로를 논문식 반응 스킴으로 배치: 타겟에서 거꾸로 주 사슬을 잡고,
-// 나머지 반응물은 화살표 위 보조 투입물로, 사슬 밖 스텝은 분기로 둔다.
+// Lay out a route as a paper-style reaction scheme: pick the main chain backward from the target,
+// put the remaining reactants as auxiliary inputs above the arrow, and place steps off the chain as branches.
 export function schemeLayout(route) {
   const steps = route.steps
   const producedBy = new Map(steps.map((s, i) => [s.product.smiles, i]))

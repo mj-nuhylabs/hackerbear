@@ -1,20 +1,20 @@
-"""공급사에서 읽어 둔 가격 기록 → 가격 시트 채우기.
+"""Price records read from suppliers -> fill the price sheet.
 
-입력은 backend/data/price_sources/*.json 전부다. 그 파일들은 공급사 제품 페이지에서 읽은
-값 그대로다 — 정가, 팩 크기, 밀도, 제품 URL. 이 스크립트는 거기서 **계산만** 한다:
+Input is every file in backend/data/price_sources/*.json. Those files hold values exactly as read from supplier
+product pages: list price, pack size, density, product URL. This script does **only computation** on them:
 
-    부피 팩 → 그램      mass_g = qty_mL * density      (밀도는 같은 제품 페이지의 값)
-    용액 → 화합물 그램   mass_g *= content_wt_frac      (농도도 같은 페이지의 값. 포르말린 37 wt% 등)
-    대표 팩 선택         1 g 이상인 가장 작은 팩, 없으면 가장 큰 팩
-    price_per_g         pack_price / pack_size_g       (같은 팩에서 나온다)
+    volume pack -> grams     mass_g = qty_mL * density      (density from the same product page)
+    solution -> compound g   mass_g *= content_wt_frac      (concentration also from the same page, e.g. formalin 37 wt%)
+    pick representative pack the smallest pack of 1 g or more, else the largest pack
+    price_per_g              pack_price / pack_size_g       (comes from the same pack)
 
-같은 CAS가 두 파일에 있으면 실행을 멈춘다 — 어느 쪽 가격이 맞는지 코드가 고르지 않는다.
+If the same CAS appears in two files, it stops. The code does not choose which price is right.
 
-대표 팩을 "가장 작은 것"으로 두는 이유: 1 g을 만드는 데 4 L짜리 아세트산을 사지 않는다.
-반대로 mg 팩만 있는 화합물은 가장 큰 팩을 쓴다 — 100 mg짜리를 30번 사는 계산이 되면
-구매액이 현실과 멀어진다.
+Why the representative pack is "the smallest": nobody buys a 4 L bottle of acetic acid to make 1 g.
+Conversely, a compound that only comes in mg packs uses the largest pack; computing 30 purchases of a 100 mg pack
+would put the purchase cost far from reality.
 
-**밀도 없는 부피 팩은 건너뛴다.** mL을 그램으로 바꿀 방법이 없으면 추정하지 않는다 (절대 규칙 3).
+**Volume packs without a density are skipped.** If there is no way to convert mL to grams, we do not estimate (absolute rule 3).
 
     .venv/bin/python -I scripts/prices_from_source.py [--source ...] [--dry-run]
 """
@@ -30,14 +30,14 @@ ROOT = Path(__file__).resolve().parents[1]
 SOURCES = ROOT / "backend/data/price_sources"
 SHEET = ROOT / "backend/data/prices_to_fill.csv"
 
-TO_GRAM = {"mg": 0.001, "g": 1.0, "kg": 1000.0}      # 질량 단위는 그대로 환산된다
-VOLUME = {"mL": 1.0, "L": 1000.0}                     # 부피는 밀도가 있어야 환산된다
+TO_GRAM = {"mg": 0.001, "g": 1.0, "kg": 1000.0}      # mass units convert directly
+VOLUME = {"mL": 1.0, "L": 1000.0}                     # volumes convert only if a density is given
 
 
 def pack_grams(pack: dict, density: float | None, wt_frac: float | None = None) -> float | None:
-    """팩 하나 → 그 화합물의 그램. 부피인데 밀도가 없으면 None (버린다).
+    """One pack -> grams of that compound. If it is a volume with no density, None (discarded).
 
-    용액이면(wt_frac) 용액 질량에 페이지에 적힌 농도를 곱한다 — 물과 안정제 값까지 화합물 값으로 치지 않는다.
+    For a solution (wt_frac), multiply the solution mass by the concentration stated on the page; water and stabilizer are not counted as compound.
     """
     unit, qty = pack["unit"], float(pack["qty"])
     if unit in TO_GRAM:
@@ -52,7 +52,7 @@ def pack_grams(pack: dict, density: float | None, wt_frac: float | None = None) 
 
 
 def choose(packs: list[dict], density: float | None, wt_frac: float | None = None) -> dict | None:
-    """대표 팩. 1 g 이상인 것 중 가장 작은 것, 그런 게 없으면 가장 큰 것."""
+    """Representative pack: the smallest one of 1 g or more; if none, the largest."""
     sized = []
     for p in packs:
         g = pack_grams(p, density, wt_frac)
@@ -65,7 +65,7 @@ def choose(packs: list[dict], density: float | None, wt_frac: float | None = Non
 
 
 def load_sources(paths: list[Path]) -> dict[str, dict]:
-    """CAS → 제품. 제품마다 그 기록 파일의 site·currency를 붙여 둔다. 같은 CAS가 두 번 나오면 멈춘다."""
+    """CAS -> product. Each product gets the site and currency of its record file. Stops if the same CAS appears twice."""
     products: dict[str, dict] = {}
     for path in paths:
         src = json.loads(path.read_text())

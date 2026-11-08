@@ -48,7 +48,7 @@
   color: var(--accent);
 }
 
-/* 매칭 등급 — 이 레코드가 이 스텝과 얼마나 맞는지 */
+/* Match tier -- how well this record fits this step */
 .proc-match {
   display: inline-flex;
   align-items: center;
@@ -121,7 +121,7 @@
   color: var(--ink-2);
 }
 
-/* 절차 원문 — 가공하지 않았다는 것이 보이게 인용 형태로 */
+/* Procedure text -- in a quote style so it is visible that it is unprocessed */
 .proc-text {
   margin: 0;
   padding: 12px 14px;
@@ -185,10 +185,10 @@
   margin-bottom: 6px;
 }
 
-/* 레코드가 돌린 규모 → 우리 규모 (backend/evidence/adapt.py limiting_recorded_mmol) */
+/* Scale the record ran -> our scale (backend/evidence/adapt.py limiting_recorded_mmol) */
 .proc-scale { margin: 6px 0 8px; }
 
-/* 이름을 앞에, SMILES를 밑에 작게 (frontend/src/components/CompoundName.jsx) */
+/* Name first, SMILES small underneath (frontend/src/components/CompoundName.jsx) */
 .cmpd { display: inline-flex; flex-direction: column; gap: 1px; min-width: 0; }
 .cmpd-name { font-weight: 500; overflow-wrap: anywhere; }
 .cmpd-smiles {
@@ -198,7 +198,7 @@
   overflow-wrap: anywhere;
 }
 
-/* 우리 규모의 순서표 (backend/evidence/protocol.py) */
+/* Step-by-step sheet at our scale (backend/evidence/protocol.py) */
 .protocol { border-left: 3px solid var(--accent); padding-left: 12px; }
 .protocol-steps { margin: 6px 0 8px; padding-left: 20px; display: grid; gap: 5px; }
 .protocol-steps li { font-size: var(--fs-sm); }

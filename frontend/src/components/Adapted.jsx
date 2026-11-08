@@ -15,7 +15,7 @@ function qty(row, k) {
   return sig(v)
 }
 
-// 1 mL 미만이면 µL로. 0.0007 L짜리를 "0.0007 mL"로 적어 두면 피펫을 못 든다
+// Below 1 mL, use µL. A 0.0007 L volume written as "0.0007 mL" cannot be picked up with a pipette
 const mL = (v) => (v == null ? DASH : v < 1 ? `${sig(v * 1000)} µL` : `${sig(v)} mL`)
 
 // What the record was run at, against what this step needs. Without it the verbatim text ("0.0072
@@ -53,7 +53,7 @@ function Table({ table, factor }) {
             <tr key={i}>
               <td>
                 <div className="proc-mat">
-                  {/* 이 줄은 "어느 쪽 것인가"만 말한다. 이름과 구조는 아래 CompoundName이 한 번만 쓴다 */}
+                  {/* This line only says "whose is it". The name and structure are written once, by CompoundName below */}
                   <span className="proc-name">
                     {r.is_substrate ? 'Your substrate' : ''}
                     {r.is_substrate && r.pair_similarity != null && (
@@ -67,8 +67,8 @@ function Table({ table, factor }) {
                     )}
                   </span>
                   {(r.is_substrate ? r.our_smiles : r.recorded_smiles) && (
-                    // 기질 행의 구조는 **우리 것**이다. 레코드가 적어 둔 이름은 레코드의 화합물
-                    // 이름이므로 그 행에 붙이면 안 된다 — 거기서는 네이머가 우리 구조를 읽는다
+                    // The structure on the substrate row is **ours**. A name the record lists is the record's compound
+                    // name, so it must not be attached to that row -- there the namer reads our structure
                     <CompoundName
                       name={r.is_substrate ? null : r.recorded_name}
                       smiles={r.is_substrate ? r.our_smiles : r.recorded_smiles}
@@ -78,8 +78,8 @@ function Table({ table, factor }) {
               </td>
               <td className="r">{r.equiv != null ? sig(r.equiv) : DASH}</td>
               <td className="r">{r.mmol != null ? sig(scaled(r, 'mmol')) : DASH}</td>
-              {/* 액체는 재서 넣는다 — 밀도가 레코드/제품 페이지에 있으면 mL을 앞에 두고 질량을
-                  괄호로 붙인다 (backend/chem/density.py). 고체는 질량 그대로. */}
+              {/* Liquids are measured out -- if the density is on the record/product page, put mL first and add the mass
+                  in parentheses (backend/chem/density.py). Solids keep the mass as is. */}
               <td className="r">
                 {r.measure_ml != null && r.mass_mg != null ? (
                   <>

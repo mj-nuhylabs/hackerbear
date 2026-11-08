@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
-# 머신 한 대로 큰 학습을 끝까지 돌린다.
-#   1) 지금 돌고 있는 shard 0/2가 끝나길 기다린다
-#   2) shard 1/2를 돌린다
-#   3) 샤드를 합쳐 featurize → 학습 → 캘리브레이션
-#   4) 결과를 data/runs/ord_all/ 로 보관한다 (50k 베이스라인은 data/runs/uspto50k/에 그대로)
+# Run the big training end to end on a single machine.
+#   1) wait for the currently running shard 0/2 to finish
+#   2) run shard 1/2
+#   3) merge the shards, then featurize -> train -> calibrate
+#   4) archive the results in data/runs/ord_all/ (the 50k baseline stays as is in data/runs/uspto50k/)
 #
-#   ./scripts/run_full_training.sh [기다릴_PID]
+#   ./scripts/run_full_training.sh [PID_to_wait_for]
 set -uo pipefail
 cd "$(dirname "${BASH_SOURCE[0]}")/../backend"
 PY=../.venv/bin/python

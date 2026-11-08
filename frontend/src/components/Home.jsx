@@ -1,4 +1,4 @@
-// The homescreen: what SynthPath does, where to start (type, draw or read an image), the saved example targets, the
+// The homescreen: what SynPath does, where to start (type, draw or read an image), the saved example targets, the
 // evidence tiers, and where each value on the results comes from. Every figure here is read from the backend (or from
 // demo.json, which scripts/make_mock_data.py wrote from RDKit and AiZynthFinder output); missing ones show as —.
 import { Fragment, useEffect, useState } from 'react'
@@ -152,7 +152,7 @@ export default function Home({ search, onRun, onDraw, onImage }) {
             Synthesis routes with the evidence behind every step.
           </h1>
           <p className="home-lede">
-            Give SynthPath a target molecule. It works backward to materials you can buy, tells you which steps are on
+            Give SynPath a target molecule. It works backward to materials you can buy, tells you which steps are on
             record, which are analogous and which are only computed, and prices out what you need for the amount you
             want.
           </p>

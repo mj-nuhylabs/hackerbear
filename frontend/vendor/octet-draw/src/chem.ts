@@ -15,7 +15,7 @@ import { axialLabels } from "./axial.ts";
 import { sandwichIons } from "./metals.ts";
 import { cipLabels } from "./cip.ts";
 import type { StereoFacts } from "./check.ts";
-import { inHost } from "./synthpath.ts"; // SynthPath
+import { inHost } from "./synpath.ts"; // SynPath
 
 type IndigoModule = Awaited<ReturnType<typeof Indigo>>;
 let indigo: IndigoModule | undefined;
@@ -23,7 +23,7 @@ export const ready: Promise<void> = Indigo().then((m: IndigoModule) => { indigo 
 
 // Drawing sizes come from brand/tokens.css (ACS 1996). The layout worker (layout.worker.ts) has no page: it lays out
 // with Indigo alone and reads none of them.
-// SynthPath: the tokens are scoped to .octet-host, so they are read there (synthpath.ts).
+// SynPath: the tokens are scoped to .octet-host, so they are read there (synpath.ts).
 const token = (name: string) => (typeof document === "undefined" ? "" : inHost((h) => getComputedStyle(h).getPropertyValue(name)));
 const pt = (name: string) => (parseFloat(token(name)) * 4) / 3; // pt to px
 const BOND = pt("--bond-length");

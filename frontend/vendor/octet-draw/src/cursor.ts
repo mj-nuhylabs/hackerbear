@@ -4,7 +4,7 @@ import { createElement } from "react";
 import { flushSync } from "react-dom";
 import { createRoot } from "react-dom/client";
 import { ArrowClockwise, Selection } from "@phosphor-icons/react";
-import { inHost } from "./synthpath";
+import { inHost } from "./synpath";
 
 // The glyph's path data, read from the real icon component (no copied paths).
 function glyphPaths(icon: typeof Selection = Selection): string[] {
@@ -20,7 +20,7 @@ function glyphPaths(icon: typeof Selection = Selection): string[] {
 function lightInk() {
   const probe = document.createElement("div");
   probe.dataset.theme = "light";
-  // SynthPath: read inside .octet-host, where Octet's tokens are scoped.
+  // SynPath: read inside .octet-host, where Octet's tokens are scoped.
   return inHost((parent) => {
     parent.append(probe);
     const ink = getComputedStyle(probe).getPropertyValue("--ink").trim() || "#0F172A";

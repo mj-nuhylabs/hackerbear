@@ -130,8 +130,8 @@ def adapt(procedure: dict, our_substrates: list[str], our_product: str, our_limi
             "mmol": mmol,
             "mass_mg": round(mmol * mw, 2) if mmol is not None and mw else None,
             "volume_ml": vol_ml,
-            # 액체는 달지 않고 재서 넣는다. 밀도는 가격을 읽어 온 제품 페이지에 적혀 있던 값만 쓴다
-            # (chem/density.py). 밀도가 없으면 None이고 표는 질량만 보여준다
+            # Liquids are measured out, not weighed. Density is only used if it was printed on the product page
+            # the price came from (chem/density.py). Without a density this is None and the table shows mass only
             **_measure(our_smiles, round(mmol * mw, 2) if mmol is not None and mw else None),
         })
     # Our own substrates the record has no counterpart for. Without a row the chemist would not
@@ -154,8 +154,8 @@ def adapt(procedure: dict, our_substrates: list[str], our_product: str, our_limi
         "text": procedure.get("text"),
         "scale_mmol": our_limiting_mmol,
         "limiting_recorded": limiting.get("smiles") if limiting else None,
-        # 레코드가 돌린 규모. 이게 없으면 화면에 원문("0.0072 moles")과 환산표(8.11 mmol)가 나란히
-        # 뜨는데 둘의 관계를 말해 주는 게 없어서, 적은 양으로 많은 양을 만든 것처럼 읽힌다
+        # Scale the record ran at. Without this the screen shows the original text ("0.0072 moles") next to the
+        # converted table (8.11 mmol) with nothing linking them, which reads as if a small amount made a large amount
         "limiting_recorded_mmol": round(lim_n * 1000.0, 4) if lim_n else None,
         "rows": rows,
         "unscaled_inputs": missing,

@@ -80,7 +80,7 @@
   font-weight: 600;
 }
 
-/* 원본과 읽어낸 구조를 나란히 — 확인이 이 패널의 본체다 */
+/* Original and the parsed structure side by side -- confirmation is the core of this panel */
 .imgp-compare {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);

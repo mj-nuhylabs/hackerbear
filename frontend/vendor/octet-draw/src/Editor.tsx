@@ -79,7 +79,7 @@ import { StructureThumb, type TemplateTool } from "./TemplateLibrary";
 import { cleanUpReaction, cleanUpReactions, findReaction, gapFor, layoutRow, reactionClean, roleOf, rowOf, withStructure, type Layout, type Reaction } from "./reaction";
 import { alignByMap, clearScheme, interpret, mapScheme, rolesOf, type Part, type Role, type RoleStep } from "./interpret";
 import { SEARCHES, searchNow, searchQuery } from "./search";
-import { frameHeight, frameMidY, frameSpan, frameWidth, synthpath } from "./synthpath"; // SynthPath: the editor's width is its pane's, not the window's
+import { frameHeight, frameMidY, frameSpan, frameWidth, synpath } from "./synpath"; // SynPath: the editor's width is its pane's, not the window's
 import { moduleOf, SettingsWindow, type ModuleId } from "./SettingsWindow";
 import { addBranch, addSide, addStop, angleAbout, attachBeside, branchFor, branchHeads, branchOf, breakAt, clearAt, cycleAtoms, dragEnd, dragMeet, dropOnCycle, followArcs, isSide, labelEnd, layoutCycles, orderAround, pullBranch, removeEnd, removeStop, resizeCycle, setBranch, setEnd, setEnds, setStep, sideChoices, sideFor, spreadCycle, stepAt, stepFor, structureMeet, swapBranch, textOn, withEnd, type Cycle, type CycleBranch, type CycleLayout, type CycleText } from "./cycle";
 import { LIBRARY, libraryItem, type LibraryItem } from "./library";
@@ -1038,7 +1038,7 @@ export default function Editor() {
   // Home (decision 0003): where Octet opens (?editor skips it, for tests), with the name box on first launch and the
   // tutorial then, or from Help > Tutorial. Recent drawings come from the app (src-tauri/src/recent.rs), and drawings
   // a crash took from src-tauri/src/recovery.rs.
-  // SynthPath: in SynthPath's Draw panel the editor opens on the canvas, not on Home.
+  // SynPath: in SynPath's Draw panel the editor opens on the canvas, not on Home.
   const [home, setHome] = useState(() => rescue.current?.home ?? false);
   // Home opened over a drawing (Home in the File menu) offers to go back to it; Home at the start has nothing to go back to.
   const [overDrawing, setOverDrawing] = useState(false);
@@ -1880,28 +1880,28 @@ export default function Editor() {
     set(merge(base, frag, land(frag, at)), false, undefined, drop);
     setSelection(new Set(frag.atoms.map((_, i) => base.atoms.length + i)));
   }
-  // SynthPath: what SynthPath's search reads (each structure the selection touches, whole, as Bring to Front takes
+  // SynPath: what SynPath's search reads (each structure the selection touches, whole, as Bring to Front takes
   // them, so one picked atom searches its molecule; the whole drawing when nothing is selected), and a structure
-  // SynthPath sends, placed as a pasted SMILES is (to the right of the drawing, selected). See synthpath.ts.
-  synthpath.part = () => {
+  // SynPath sends, placed as a pasted SMILES is (to the right of the drawing, selected). See synpath.ts.
+  synpath.part = () => {
     if (!selection.size && !picked.size) return doc;
     const touched = fragments(doc).filter((g) => g.some((i) => selection.has(i))).flat();
     return touched.length ? extractSelection(doc, new Set(touched), new Set()) : extractSelection(doc, selection, picked);
   };
-  synthpath.load = (smiles: string) => {
-    if (!loaded) { synthpath.inbox = smiles; return; }
+  synpath.load = (smiles: string) => {
+    if (!loaded) { synpath.inbox = smiles; return; }
     try { place(asOpened(importStructure(smiles), smiles)); } catch { setNotice("Octet cannot draw this structure."); }
   };
   useEffect(() => {
-    synthpath.state = { loaded, atoms: doc.atoms.length, selected: selection.size > 0 || picked.size > 0 };
-    if (loaded && synthpath.inbox) {
-      const smiles = synthpath.inbox;
-      synthpath.inbox = undefined;
+    synpath.state = { loaded, atoms: doc.atoms.length, selected: selection.size > 0 || picked.size > 0 };
+    if (loaded && synpath.inbox) {
+      const smiles = synpath.inbox;
+      synpath.inbox = undefined;
       try { place(asOpened(importStructure(smiles), smiles)); } catch { setNotice("Octet cannot draw this structure."); }
     }
-    synthpath.changed?.();
+    synpath.changed?.();
   });
-  useEffect(() => () => { synthpath.part = undefined; synthpath.load = undefined; synthpath.state = undefined; }, []);
+  useEffect(() => () => { synpath.part = undefined; synpath.load = undefined; synpath.state = undefined; }, []);
   // A reaction that came in (a file or text with arrows) laid out as Clean Up Reaction lays it out, measured as it will
   // be drawn. arrowIds: its arrows.
   function laidOut(m: Mol, arrowIds: number[]): Mol {

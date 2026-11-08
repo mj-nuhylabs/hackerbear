@@ -50,7 +50,7 @@ import type { HomeLibrary, ThumbTarget, TilePicture } from "./homeLibrary";
 import { STARTERS } from "./starters";
 import { experimentRows, type ExperimentEntry, type ExperimentSort } from "./experiment";
 import { formatAmount } from "./stoich";
-import { host } from "./synthpath"; // SynthPath: portals go in the editor's own element
+import { host } from "./synpath"; // SynPath: portals go in the editor's own element
 
 export type RecentEntry = { path: string; name: string; at: number; thumb?: string; found: boolean };
 // A drawing open in a window of its own (src-tauri/src/windows.rs), with its picture as an SVG when it has one.

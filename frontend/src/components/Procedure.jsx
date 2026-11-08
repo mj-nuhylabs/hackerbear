@@ -2,8 +2,8 @@ import { DASH, sig } from '../lib/format'
 import CompoundName from './CompoundName'
 import './procedure.css'
 
-// 이 패널의 값은 전부 ORD 레코드에 적힌 것이거나 그것으로 계산한 것이다.
-// 절차문은 원문 그대로다 — 요약도 재작성도 하지 않는다.
+// Every value in this panel is either written in an ORD record or computed from one.
+// The procedure text is verbatim -- no summarizing, no rewriting.
 
 const MATCH = {
   exact: { label: 'SAME REACTION', say: 'This record has the same reactants and the same product as this step.' },
@@ -21,7 +21,7 @@ const MATCH = {
   },
 }
 
-// ORD는 질량·몰수·부피를 따로 싣는다. 있는 것만 보여준다
+// ORD lists mass, moles, and volume separately. Show only what is there
 function amount(r) {
   const parts = []
   if (r.mass_g != null) parts.push(r.mass_g < 1 ? `${sig(r.mass_g * 1000)} mg` : `${sig(r.mass_g)} g`)
@@ -54,8 +54,8 @@ function Reagents({ reagents }) {
           {reagents.map((r, i) => (
             <tr key={`${r.smiles ?? r.label}-${i}`}>
               <td>
-                {/* 레코드가 이름을 줬으면 그걸 쓰고, 없으면 네이머가 구조를 읽는다. label은
-                    ORD의 역할명("Base")이라 이름이 아니므로 둘 다 없을 때만 쓴다 */}
+                {/* If the record gave a name, use it; if not, the namer reads the structure. label is
+                    an ORD role name ("Base"), not a name, so use it only when neither exists */}
                 <div className="proc-mat">
                   {r.smiles ? (
                     <CompoundName name={r.name} smiles={r.smiles} />
@@ -78,9 +78,9 @@ function Reagents({ reagents }) {
   )
 }
 
-// 시약 표가 있을 때만 해당하는 설명. 표가 없으면 할 말이 없다.
-// 이 표는 레코드가 돌린 규모 그대로다. 바로 위 "Run this step"은 우리 규모(1 g 기준)라서, 둘을
-// 연결해 주지 않으면 "0.72 mmol로 8.11 mmol을 만든다"처럼 읽힌다 — 실제로 그렇게 읽은 사람이 있다.
+// A note that applies only when there is a reagent table. With no table, there is nothing to say.
+// This table is at the scale the record ran. "Run this step" just above is at our scale (per 1 g), so unless the two are
+// connected it reads like "0.72 mmol makes 8.11 mmol" -- someone really did read it that way.
 function AmountsNote({ scaleMmol, ourMmol }) {
   const factor = scaleMmol && ourMmol ? ourMmol / scaleMmol : null
   return (
@@ -103,10 +103,10 @@ function AmountsNote({ scaleMmol, ourMmol }) {
   )
 }
 
-// 출처 표기는 시약 표와 무관하게 항상 띄운다.
-// 전에는 AmountsNote에 붙어 있어서 시약이 없는 레코드에서는 **원문을 인용하면서 출처를 안 밝혔다.**
-// 지금 데이터에서는 안 걸리지만(41/41, 라이브 2/2 모두 시약 있음) 조건이 틀린 모양이었다.
-// 남의 문장을 그대로 보여주면 출처를 밝힌다 — 시약 표가 우연히 있어서가 아니라.
+// The source attribution is always shown, independent of the reagent table.
+// It used to hang off AmountsNote, so for records with no reagents it **quoted the original text without naming the source.**
+// It does not trigger on the current data (41/41, live 2/2 all have reagents), but the condition was the wrong shape.
+// If you show someone else's sentence verbatim, you name the source -- not because a reagent table happens to be there.
 function SourceNote() {
   return (
     <p className="proc-note muted small">
@@ -201,8 +201,8 @@ export default function Procedure({ procedure, ourMmol }) {
 
       {procedure.text && (
         <>
-          {/* ORD 레코드의 절차문은 원문 그대로다. 손으로 옮겨 적은 레코드(scripts/import_scifinder.py)는
-              숫자가 전부 출처의 것이어도 "원문 그대로"가 아니다 — 그 차이를 숨기지 않는다 */}
+          {/* The procedure text of an ORD record is verbatim. A hand-transcribed record (scripts/import_scifinder.py)
+              is not "verbatim" even when every number comes from the source -- we do not hide that difference */}
           <p className="proc-verbatim">
             {procedure.transcribed
               ? 'Transcribed from the cited source — every quantity is the source’s, but this is not a verbatim extract. Check it against the DOI above.'

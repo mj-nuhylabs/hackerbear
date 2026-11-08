@@ -11,9 +11,9 @@ import Experimental from './Experimental'
 import Protocol from './Protocol'
 import './analogs.css'
 
-// ORD는 용매·촉매를 구조로 적는다. 그대로 띄우면 화학자가 "C(CCC)O"를 읽어야 하므로, Octet의
-// 오프라인 명명기로 이름을 붙이고 구조는 title에 남긴다. 이름을 못 붙이면 구조를 그대로 보여준다 —
-// 다른 이름으로 바꾸지 않는다.
+// ORD lists solvents and catalysts as structures. Showing them as is would make the chemist read "C(CCC)O", so we use Octet's
+// offline namer to give a name and keep the structure in the title. If no name can be assigned, show the structure as is --
+// we do not swap in a different name.
 function Structure({ smiles }) {
   const [name, setName] = useState(undefined)
   useEffect(() => {
@@ -30,10 +30,10 @@ function Structure({ smiles }) {
   return <code className="cond-smiles">{smiles}</code>
 }
 
-// 벤치에서 바로 필요한 조건 칸들. 값이 없으면 — 로 남긴다.
-// 이 반응을 실제로 돌린 **출처**들이 각각 뭐라고 적었는가. 한 특허가 표 하나로 6건을 올리면
-// 레코드 수로는 압도하지만 독립된 근거는 하나다 — 아스피린에서 그 6건이 설퍼이트 지르코니아
-// 스크리닝 표였고, 그게 "아스피린의 촉매"처럼 떴다.
+// Condition cells needed right at the bench. A missing value stays as —.
+// What each **source** that actually ran this reaction reported. If one patent posts 6 entries in a single table,
+// the record count is overwhelming but the independent evidence is one -- for aspirin, those 6 were a sulfated zirconia
+// screening table, and it showed up as "the catalyst for aspirin".
 function SourceSpread({ by }) {
   if (!by?.length) return null
   const span = (s, unit) =>
@@ -77,8 +77,8 @@ function Conditions({ c }) {
     ['Temperature', c?.temperature_c != null ? `${sig(c.temperature_c)} °C` : null, false, 'temperature_c'],
     ['Time', c?.time_h != null ? `${sig(c.time_h)} h` : null, false, 'time_h'],
     ['Solvent', c?.solvent, true, 'solvent'],
-    // 촉매는 레코드가 적어 둔 이름이 먼저다. 구조가 이름과 안 맞으면 백엔드가 구조를 버린다
-    // (backend/evidence/identity.py) — "zirconia"에 엉뚱한 유기물 구조가 붙어 있던 경우
+    // The name the record lists comes first for a catalyst. If the structure does not match the name, the backend drops the structure
+    // (backend/evidence/identity.py) -- e.g. a case where "zirconia" had an unrelated organic structure attached
     ['Catalyst', c?.catalyst ?? c?.catalyst_name ?? null, !!c?.catalyst, 'catalyst'],
   ]
   return (
@@ -89,13 +89,13 @@ function Conditions({ c }) {
           <dd>
             {v == null ? DASH : isStructure ? <Structure smiles={v} /> : v}
             {v != null && c?.mock && <Mock what="Conditions" />}
-            {/* 이 반응 자체의 기록이 아니라 유사 반응에서 가져온 조건이면 반드시 표시한다 */}
+            {/* If the conditions come from a similar reaction rather than this reaction's own record, always flag it */}
             {v != null && c?.from_analog && (
               <span className="ana-basis ana-basis-analogs" title={`Tanimoto ${c.similarity}`}>
                 from analog
               </span>
             )}
-            {/* 구조가 이름과 안 맞아서 버린 경우. 이름만 보여주고 왜인지 말해 준다 */}
+            {/* The case where the structure was dropped because it did not match the name. Show only the name and say why */}
             {key === 'catalyst' && c?.catalyst_structure_dropped && (
               <span className="cond-src" title={c.catalyst_structure_dropped}>
                 name only
@@ -108,9 +108,9 @@ function Conditions({ c }) {
   )
 }
 
-// 비용 계산에 들어간 수율과 그 출처. 세 가지뿐이다 — 이 반응의 레코드, 가까운 유사 반응, 가정값.
-// 유사 반응에서 왔으면 하나의 숫자가 아니라 퍼짐을 같이 보여준다: 측정된 평균 오차가 ±20%p라서
-// "62%"만 띄우면 화학자가 ±5%p쯤으로 읽는다 (scripts/validate_analogs.py).
+// The yield used in the cost calculation and its source. There are only three -- this reaction's record, a close analog, or an assumed value.
+// If it came from an analog, show the spread, not a single number: the measured mean error is ±20 pp, so showing
+// just "62%" makes the chemist read it as about ±5 pp (scripts/validate_analogs.py).
 const yieldBasis = (step) => step.yield_basis?.basis ?? (step.reported_yield != null ? 'reported' : 'assumed')
 
 function YieldUsed({ step }) {
@@ -144,7 +144,7 @@ function Bar({ label, value, emphasize }) {
   )
 }
 
-// 단계가 바뀌면 key로 새로 마운트되므로 상태가 저절로 초기화된다
+// When the step changes it is remounted via key, so state resets by itself
 function Explain({ route, stepIndex }) {
   const [state, setState] = useState({ status: 'idle' })
 
@@ -265,8 +265,8 @@ export default function StepDetail({ route, stepIndex, onSelect, scale, targetG,
         </svg>
         <Mol compound={s.product} size="sm" caption={caption(s.product)} />
       </div>
-      {/* backend/chem/balance.py: 반응물 목록이 생성물의 원자를 다 대지 못한다 — 레코드에서 반응물이 빠졌다.
-          단, 그 원자를 레코드의 투입표에 있는 시약이 대고 있으면 빠진 게 아니다 (missing_supplied_by) */}
+      {/* backend/chem/balance.py: the reactant list does not account for all the product's atoms -- a reactant is missing from the record.
+          But if a reagent in the record's charge table supplies those atoms, nothing is missing (missing_supplied_by) */}
       {s.missing_atoms && Object.keys(s.missing_atoms).length > 0 && (
         <p className="step-gap" role="note">
           {s.missing_supplied_by?.length ? (
@@ -294,7 +294,7 @@ export default function StepDetail({ route, stepIndex, onSelect, scale, targetG,
           )}
         </p>
       )}
-      {/* 만들 때 바로 봐야 하는 것부터: 스케일, 수율, 조건 → 절차 → 내 스케일로 환산한 양 */}
+      {/* Start with what you need to see when making it: scale, yield, conditions -> procedure -> amounts converted to my scale */}
       <div className="run-step">
         <h3>Run this step</h3>
         <dl className="bench-grid">
@@ -319,14 +319,14 @@ export default function StepDetail({ route, stepIndex, onSelect, scale, targetG,
           </div>
           <Conditions c={s.conditions} />
         </dl>
-        {/* 레코드 수가 아니라 **출처 수**로 본다. 한 특허의 스크리닝 표가 6건이면 레코드로는
-            다수지만 독립된 근거는 하나다 (backend/evidence/provenance.py _by_source) */}
+        {/* Judge by the number of **sources**, not the record count. If one patent's screening table has 6 entries, it is
+            a majority by records but one independent piece of evidence (backend/evidence/provenance.py _by_source) */}
         <SourceSpread by={s.conditions?.by_source} />
       </div>
 
       <Protocol protocol={s.protocol} factor={scale?.nRxn != null ? scale.nRxn * 1000 : 1} targetG={targetG} />
 
-      {/* 같은 데이터를 제출 서식의 문단으로. 표를 그대로 붙여 넣을 수는 없으니까 */}
+      {/* The same data as a submission-format paragraph. Because a table cannot be pasted in as is */}
       <Experimental protocol={s.protocol} factor={scale?.nRxn != null ? scale.nRxn * 1000 : 1} targetG={targetG} />
 
       <Procedure procedure={s.procedure} ourMmol={scale?.nRxn != null ? scale.nRxn * 1000 : null} />

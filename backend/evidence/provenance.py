@@ -1,12 +1,12 @@
-"""스텝 → 원본 레코드 역매핑.
+"""Step -> source record reverse mapping.
 
-AiZynthFinder 템플릿 테이블에는 출처가 없다(컬럼이 retro_template, template_hash,
-classification, library_occurence 넷뿐). 그래서 특허번호를 거기서 얻을 수는 없고,
-ORD 레코드 쪽에서 같은 반응을 찾아 붙인다. scripts/attach_procedures.py가 미리 긁어둔
-data/ord_hits.json(생성물 SMILES → 레코드 리스트)을 읽는다.
+The AiZynthFinder template table has no provenance (its only columns are retro_template, template_hash,
+classification and library_occurence). Patent numbers cannot come from there, so we find the same
+reaction on the ORD side and attach it. Reads data/ord_hits.json (product SMILES -> record list),
+which scripts/attach_procedures.py pre-scraped.
 
-매칭 규칙: 생성물이 같고, 스텝의 반응물이 레코드 반응물의 **부분집합**일 것.
-집합 상등을 쓰면 0건이 나온다 — ORD는 반응 왼쪽에 염·짝이온·시약까지 적기 때문이다.
+Matching rule: same product, and the step's reactants must be a **subset** of the record's reactants.
+Set equality gives 0 hits, because ORD writes salts, counterions and reagents on the left of the reaction.
 """
 from __future__ import annotations
 
@@ -34,7 +34,7 @@ def canon(smiles: str | None) -> str | None:
 
 @lru_cache(maxsize=1)
 def _records() -> dict[str, list[dict]]:
-    """생성물 정규 SMILES → ORD 레코드 리스트. 파일이 없으면 빈 dict (기능만 꺼진다)."""
+    """Canonical product SMILES -> list of ORD records. Empty dict if the file is missing (feature off)."""
     if not HITS.exists():
         return {}
     raw = json.loads(HITS.read_text())
@@ -47,13 +47,13 @@ def _records() -> dict[str, list[dict]]:
 
 
 def _completeness(r: dict) -> tuple:
-    """조건·수율이 있는 레코드를 앞으로. 값이 많은 쪽이 UI에서 쓸모 있다."""
+    """Put records with conditions/yield first. More populated values are more useful in the UI."""
     return (r.get("yield_pct") is not None, r.get("temperature_c") is not None,
             r.get("time_h") is not None, bool(r.get("text")))
 
 
 def match(reactants: list[str], product: str) -> list[dict]:
-    """이 스텝과 같은 반응의 ORD 레코드. 없으면 빈 리스트 — 지어내지 않는다."""
+    """ORD records of the same reaction as this step. Empty list if none; we do not invent them."""
     p = canon(product)
     if not p:
         return []
@@ -63,18 +63,18 @@ def match(reactants: list[str], product: str) -> list[dict]:
     hits = []
     for rec in _records().get(p, []):
         have = {c for c in (canon(r) for r in (rec.get("reactants") or [])) if c}
-        # 생성물이 그 레코드의 반응물에 이미 들어 있으면 그 레코드는 이 결합을 만든 게 아니다 —
-        # 제형·재결정·염 교환 기록이다 (US05154930: 아스피린을 레시틴에 녹인 제형 특허)
+        # If the product is already among that record's reactants, the record did not form this bond:
+        # it is a formulation, recrystallization or salt-exchange record (US05154930: aspirin dissolved in lecithin)
         if want <= have and p not in have:
             hits.append(rec)
     return sorted(hits, key=_completeness, reverse=True)
 
 
 def procedure_from(records: list[dict], reactants: list[str]) -> dict | None:
-    """절차 패널에 띄울 레코드 하나 — 가장 완전한 것, 원문 그대로. 없으면 None.
+    """One record for the procedure panel: the most complete one, verbatim. None if there is none.
 
-    match()를 통과한 레코드만 들어오므로 짝은 둘뿐이다: 반응물 집합이 같으면 exact, 레코드가
-    염·시약을 더 적었으면 covered.
+    Only records that passed match() arrive here, so there are just two kinds: exact if the reactant sets are equal,
+    covered if the record lists extra salts/reagents.
     """
     if not records:
         return None
@@ -85,7 +85,7 @@ def procedure_from(records: list[dict], reactants: list[str]) -> dict | None:
 
 
 def evidence_from(records: list[dict], precedent_count: int, tier: str) -> dict:
-    """Evidence 블록. source_ids·url은 레코드에 있는 것만."""
+    """Evidence block. source_ids and url come only from what the records contain."""
     return {
         "tier": tier,
         "source_ids": [r["reaction_id"] for r in records[:5] if r.get("reaction_id")],
@@ -112,15 +112,16 @@ def _catalyst(rec: dict) -> dict:
 
 
 def conditions_from(records: list[dict]) -> dict | None:
-    """이 반응의 조건. 항목마다 그 값을 적어 둔 첫 레코드에서 가져오고, 출처도 항목별로 단다.
+    """Conditions for this reaction. Each item comes from the first record that lists it, with a per-item source.
 
-    예전에는 온도나 시간 중 **하나라도** 있는 첫 레코드를 통째로 돌려줬다. 그래서 온도만 적힌
-    레코드가 앞에 오면 뒤에 시간이 적힌 레코드가 있어도 시간이 —로 떴다. 아스피린 아세틸화가
-    그 경우다: 90–120 °C짜리 레코드가 6건, 시간(5분)이 적힌 레코드가 1건인데 시간이 안 나왔다.
+    This used to return the first record with **any** temperature or time, whole. So when a record with only a
+    temperature came first, the time showed as — even if a later record had one. Aspirin acetylation was
+    that case: 6 records at 90-120 °C, 1 record with a time (5 min), and the time did not appear.
 
-    항목을 따로 채우면 한 화면의 값들이 서로 다른 실험에서 올 수 있다 (같은 반응의 다른 기록이다).
-    그래서 항목마다 source_id를 달고 mixed=True로 표시한다 — UI가 값 옆에 출처를 보여줘야 한다.
-    한 실험의 조건인 척하면 안 된다.
+    Filling items separately means one screen's values can come from different experiments (different writeups of
+    the same reaction).
+    So each item carries a source_id and mixed=True is set: the UI must show the source next to the value.
+    It must not pass off as the conditions of a single experiment.
     """
     fields = {"temperature_c": "temperature_c", "time_h": "time_h",
               "solvent": "solvents", "catalyst": "catalysts"}
@@ -178,9 +179,9 @@ def conditions_from(records: list[dict]) -> dict | None:
     out = {**read(best), "catalyst_loading": None,
            "source_id": best.get("reaction_id"), "mixed": False, **_catalyst(best)}
 
-    # 다른 레코드가 적어 둔 **다른** 조건은 대안으로 따로 보여준다. 항목별로 긁어다 합치면
-    # 서로 다른 실험 네 개가 조건 하나로 뜬다 — 아스피린 스텝이 그랬다: 무용매 90 °C(지르코니아)에
-    # 5분과 다이클로로메테인(얼음욕 피리딘 반응)이 섞여서, 아무도 돌린 적 없는 절차가 됐다.
+    # **Different** conditions written in other records are shown separately as alternatives. Merging item by item
+    # would show four different experiments as one set of conditions. The aspirin step did this: solvent-free
+    # 90 °C (zirconia) with 5 min got mixed with dichloromethane (ice-bath pyridine reaction), giving a procedure nobody ever ran.
     alts = []
     for r in records:
         if r is best or not r.get("reaction_id"):
@@ -249,7 +250,7 @@ def _span(vals: list[float]) -> dict | None:
 
 
 def reported_yield(records: list[dict]) -> float | None:
-    """문헌 수율. 0 < y <= 100 범위 밖은 레코드 오류로 보고 버린다 (ORD에 37,578건 있다)."""
+    """Literature yield. Values outside 0 < y <= 100 are treated as record errors and dropped (37,578 in ORD)."""
     for r in records:
         y = r.get("yield_pct")
         if y is not None and 0 < y <= 100:

@@ -1,9 +1,9 @@
-"""isotonic 캘리브레이션 + reliability diagram PNG + metrics.json.
+"""Isotonic calibration + reliability diagram PNG + metrics.json.
 
-- calibrator는 calib셋으로만 fit한다.
-- reliability diagram과 모든 지표는 test셋에서만 계산한다. calib셋으로 그리면 isotonic이
-  자기가 맞춘 데이터를 보여주는 그림이 되어 항상 좋아 보인다.
-- 그림과 metrics.json의 숫자는 전부 여기서 코드로 계산한 값이다 (절대 규칙 2).
+- The calibrator is fit on the calib set only.
+- The reliability diagram and all metrics are computed on the test set only. Drawn on the calib set, isotonic would
+  be showing the data it was fit to, and would always look good.
+- Every number in the figure and in metrics.json is computed here by code (absolute rule 2).
 """
 from __future__ import annotations
 
@@ -20,13 +20,13 @@ from sklearn.metrics import average_precision_score, brier_score_loss, roc_auc_s
 DATA = Path(__file__).resolve().parents[1] / "data"
 N_BINS = 10
 
-# dataviz 기본 팔레트 (light surface). PNG라 테마 전환 없음
+# dataviz default palette (light surface). PNG, so no theme switching
 SURFACE, INK, INK2, GRID = "#fcfcfb", "#0b0b0b", "#52514e", "#e4e3df"
 CALIBRATED, RAW, HIST = "#2a78d6", "#eb6834", "#9ec5f4"
 
 
 def ece(y: np.ndarray, p: np.ndarray, n_bins: int = N_BINS) -> float:
-    """Expected calibration error, 등간격 bin, 표본 수 가중."""
+    """Expected calibration error, equal-width bins, weighted by sample count."""
     edges = np.linspace(0, 1, n_bins + 1)
     idx = np.clip(np.digitize(p, edges[1:-1]), 0, n_bins - 1)
     total = 0.0
@@ -38,7 +38,7 @@ def ece(y: np.ndarray, p: np.ndarray, n_bins: int = N_BINS) -> float:
 
 
 def reliability(y: np.ndarray, p: np.ndarray, n_bins: int = N_BINS):
-    """비어 있지 않은 bin마다 (평균 예측값, 실제 양성 비율, 개수)."""
+    """For each non-empty bin: (mean prediction, observed positive fraction, count)."""
     edges = np.linspace(0, 1, n_bins + 1)
     idx = np.clip(np.digitize(p, edges[1:-1]), 0, n_bins - 1)
     rows = [(p[idx == b].mean(), y[idx == b].mean(), int((idx == b).sum()))

@@ -1,17 +1,17 @@
-"""LLM 출력 가드 — 절대 규칙을 코드로 강제한다.
+"""LLM output guard: enforces the absolute rules in code.
 
-프로젝트의 차별점은 "환각하지 않는다"이다. LLM이 출력해도 되는 것은 자연어 설명문뿐이고,
-SMILES·수율·가격·DOI·특허번호·반응 조건을 LLM이 만들어내면 **버그다**.
+The project's differentiator is "no hallucination". The only thing the LLM may output is natural-language prose;
+if it makes up SMILES, yields, prices, DOIs, patent numbers or reaction conditions, that is **a bug**.
 
-그래서 설명 생성 경로는 반드시 enforce()를 통과해야 한다. 위반이면 예외를 던지고,
-llm/explain.py는 그걸 잡아서 설명문 대신 "생성 실패"를 돌려준다 — 걸러낸 텍스트를
-고쳐서 내보내지 않는다. 고치면 무엇이 사실이고 무엇이 수정본인지 알 수 없게 된다.
+So the explanation path must pass through enforce(). A violation raises an exception, and
+llm/explain.py catches it and returns "generation failed" instead of prose. Filtered text is never
+repaired and shipped: after repair you cannot tell what is fact and what is an edit.
 
-잡는 것:
-  SMILES    RDKit가 분자로 읽고, 중원자 3개 이상이며, SMILES 특수문자/숫자를 가진 토큰
-  숫자+단위  "76%", "40 °C", "8 h", "2 equiv", "5 mmol" 같은 정량 주장
+What it catches:
+  SMILES    a token RDKit parses as a molecule, with 3+ heavy atoms and SMILES special characters/digits
+  number+unit  quantitative claims such as "76%", "40 °C", "8 h", "2 equiv", "5 mmol"
   DOI       10.xxxx/...
-  특허번호    US1234567, US20070213315A1
+  patent number    US1234567, US20070213315A1
 """
 from __future__ import annotations
 
@@ -23,7 +23,7 @@ RDLogger.DisableLog("rdApp.*")
 
 MIN_HEAVY_ATOMS = 3
 SMILES_CHARS = re.compile(r"[\[\]()=#@\\/+]|\d")
-# 설명문에 정상적으로 나올 수 있는 단어는 분자로 읽히더라도 통과시킨다
+# Words that can legitimately appear in prose pass even if they parse as molecules
 ALLOW = {"i", "in", "on", "no", "nos", "c", "n", "o", "s", "p", "b", "co", "cc", "ccc", "one", "none"}
 
 UNIT = (r"%|°\s?[CFK]|\bK\b|\bdeg\b|°|"
@@ -35,7 +35,7 @@ PATENT = re.compile(r"\bUS[\s-]?\d{6,11}(?:[A-Z]\d?)?\b")
 
 
 class GuardViolation(ValueError):
-    """LLM이 화학적 사실을 만들어냈다. 그 출력은 쓰지 않는다."""
+    """The LLM made up chemical facts. Do not use that output."""
 
     def __init__(self, violations: list[dict]):
         self.violations = violations
@@ -52,7 +52,7 @@ def _looks_like_smiles(token: str) -> bool:
 
 
 def check(text: str) -> list[dict]:
-    """위반 목록. 비어 있으면 통과다."""
+    """List of violations. Empty means pass."""
     out: list[dict] = []
     for rx, kind in ((DOI, "doi"), (PATENT, "patent"), (NUMBER_UNIT, "number_with_unit")):
         for m in rx.finditer(text or ""):
@@ -64,7 +64,7 @@ def check(text: str) -> list[dict]:
 
 
 def enforce(text: str) -> str:
-    """통과하면 원문 그대로, 아니면 GuardViolation. 고쳐서 내보내지 않는다."""
+    """Return the text unchanged if it passes, else raise GuardViolation. Never repair and ship."""
     v = check(text)
     if v:
         raise GuardViolation(v)

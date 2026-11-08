@@ -33,7 +33,7 @@ export default function RouteScheme({ route, targetName, selectedStep, onSelect 
   const last = route.steps.length - 1
   const wrapRef = useRef(null)
 
-  // 선택한 단계가 가로 스크롤 밖에 있으면 그 단계가 보이게 맞춘다 (페이지는 움직이지 않음)
+  // If the selected step is outside the horizontal scroll area, scroll so that step is visible (the page does not move)
   useEffect(() => {
     const wrap = wrapRef.current
     const cell = wrap?.querySelector('.arrow-cell.is-selected')

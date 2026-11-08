@@ -1,5 +1,5 @@
-// API 계층. USE_MOCK=false로 바꾸면 FastAPI(/api → :8000)로 붙는다.
-// 목업 응답은 API 계약(CLAUDE_HACKFNM.md)과 같은 모양을 유지한다.
+// API layer. Set USE_MOCK=false to connect to FastAPI (/api -> :8000).
+// Mock responses keep the same shape as the API contract (CLAUDE_HACKFNM.md).
 import demo from './mock/demo.json'
 import { computeCost } from './lib/cost'
 
@@ -62,8 +62,8 @@ export async function getRoutes(smiles, maxDepth = 4) {
   return { routes: t.routes.map(hydrateRoute) }
 }
 
-// 경로 하나의 BOM과 합계. 실제로는 POST /cost(backend/cost/stoich.py)가 data/prices.csv로 계산하고, 여기서는 UI가
-// 쓰는 모양으로 옮기기만 한다. 목업에서는 같은 수식의 JS 구현(lib/cost.js)을 demo.json 가격으로 돌린다.
+// BOM and totals for one route. In the real app POST /cost (backend/cost/stoich.py) computes this from data/prices.csv, and here we only
+// reshape it for the UI. In the mock, a JS implementation of the same formula (lib/cost.js) runs on the demo.json prices.
 export async function getCost(route, { targetG, purification }) {
   // The mock has no catalogue price for targets, so it has no buy-vs-make verdict either (null hides it)
   if (USE_MOCK) return { ...computeCost(route, { targetG, purification, prices: demo.prices }), buy: null }
@@ -99,7 +99,7 @@ export async function getCost(route, { targetG, purification }) {
       yield: s.yield,
       yieldSource: s.yield_is_assumed ? 'assumed' : 'reported',
     })),
-    // 생성물에 안 들어가는 입력 — 레코드가 적어 둔 양 그대로 (backend/cost/inputs.py)
+    // Inputs that do not end up in the product -- amounts exactly as the record lists them (backend/cost/inputs.py)
     reagents: (c.reagents ?? []).map((l) => ({
       smiles: l.smiles,
       name: l.name,
@@ -166,7 +166,7 @@ export async function getCost(route, { targetG, purification }) {
   }
 }
 
-// 목업 설명문. 실제로는 llm/explain.py가 검색된 레코드만 입력으로 받아 쓰고, 가드를 통과해야 나온다.
+// Mock explanation text. In the real app llm/explain.py writes it using only retrieved records as input, and it appears only after passing the guard.
 const EXPLAIN = {
   REPORTED: {
     why_works:

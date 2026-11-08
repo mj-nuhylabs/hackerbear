@@ -130,7 +130,7 @@ def cas_to_smiles(cas: str) -> str | None:
     url = f"https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/name/{cas}/property/SMILES/JSON"
     out = None
     try:
-        with httpx.Client(timeout=20, headers={"User-Agent": "SynthPath/1.0"}) as c:
+        with httpx.Client(timeout=20, headers={"User-Agent": "SynPath/1.0"}) as c:
             r = c.get(url)
             if r.status_code == 200:
                 props = r.json()["PropertyTable"]["Properties"][0]

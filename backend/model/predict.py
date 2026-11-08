@@ -1,13 +1,13 @@
-"""추론: 반응 → (plausibility_raw, plausibility_calibrated).
+"""Inference: reaction -> (plausibility_raw, plausibility_calibrated).
 
-모델 파일이 없거나 입력을 정규화할 수 없으면 (None, None)을 돌려준다 — UI는 —로 띄운다.
-추정값으로 채우지 않는다 (절대 규칙 3).
+If the model files are missing or the input cannot be normalized, return (None, None); the UI shows —.
+Never fill in an estimate (absolute rule 3).
 
-calibrated 값의 의미: 보류해 둔 USPTO 실제 반응 vs 템플릿 생성 decoy 사이에서 캘리브레이션된 확률.
-**구조적 타당성이지 실험 성공 확률이 아니다 — 이건 추측이 아니라 측정값이다.**
-scripts/validate_external.py가 ORD의 기록된 실제 결과(모든 조건에서 실패한 반응 vs 어떤 조건에선
-성공한 반응)에 대고 재보면 ROC-AUC가 0.47로, 우연보다 못하다. 즉 이 점수로 "실험이 될지"를
-말하면 안 된다. 이 점수가 잡아내는 것은 "템플릿이 엉뚱하게 적용된 스텝"이다.
+Meaning of the calibrated value: calibrated probability of a held-out real USPTO reaction vs a template-generated decoy.
+**It is structural plausibility, not the probability of experimental success. This is a measurement, not a guess.**
+Measured by scripts/validate_external.py against recorded real outcomes in ORD (reactions that failed under all
+conditions vs reactions that succeeded under some), ROC-AUC is 0.47, worse than chance. So this score must not be used
+to say whether an experiment will work. What it catches is "a step where the template was applied nonsensically".
 """
 from __future__ import annotations
 
@@ -38,7 +38,7 @@ def _load() -> dict | None:
 
 
 def score_many(rxn_smiles: list[str]) -> list[tuple[float | None, float | None]]:
-    """정방향 'reactants>>product' 리스트 → [(raw, calibrated), ...]. 실패한 항목은 (None, None)."""
+    """Forward 'reactants>>product' list -> [(raw, calibrated), ...]. Failed entries are (None, None)."""
     out: list[tuple[float | None, float | None]] = [(None, None)] * len(rxn_smiles)
     st = _load()
     if st is None:
@@ -52,8 +52,8 @@ def score_many(rxn_smiles: list[str]) -> list[tuple[float | None, float | None]]
         raw = st["model"].predict_proba(X)[:, 1]
         cal = st["calibrator"].predict_proba(X)[:, 1]
     except Exception:
-        # 값은 None으로 돌려주되(절대 규칙 3), 조용히 삼키지는 않는다.
-        # 점수가 전부 —로 뜨는 게 "모델 없음"인지 버그인지 구분할 수 있어야 한다.
+        # Return None for the value (absolute rule 3), but do not swallow it silently.
+        # You must be able to tell whether scores all showing — means "no model" or a bug.
         traceback.print_exc()
         return out
     for j, i in enumerate(idx):

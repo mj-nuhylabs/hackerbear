@@ -12,7 +12,7 @@
 // set's button, or a set's menu) tears a set off into a floating palette (FloatingTemplates, below). The library and
 // each palette have a template size (SizeChoice), and a set's menu saves it as a ChemDraw template file.
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
-import { frameHeight, frameTop, frameWidth } from "./synthpath"; // SynthPath: the editor's width is its pane's, not the window's
+import { frameHeight, frameTop, frameWidth } from "./synpath"; // SynPath: the editor's width is its pane's, not the window's
 import { ArrowLineDownRight, ArrowLineUpLeft, ArrowSquareOut, BookmarkSimple, Copy, FileArrowUp, Folders, FolderSimple, FolderSimplePlus, FolderSimpleUser, MagnifyingGlass, NotePencil, PencilSimple, Plus, PushPin, Trash, X } from "@phosphor-icons/react";
 import { ContextMenu, menuAt, menuKey, type MenuItem } from "./Menu";
 import { commonKey } from "./common";

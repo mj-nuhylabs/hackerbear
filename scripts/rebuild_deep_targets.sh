@@ -21,7 +21,7 @@ fail() { say "$1 FAILED — data/deep/ left as it was; partial output in $NEXT";
 mkdir -p "$NEXT"
 # the holdout only grows (build_deep_targets.stage_recorded unions with the existing file)
 cp "$LIVE/holdout_molecules.txt" "$NEXT/"
-export SYNTHPATH_DEEP_DIR="$PWD/$NEXT"
+export SYNPATH_DEEP_DIR="$PWD/$NEXT"
 
 say "recorded routes";  $PY -u -I scripts/build_deep_targets.py --stage recorded || fail "recorded"
 say "AiZynth search ($WORKERS workers)"

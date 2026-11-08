@@ -1,7 +1,7 @@
-"""이름/CAS/SMILES → 정규 SMILES + MW + SVG.
+"""Name/CAS/SMILES -> canonical SMILES + MW + SVG.
 
-구조·분자량·InChIKey는 RDKit 계산값이고, 이름↔구조는 PubChem PUG REST 응답 그대로다.
-우리가 지어내는 값은 없다. 못 찾으면 예외를 던지고, 없는 필드는 None이다.
+Structure, molecular weight and InChIKey are RDKit-computed; name<->structure is the PubChem PUG REST response verbatim.
+We invent no values. If nothing is found we raise, and missing fields are None.
 """
 from __future__ import annotations
 
@@ -16,11 +16,11 @@ from rdkit.Chem.Draw import rdMolDraw2D
 RDLogger.DisableLog("rdApp.*")
 
 PUBCHEM = "https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/name"
-# 구조로 조회할 때의 베이스. PUBCHEM은 /name으로 끝나므로 그걸 쓰면 경로가 틀어진다
+# Base for structure lookups. PUBCHEM ends in /name, so reusing it would break the path
 PUBCHEM_SMILES = "https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/smiles"
 CAS_RE = re.compile(r"\d{2,7}-\d{2}-\d")
 
-# 다크/라이트 양쪽에서 읽히는 원자 색. 탄소(검정)는 SVG에서 currentColor로 치환된다
+# Atom colors readable on both dark and light backgrounds. Carbon (black) is replaced with currentColor in the SVG
 PALETTE = {
     0: (0, 0, 0), 6: (0, 0, 0), 1: (0, 0, 0),
     7: (0.24, 0.45, 0.88), 8: (0.86, 0.26, 0.22), 9: (0.16, 0.62, 0.56),
@@ -30,7 +30,7 @@ PALETTE = {
 
 
 class ResolveError(ValueError):
-    """입력을 구조로 읽지 못했다. 추측해서 채우지 않는다."""
+    """The input could not be read as a structure. We do not guess to fill it in."""
 
 
 def mol_svg(mol, size=(260, 200)) -> str:
@@ -51,11 +51,11 @@ def mol_svg(mol, size=(260, 200)) -> str:
 
 def describe(smiles: str, name: str | None = None, cas: str | None = None, *, svg: bool = True,
              look_up_name: bool = False) -> dict:
-    """SMILES → 정규 SMILES + InChIKey + MW + SVG. 전부 RDKit 계산값.
+    """SMILES -> canonical SMILES + InChIKey + MW + SVG. All RDKit-computed.
 
-    look_up_name은 이름이 **화면에 뜨는** 분자에만 켠다. 켜면 chem/names.name_for가 공급사
-    제품명이나 PubChem 타이틀을 찾는데, PubChem은 초당 5건 제한이 있어 네트워크 호출이 된다.
-    후보 경로 수천 개의 말단 물질마다 부르면 빌드가 몇 분씩 늘어난다 (한 번 겪었다).
+    Turn look_up_name on only for molecules whose name **is shown on screen**. When on, chem/names.name_for looks up a
+    supplier product name or PubChem title; PubChem is limited to 5 req/s, so this is a network call.
+    Calling it for every leaf material of thousands of candidate routes adds minutes to the build (we hit this once).
     """
     mol = Chem.MolFromSmiles(smiles)
     if mol is None:
@@ -92,7 +92,7 @@ def detect_kind(query: str) -> str:
 
 @lru_cache(maxsize=512)
 def pubchem(term: str) -> dict:
-    """이름 또는 CAS → PubChem 레코드. 응답 값을 그대로 쓴다."""
+    """Name or CAS -> PubChem record. Uses the response values as they are."""
     try:
         with httpx.Client(timeout=20) as c:
             r = c.get(f"{PUBCHEM}/{term}/property/SMILES,InChIKey,Title/JSON")
@@ -115,15 +115,15 @@ def pubchem(term: str) -> dict:
 
 @lru_cache(maxsize=2048)
 def pubchem_title(smiles: str) -> dict:
-    """구조 → PubChem이 그 화합물을 부르는 이름(Title)과 CAS. 못 찾으면 빈 dict.
+    """Structure -> the name PubChem calls the compound (Title) and its CAS. Empty dict if not found.
 
-    이름으로 검색하면 PubChem Title이 붙어서 "Aspirin"이 뜨는데, 그려서 들어오거나 SMILES로
-    들어오면 그 경로를 안 타서 이름이 없었다. 화학자가 아스피린을 그려 놓고 화면에서
-    "2-(acetyloxy)benzoic acid"만 보는 이유가 이것이다. Title은 PubChem이 적어 둔 값 그대로다.
+    Searching by name attaches the PubChem Title, so "Aspirin" shows up; a structure that was drawn or entered as SMILES
+    did not take that path, so it had no name. This is why a chemist who drew aspirin saw only
+    "2-(acetyloxy)benzoic acid" on screen. The Title is exactly what PubChem has recorded.
     """
     try:
-        # PubChem은 기본 User-Agent로 온 요청을 거절한다. 사람 이메일이 아니라 클라이언트 이름을 보낸다
-        with httpx.Client(timeout=15, headers={"User-Agent": "SynthPath/1.0"}) as c:
+        # PubChem rejects requests with the default User-Agent. Send a client name, not a personal email
+        with httpx.Client(timeout=15, headers={"User-Agent": "SynPath/1.0"}) as c:
             r = c.get(f"{PUBCHEM_SMILES}/{smiles}/property/Title/JSON")
             if r.status_code != 200:
                 return {}
@@ -135,12 +135,12 @@ def pubchem_title(smiles: str) -> dict:
                 cas = next((s for s in syns if CAS_RE.fullmatch(s)), None)
             return {"title": title or None, "cas": cas}
     except Exception:
-        # 이름이 없어도 앱은 돈다 — 구조로 하던 일을 그대로 한다
+        # The app works without a name -- do what we did with the structure alone
         return {}
 
 
 def resolve(query: str, kind: str = "auto", *, svg: bool = True) -> dict:
-    """{query, kind} → {smiles, inchikey, mw, svg, name, cas}. 실패하면 ResolveError."""
+    """{query, kind} -> {smiles, inchikey, mw, svg, name, cas}. Raises ResolveError on failure."""
     q = (query or "").strip()
     if not q:
         raise ResolveError("the query is empty")

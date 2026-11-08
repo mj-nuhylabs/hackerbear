@@ -8,7 +8,7 @@ import { createPortal } from "react-dom";
 import { holdCursor } from "./cursor";
 import { Exit, useLeaving } from "./motion";
 import { CaretRight } from "@phosphor-icons/react";
-import { host } from "./synthpath"; // SynthPath: portals go in the editor's own element
+import { host } from "./synpath"; // SynPath: portals go in the editor's own element
 
 export type MenuItem = {
   key: string;

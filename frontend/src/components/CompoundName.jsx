@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react'
 import { nameOf } from '../octet/engine'
 
-// 한 화합물을 사람이 읽는 이름으로. 출처 순서는 backend/chem/names.py와 같다:
-//   1. 백엔드가 준 이름 — 공급사 제품명(prices.csv)이나 레코드가 적어 둔 NAME
-//   2. Octet의 오프라인 IUPAC 네이머 — 결정론적 코드다. 이름을 다시 읽어 확인한다
-//   3. 둘 다 없으면 SMILES 자체
-// SMILES는 지우지 않는다. 이성질체를 확인할 때 이름보다 SMILES가 정확하고, 이 프로젝트에서
-// 스텝이 레코드와 같은 반응임을 증명하는 것도 SMILES다. 이름을 앞에 두고 SMILES를 밑에 작게 둔다.
+// Show one compound as a human-readable name. The source order matches backend/chem/names.py:
+//   1. The name the backend gave -- a supplier product name (prices.csv) or the NAME the record lists
+//   2. Octet's offline IUPAC namer -- deterministic code. Parse the name back to check it
+//   3. If neither exists, the SMILES itself
+// The SMILES is never removed. For checking isomers the SMILES is more exact than the name, and in this project
+// the SMILES is also what proves a step is the same reaction as the record. Put the name first and the SMILES small underneath.
 export default function CompoundName({ compound, name, smiles, showSmiles = true, className = '' }) {
   const smi = smiles ?? compound?.smiles
   const given = name ?? compound?.name ?? null

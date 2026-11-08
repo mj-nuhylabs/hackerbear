@@ -1,15 +1,15 @@
-/* Layout: 실험 벤치 — 왼쪽 레일(타겟·경로 목록), 오른쪽 작업면(모눈 노트 위 반응 스킴 → 단계 근거 → 구매 목록).
-   볼드한 요소는 하나: 실험 노트 모눈 위에 그린 반응 스킴. 나머지는 조용하게. */
+/* Layout: lab bench -- left rail (target, route list), right work surface (reaction scheme on grid notebook -> step evidence -> shopping list).
+      Only one bold element: the reaction scheme drawn on the lab notebook grid. Everything else stays quiet. */
 :root {
-  --bg: #eef1f3;          /* 실험대 화이트, 약간 차가운 쪽 */
+  --bg: #eef1f3;          /* bench white, leaning slightly cool */
   --surface: #ffffff;
   --sunk: #f6f8f9;
   --ink: #16202a;
   --ink-2: #4b5966;
   --ink-3: #7c8893;
   --line: #d9dfe4;
-  --grid: #e7ecf0;        /* 노트 모눈 */
-  --accent: #7a2c8f;      /* 과망간산칼륨 TLC 염색 */
+  --grid: #e7ecf0;        /* notebook grid */
+  --accent: #7a2c8f;      /* potassium permanganate TLC stain */
   --accent-ink: #ffffff;
   --accent-soft: #f4eaf7;
 
@@ -94,7 +94,7 @@
 
 html { -webkit-text-size-adjust: 100%; }
 
-/* SynthPath's rules stop at Octet Draw's element (.octet-host), which brings its own (scoped in vite.config.js).
+/* SynPath's rules stop at Octet Draw's element (.octet-host), which brings its own (scoped in vite.config.js).
    The custom properties above stay outside: inside @scope a rule matches only below the root, never :root itself. */
 @scope (:root) to (.octet-host) {
 
@@ -130,7 +130,7 @@ button, input, select { font: inherit; color: inherit; }
   padding-right: max(16px, env(safe-area-inset-right, 0px));
 }
 
-/* ── 앱 바: 창 전체에 걸친 한 줄 (그리기 패널과 결과 위) ───────── */
+/* ── App bar: one line across the whole window (above the draw panel and results) ───────── */
 /* Fixed, the full width of the window, over both the drawing pane and the results. Its lead cell is as wide as the
    drawing pane when that is open, so the pane's edge runs on up through the bar as one line. */
 .app { padding-top: var(--bar-h); }
@@ -260,7 +260,7 @@ button, input, select { font: inherit; color: inherit; }
 .ghost-btn:disabled { opacity: 0.4; cursor: default; }
 .notebook { container: notebook / inline-size; }
 
-/* ── 벤치 레이아웃 ─────────────────── */
+/* ── Bench layout ─────────────────── */
 .bench {
   display: grid;
   grid-template-columns: 340px minmax(0, 1fr);
@@ -294,7 +294,7 @@ button, input, select { font: inherit; color: inherit; }
 .error { border-color: var(--bad); }
 .error .loading-title { color: var(--bad); }
 
-/* ── 분자 ─────────────────────────── */
+/* ── Molecule ─────────────────────── */
 .mol { margin: 0; display: flex; flex-direction: column; align-items: center; gap: 2px; color: var(--ink); flex: none; }
 .mol-svg { width: 100%; }
 .mol-svg svg { display: block; width: 100%; height: auto; }
@@ -305,7 +305,7 @@ button, input, select { font: inherit; color: inherit; }
 .mol figcaption { font-size: var(--fs-xs); color: var(--ink-2); text-align: center; line-height: 1.3; }
 .mol-missing { display: grid; place-items: center; aspect-ratio: 1.3; color: var(--ink-3); font-size: var(--fs-xs); }
 
-/* ── 태그 ─────────────────────────── */
+/* ── Tags ─────────────────────────── */
 .tier {
   display: inline-flex;
   align-items: center;
@@ -351,7 +351,7 @@ button, input, select { font: inherit; color: inherit; }
 }
 .assumed.is-reported { color: var(--good); }
 
-/* ── 키-값 ────────────────────────── */
+/* ── Key-value ────────────────────── */
 .kv { margin: 0; display: flex; flex-direction: column; }
 .kv-row {
   display: grid;
@@ -379,7 +379,7 @@ button, input, select { font: inherit; color: inherit; }
   line-height: 1.5;
 }
 
-/* ── 레일 ─────────────────────────── */
+/* ── Rail ─────────────────────────── */
 .target { display: flex; flex-direction: column; gap: 10px; }
 .target-name { font-size: var(--fs-xl); }
 
@@ -424,8 +424,8 @@ button, input, select { font: inherit; color: inherit; }
 .pip-reported { background: var(--reported); }
 .pip-analogous { background: var(--analogous-pip); }
 .pip-computed { background: var(--computed); opacity: 0.55; }
-/* 등급은 선례가 얼마나 있나를 말하고, 이 줄무늬는 그 스텝을 실제로 돌릴 수 있나를 말한다 —
-   REPORTED인데 양을 적을 수 있는 레코드가 없는 스텝이 있다 */
+/* The tier says how much precedent there is, and this stripe says whether you can actually run the step --
+      there are REPORTED steps with no record that has writable amounts */
 .pip-nosheet {
   background-image: repeating-linear-gradient(
     135deg, transparent 0 2px, color-mix(in srgb, var(--bg) 70%, transparent) 2px 4px
@@ -438,13 +438,13 @@ button, input, select { font: inherit; color: inherit; }
 .rc-score { display: flex; justify-content: space-between; }
 .rc-id { font-family: var(--font-mono); font-size: 11px; }
 
-/* ── 반응 스킴 (모눈 노트) ──────────── */
+/* ── Reaction scheme (grid notebook) ──────────── */
 .scheme-head { flex-direction: row; flex-wrap: wrap; justify-content: space-between; align-items: flex-start; gap: 10px 24px; }
 .legend { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: var(--fs-xs); color: var(--ink-2); }
 .legend li { display: flex; align-items: center; gap: 6px; }
 
 .scheme-wrap {
-  position: relative; /* 선택 단계로 가로 스크롤을 맞출 때 기준 */
+  position: relative; /* reference when scrolling horizontally to the selected step */
   overflow-x: auto;
   border: 1px solid var(--line);
   border-radius: var(--r-ctl);
@@ -488,7 +488,7 @@ button, input, select { font: inherit; color: inherit; }
 .branch-inputs, .branch-in, .rxn-in { display: flex; align-items: center; gap: 4px; }
 .plus { color: var(--ink-3); font-size: var(--fs-lg); padding: 0 2px; }
 
-/* ── 단계 상세 ─────────────────────── */
+/* ── Step detail ─────────────────────── */
 .step { display: flex; flex-direction: column; gap: 16px; }
 .step-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px; }
 .step-title-row { display: flex; align-items: center; gap: 10px; }
@@ -524,7 +524,7 @@ button, input, select { font: inherit; color: inherit; }
 .pbar-main .pbar-label { color: var(--ink); font-weight: 500; }
 .pbar-val { text-align: right; font-variant-numeric: tabular-nums; }
 
-/* 벤치 요약 — 스텝 상세의 맨 위. 만들 때 바로 필요한 숫자만 */
+/* Bench summary -- top of the step detail. Only the numbers you need right when making it */
 .run-step { display: flex; flex-direction: column; gap: 12px; padding: 14px 16px; border: 1px solid var(--line); border-radius: var(--r-ctl); background: var(--sunk); }
 .run-step h3 { color: var(--ink); font-size: var(--fs-md); }
 .bench-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 14px 16px; margin: 0; }
@@ -556,7 +556,7 @@ button, input, select { font: inherit; color: inherit; }
 .chips { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
 .chips li { padding: 2px 10px; border-radius: 999px; border: 1px solid var(--line); font-size: var(--fs-sm); background: var(--sunk); }
 
-/* ── 비용 ─────────────────────────── */
+/* ── Cost ─────────────────────────── */
 .cost-controls { display: flex; flex-wrap: wrap; gap: 12px 32px; margin-bottom: 14px; }
 .ctl { display: flex; flex-direction: column; gap: 4px; font-size: var(--fs-sm); color: var(--ink-2); }
 .ctl-input { display: flex; align-items: center; gap: 8px; color: var(--ink); }
@@ -588,7 +588,7 @@ button, input, select { font: inherit; color: inherit; }
 .total-v { font-family: var(--font-display); font-size: var(--fs-2xl); font-weight: 600; line-height: 1.15; }
 .cost-foot { margin-top: 12px; max-width: 80ch; }
 
-/* ── 모델 성능 패널 (수치는 백엔드에서 읽는다) ──── */
+/* ── Model performance panel (numbers are read from the backend) ──── */
 .model-panel { display: flex; flex-direction: column; gap: 12px; }
 .model-panel h3 { font-size: var(--fs-sm); margin: 0 0 2px; }
 .model-panel p { max-width: 68ch; }
@@ -615,7 +615,7 @@ button, input, select { font: inherit; color: inherit; }
   font-size: var(--fs-sm);
 }
 
-/* ── 그리기 패널 (Octet Draw, 앱에 내장) ───────── */
+/* ── Draw panel (Octet Draw, embedded in the app) ───────── */
 /* Pinned to the window's left edge at full height, so its top-left corner is the window's and Octet's pointer and
    overlay maths hold (DrawPane.jsx). The app bar lies over its top; its status bar (--strip) sits under the editor. */
 .app.with-draw { margin-left: var(--draw-w); }
@@ -677,7 +677,7 @@ body:has(.draw-pane[data-mode='full']:not([hidden])) { overflow: hidden; }
 .target-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
 .octet-name { overflow-wrap: anywhere; }
 
-/* ── 반응형 ───────────────────────── */
+/* ── Responsive ───────────────────────── */
 /* The results' own width decides the layout, not the window's: with the drawing pane open, a wide window still
    leaves them 700–1100px. Below 1180px the work column beside a 340px rail gets too narrow for the bill of
    materials, so the results go to one column: the target card lies flat (structure left, data right) and the routes
@@ -752,12 +752,12 @@ body:has(.draw-pane[data-mode='full']:not([hidden])) { overflow: hidden; }
   -webkit-font-smoothing: auto;
 }
 
-/* In SynthPath's pane, Octet's editor fills the pane above the strip instead of the window (Octet's own CSS has
+/* In SynPath's pane, Octet's editor fills the pane above the strip instead of the window (Octet's own CSS has
    position: fixed; inset: 0). Outside the @scope above, which stops at .octet-host. */
 .draw-pane .octet-host .editor { position: absolute; }
 
-/* ── Octet Draw in SynthPath's skin ───────────────────────────────────────────────────────────────────────────
-   One app, not two: Octet's chrome takes SynthPath's palette, accent (the KMnO4 purple), radii and type. Its tokens
+/* ── Octet Draw in SynPath's skin ───────────────────────────────────────────────────────────────────────────
+   One app, not two: Octet's chrome takes SynPath's palette, accent (the KMnO4 purple), radii and type. Its tokens
    (brand/tokens.css) are re-pointed here; the drawing's own atom colours and label font (ACS, Arial) are document
    content and stay Octet's. Higher specificity than Octet's .octet-host and dark-theme rules, which load later. */
 .draw-pane .draw-stage .octet-host,
@@ -819,7 +819,7 @@ body:has(.draw-pane[data-mode='full']:not([hidden])) { overflow: hidden; }
   --ink: #e4e9ed;
   --selection: rgb(201 139 219 / 0.24);
 }
-/* Octet's panels that hang from the top of its window start below SynthPath's app bar; the canvas runs on under it,
+/* Octet's panels that hang from the top of its window start below SynPath's app bar; the canvas runs on under it,
    so drawing coordinates stay the window's. A panel anchored top and bottom gets shorter by as much. */
 .draw-pane .octet-host .editor > :is(.palette, .export, .feedback-link, .name-field, .name-suggestion, .name-options, .name-history, .template-bar, .coach) {
   margin-top: var(--bar-h);

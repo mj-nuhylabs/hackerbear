@@ -13,9 +13,9 @@ frontend/dist/
 
 # Large / downloaded data (re-fetch with scripts in README)
 backend/data/aizynth/
-# 디렉터리가 아니라 내용물을 무시한다 — 무시된 디렉터리 안의 파일은 !로 되살릴 수 없다
+# Ignore the contents, not the directory — a file inside an ignored directory cannot be re-included with !
 backend/data/ord/*
-# 예외: projections 메타데이터에는 데이터셋 이름이 없다. 이 맵을 잃으면 복구할 데가 없다
+# Exception: the projections metadata has no dataset names. If this map is lost, there is nowhere to recover it from
 !backend/data/ord/dataset_names.json
 *.hdf5
 *.onnx
@@ -23,55 +23,55 @@ backend/data/ord/*
 # OS
 .DS_Store
 
-# Build output (artifact로 퍼블리시하므로 커밋하지 않음)
+# Build output (published as an artifact, so not committed)
 frontend/dist/
 
 backend/data/uspto50k/
 backend/data/nicolit/
 backend/data/ord_flat.parquet
 backend/data/ml/
-# 학습 실험 보관함. data/의 현재 모델과 중복이고 실행할 때마다 늘어난다
+# Archive of training runs. Duplicates the current model in data/ and grows with every run
 backend/data/runs/
 
-# model.pkl / calibrator.pkl / calibration.png / metrics.json은 **커밋한다** (합쳐서 ~1MB).
-# 학습에 3시간 넘게 걸려서, 이게 없으면 새로 clone한 사람은 데모에서 타당성 점수를 못 본다.
-# ord_hits.json을 커밋한 것과 같은 이유다. pkl은 lightgbm/sklearn 버전에 민감하지만,
-# 못 읽으면 predict.py가 (None, None)을 돌려주고 UI에 —로 뜰 뿐 앱은 돈다.
+# model.pkl / calibrator.pkl / calibration.png / metrics.json are **committed** (~1MB combined).
+# Training takes over 3 hours, so without them a fresh clone cannot show plausibility scores in the demo.
+# Same reason ord_hits.json is committed. The pkl is sensitive to lightgbm/sklearn versions, but
+# if it cannot be loaded, predict.py returns (None, None) and the UI shows — — the app still runs.
 
-# 유사 반응 인덱스 (112MB) — scripts/build_analog_index.py가 ORD에서 다시 만든다.
-# 측정 결과(analog_validation.json)는 작아서 커밋한다. metrics.json과 같은 이유다.
+# Analogous-reaction index (112MB) — scripts/build_analog_index.py rebuilds it from ORD.
+# The measured results (analog_validation.json) are small, so they are committed. Same reason as metrics.json.
 backend/data/analogs/
 
-# 가격 임포트가 남기는 백업 (git이 이미 이전 값을 갖고 있다)
+# Backups left by the price import (git already has the previous values)
 *.csv.bak
 
-# 정규화한 ORD 레코드 (312MB) — scripts/build_ord_canon.py가 ord_flat.parquet에서 70초면 다시 만든다
+# Canonicalized ORD records (312MB) — scripts/build_ord_canon.py rebuilds them from ord_flat.parquet in 70 seconds
 backend/data/ord_canon.parquet
 
-# Model A 학습 입력 (683MB: 757k 반응의 fingerprint·descriptor·조건 집합)
-# scripts/build_transfer_dataset.py --stage rows / --stage pairs가 다시 만든다
+# Model A training inputs (683MB: fingerprints, descriptors and condition sets for 757k reactions)
+# scripts/build_transfer_dataset.py --stage rows / --stage pairs rebuilds them
 backend/data/transfer/
 
-# 밤새 돌린 작업 로그
+# Logs from overnight jobs
 backend/data/logs/
 
-# 데모 타겟 5개의 심층 탐색 중간 산물 (84MB: 절차 원문 58MB, AiZynth 경로 19MB).
-# scripts/build_deep_targets.py가 다시 만든다. 예외는 아래 demo_*.json — 앱이 /routes에서
-# 그대로 서빙하므로 이게 없으면 새로 클론한 저장소에서 데모가 안 돈다 (model.pkl과 같은 이유)
+# Intermediate output of the deep search for the 5 demo targets (84MB: 58MB procedure text, 19MB AiZynth routes).
+# scripts/build_deep_targets.py rebuilds it. The exception is demo_*.json below — the app serves
+# them as-is from /routes, so without them the demo does not run on a fresh clone (same reason as model.pkl)
 backend/data/deep/*
 !backend/data/deep/demo_*.json
 !backend/data/deep/holdout_molecules.txt
 
-# 중간 점검용으로 학습한 모델 B (후보 500개·1000개 시점). 새벽 본 학습이 route_ranker.pkl을
-# 따로 쓰므로 이건 남겨둘 이유가 없다
+# Model B trained for interim checks (at 500 and 1000 candidates). The full training run at dawn writes
+# route_ranker.pkl separately, so there is no reason to keep these
 backend/data/route_ranker_early*
 
-# 데모 재구축 중간 산물 (scripts/rebuild_deep_targets.sh가 끝나면 data/deep/로 옮기고 지운다)
+# Intermediate output of the demo rebuild (scripts/rebuild_deep_targets.sh moves it to data/deep/ and deletes it when done)
 backend/data/deep_next/
 
-# SciFinder 등 라이선스 있는 검색에서 내보낸 레코드. 검색을 돌린 사람에게 라이선스가 있는 자료이므로
-# 저장소에 올리지 않는다 (scripts/import_scifinder.py)
+# Records exported from licensed searches such as SciFinder. The license belongs to whoever ran the search,
+# so they are not put in the repo (scripts/import_scifinder.py)
 backend/data/scifinder/
 
-# PubChem 화합물 이름 캐시 (chem/names.py가 다시 채운다)
+# PubChem compound-name cache (chem/names.py refills it)
 backend/data/pubchem_titles.json

@@ -1,19 +1,19 @@
-"""demo.json의 타당성 점수를 실제 모델 출력으로 바꾼다.
+"""Replace the plausibility scores in demo.json with real model output.
 
-목업 단계에서 demo.json의 plausibility_raw/calibrated는 내가 만든 가짜 값이었고
-(`mock` 리스트에 그렇게 표시해 뒀다), UI는 그 옆에 `example` 배지를 띄웠다.
-학습이 끝났으니 model/predict.py가 내는 실제 값으로 덮고 배지를 뗀다.
+During the mockup stage, plausibility_raw/calibrated in demo.json were fake values I made up
+(listed in the `mock` list), and the UI showed an `example` badge next to them.
+Training is done, so overwrite them with the real values from model/predict.py and drop the badge.
 
-점수를 바꾸면 등급도 따라 바뀐다 — evidence/tiers.py의 PLAUSIBILITY_MIN이 0.5 미만을
-COMPUTED로 내리기 때문이다. 그래서 점수만 쓰고 등급을 그대로 두면 화면의 배지와 숫자가
-어긋난다. decide()를 다시 돌려 둘을 맞춘다.
+Changing the score changes the tier too: PLAUSIBILITY_MIN in evidence/tiers.py demotes anything below 0.5 to
+COMPUTED. So if we wrote only the score and left the tier alone, the on-screen badge and number would
+disagree. Re-run decide() to keep them consistent.
 
-REPORTED는 점수와 무관하게 유지된다(코퍼스에 레코드가 있다는 사실이 점수보다 강한 증거다).
-점수가 None으로 오면(정규화 실패) None을 그대로 쓴다. 가짜 값을 남겨 두지 않는다 —
-"없음"을 "낮음"으로 바꿔 읽지 않기 위해서다(절대 규칙 3).
+REPORTED is kept regardless of score (a record in the corpus is stronger evidence than a score).
+If the score comes back None (normalization failed), write None as is. No fake value is left behind,
+so that "missing" is never read as "low" (absolute rule 3).
 
-    python scripts/bake_plausibility.py --dry-run     # 무엇이 바뀌는지만 본다
-    python scripts/bake_plausibility.py               # 실제로 쓴다
+    python scripts/bake_plausibility.py --dry-run     # only show what would change
+    python scripts/bake_plausibility.py               # actually write
 """
 from __future__ import annotations
 
@@ -34,7 +34,7 @@ BAKED = ("plausibility_raw", "plausibility_calibrated")
 
 
 def steps_of(demo: dict):
-    """(타겟명, 경로 id, 스텝 인덱스, 스텝) — 원본 dict를 그대로 내보내 제자리에서 고친다."""
+    """(target name, route id, step index, step) — yields the original dicts so they can be edited in place."""
     for t in demo["targets"]:
         for r in t["routes"]:
             for i, s in enumerate(r["steps"]):
@@ -66,13 +66,13 @@ def main() -> int:
         s["plausibility_raw"] = raw
         s["plausibility_calibrated"] = cal
 
-        # 실제 값이 됐으므로 example 배지를 뗀다. gaps 등 다른 mock 표시는 그대로 둔다.
+        # These are real values now, so drop the example badge. Other mock markers such as gaps stay as they are.
         if s.get("mock"):
             s["mock"] = [k for k in s["mock"] if k not in BAKED]
             if not s["mock"]:
                 del s["mock"]
 
-        # 코퍼스 레코드가 있는지는 source_ids로 판정한다 — provenance가 채우는 것과 같은 기준.
+        # Whether a corpus record exists is decided by source_ids, the same criterion provenance fills.
         after = decide(
             has_corpus_record=bool(s["evidence"].get("source_ids")),
             precedent_count=s["evidence"]["precedent_count"],

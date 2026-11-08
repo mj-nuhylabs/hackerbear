@@ -1,11 +1,11 @@
-"""AiZynthFinder 래핑 → Route 객체.
+"""AiZynthFinder wrapper -> Route objects.
 
-경로·템플릿·선례 수는 AiZynthFinder와 USPTO 템플릿 라이브러리가 준 값이고,
-타당성 점수는 model/predict.py, 증거 등급은 evidence/tiers.py, 출처·조건·수율은
-evidence/provenance.py가 ORD 레코드에서 찾은 값이다. 이 파일이 만들어내는 숫자는 없다.
+Routes, templates and precedent counts are values given by AiZynthFinder and the USPTO template library;
+the plausibility score comes from model/predict.py, the evidence tier from evidence/tiers.py, and sources, conditions and yields
+are what evidence/provenance.py found in ORD records. This file produces no numbers of its own.
 
-assumed_yield만 가정값이다 — 문헌값이 있으면 그것을 쓰고, 없으면 ASSUMED_YIELD를 쓰되
-스텝에 yield_is_assumed=True로 표시해 UI가 라벨을 붙일 수 있게 한다.
+Only assumed_yield is an assumption -- use the literature value if there is one, otherwise ASSUMED_YIELD,
+and mark the step yield_is_assumed=True so the UI can attach a label.
 """
 from __future__ import annotations
 
@@ -22,19 +22,19 @@ from .resolve import describe
 from .stock import label as stock_label
 
 CONFIG = Path(__file__).resolve().parents[1] / "data/aizynth/config.yml"
-ASSUMED_YIELD = 0.70          # 문헌값이 없을 때만. 반드시 assumed로 표시한다
+ASSUMED_YIELD = 0.70          # only when there is no literature value. Always mark as assumed
 MAX_ROUTES = 5
 DEFAULT_TIME_LIMIT_S = 45
-SEARCH_SEED = 0               # 같은 분자는 언제 검색해도 같은 경로가 나와야 한다 (finder() 참조)
+SEARCH_SEED = 0               # the same molecule must give the same routes on every search (see finder())
 
 _finder = None
 _lock = threading.Lock()
-# /cost, /explain이 route_id로 다시 찾을 수 있게 들고 있다 (DB 없음 — 메모리)
+# Kept so /cost and /explain can look routes up again by route_id (no DB -- in memory)
 ROUTES: dict[str, dict] = {}
 
 
 def finder():
-    """AiZynthFinder 1회 로드. ONNX 모델이 커서 첫 호출이 느리다."""
+    """Load AiZynthFinder once. The ONNX models are large, so the first call is slow."""
     global _finder
     if _finder is None:
         with _lock:
@@ -45,13 +45,13 @@ def finder():
                 from aizynthfinder.aizynthfinder import AiZynthFinder
 
                 from .stock import use_with_zinc
-                # MCTS가 확장할 노드를 random.choice / np.random.choice로 고른다. 씨앗을 안 박으면
-                # 같은 분자를 두 번 검색했을 때 다른 경로가 나올 수 있다 — 화학자가 "아까 있던 화합물이
-                # 사라졌다"고 느끼는 원인이다. 결과가 매번 같아야 검증도 된다.
+                # MCTS picks the node to expand with random.choice / np.random.choice. Without a seed,
+                # searching the same molecule twice can give different routes -- the reason a chemist feels "the compound
+                # from before disappeared". Results must be identical every time to be verifiable.
                 random.seed(SEARCH_SEED)
                 np.random.seed(SEARCH_SEED)
                 f = AiZynthFinder(configfile=str(CONFIG))
-                # ZINC만으로는 EtOH·MeI·CS2를 못 사서 탐색이 그걸 "합성"한다 (chem/stock.py)
+                # ZINC alone cannot buy EtOH, MeI or CS2, so the search would "synthesize" them (chem/stock.py)
                 use_with_zinc(f)
                 f.expansion_policy.select("uspto")
                 f.filter_policy.select("uspto")
@@ -60,10 +60,10 @@ def finder():
 
 
 def _walk(node: dict, steps: list, leaves: dict):
-    """AiZynth route dict(타겟→말단)를 후위 순회 → steps는 출발물질→타겟 위상 순서."""
+    """Post-order traversal of an AiZynth route dict (target -> leaves); steps are in topological order, starting materials -> target."""
     if node.get("type") != "mol":
         return
-    # SVG는 UI가 스킴·스텝·BOM에 그대로 꽂는다 (RDKit 렌더)
+    # The UI plugs the SVG straight into schemes, steps and the BOM (RDKit rendering)
     if not node.get("children"):
         c = describe(node["smiles"])
         leaves[c["smiles"]] = {**c, "in_stock": bool(node.get("in_stock")),
@@ -87,14 +87,14 @@ def _walk(node: dict, steps: list, leaves: dict):
 
 
 def _finish_steps(steps: list[dict]) -> list[dict]:
-    """타당성 점수(배치) + 증거 등급 + 출처·조건·수율 + 유사 반응을 붙인다.
+    """Attach plausibility scores (batched) + evidence tier + source/conditions/yield + analogous reactions.
 
-    값의 우선순위는 **증거가 가까운 순서**다:
-      1. 이 반응 자체의 레코드 (provenance) — 같은 반응이 기록돼 있다
-      2. 가까운 유사 반응 (analogs)        — 다른 기질로 돌려본 기록이 있다
-      3. 가정값 ASSUMED_YIELD              — 아무것도 없다
-    어느 쪽을 썼는지는 yield_basis에 남겨 UI가 라벨을 붙인다. 2번은 유사도 문턱을 넘을 때만
-    쓴다 (evidence/analogs.py의 측정표 참조).
+    Value priority is **nearest evidence first**:
+      1. Records of this exact reaction (provenance) -- the same reaction is on record
+      2. Close analogous reactions (analogs)        -- it has been run on other substrates
+      3. Assumed value ASSUMED_YIELD                -- nothing at all
+    Which one was used is recorded in yield_basis so the UI can attach a label. Option 2 is used only when it clears
+    the similarity threshold (see the measurement table in evidence/analogs.py).
     """
     scores = score_many([s["rxn_smiles"] for s in steps])
     neighbours = analogs.search_many([s["rxn_smiles"] for s in steps])
@@ -105,8 +105,8 @@ def _finish_steps(steps: list[dict]) -> list[dict]:
                       precedent_count=s["precedent_count"],
                       plausibility_calibrated=cal)
         evidence = provenance.evidence_from(records, s["precedent_count"], tier)
-        lit_pct = provenance.reported_yield(records)              # 레코드의 퍼센트 값
-        lit_yield = lit_pct / 100.0 if lit_pct is not None else None  # assumed_yield·UI와 같은 0–1 비율
+        lit_pct = provenance.reported_yield(records)              # percent value from the records
+        lit_yield = lit_pct / 100.0 if lit_pct is not None else None  # 0-1 fraction, same as assumed_yield and the UI
 
         analog_yield, analog_basis = analogs.yield_from(hits)
         if lit_yield is not None:
@@ -123,15 +123,15 @@ def _finish_steps(steps: list[dict]) -> list[dict]:
             "reactants": s["reactants"],
             "product": s["product"],
             "evidence": evidence,
-            # 반응물 목록이 생성물의 원자를 다 대지 못하면 빠진 원소 수 (chem/balance.py). 비용이 하한이 된다
+            # If the reactant list cannot account for all product atoms, the number of missing elements (chem/balance.py). Cost becomes a lower bound
             "missing_atoms": s.get("missing_atoms"),
-            # 조건도 같은 순서. 유사 반응 조건은 from_analog=True로 표시돼 UI가 구분한다
+            # Conditions follow the same order. Analog conditions are marked from_analog=True so the UI can tell them apart
             "conditions": (provenance.conditions_from(records)
                            or analogs.conditions_from(hits)),
             "procedure": provenance.procedure_from(records, [r["smiles"] for r in s["reactants"]]),
             "analogs": hits,
             "reported_yield": lit_yield,
-            # 계산에 쓰는 값. 출처는 yield_basis가 말해 준다
+            # The value used in calculation. yield_basis says where it came from
             "assumed_yield": used,
             "yield_is_assumed": lit_yield is None,
             "yield_basis": basis,
@@ -145,10 +145,10 @@ DEEP = Path(__file__).resolve().parents[1] / "data/deep"
 
 
 def _demo_payload(smiles: str) -> dict | None:
-    """데모 타겟 5개는 밤새 미리 계산한 결과(scripts/score_deep_targets.py)를 그대로 돌려준다.
+    """The 5 demo targets return results precomputed overnight (scripts/score_deep_targets.py) as they are.
 
-    기록된 경로(모든 스텝이 ORD 레코드) + 깊게 돌린 AiZynth 경로, 두 모델의 순위가 들어 있다.
-    파일이 없으면 None — 라이브 검색으로 간다.
+    Contains the recorded routes (every step an ORD record) + the deeply searched AiZynth routes, with both models' rankings.
+    If the file is missing, None -- fall back to live search.
     """
     from model.holdout import ALL_TARGETS, slug
     from rdkit import Chem
@@ -167,7 +167,7 @@ def _demo_payload(smiles: str) -> dict | None:
 
 def search(smiles: str, max_depth: int = 4, *, time_limit_s: int = DEFAULT_TIME_LIMIT_S,
            max_routes: int = MAX_ROUTES) -> dict:
-    """타겟 SMILES → {routes, search}. 경로를 못 찾으면 routes는 빈 리스트다."""
+    """Target SMILES -> {routes, search}. If no route is found, routes is an empty list."""
     demo = _demo_payload(smiles)
     if demo is not None:
         for r in demo["routes"]:
@@ -177,7 +177,7 @@ def search(smiles: str, max_depth: int = 4, *, time_limit_s: int = DEFAULT_TIME_
     f = finder()
     with _lock:
         f.config.search.time_limit = time_limit_s
-        # AiZynthFinder 4.x의 필드 이름은 max_transforms다. max_depth를 넣으면 조용히 무시된다
+        # The AiZynthFinder 4.x field is named max_transforms. Passing max_depth is silently ignored
         f.config.search.max_transforms = max_depth
         f.target_smiles = smiles
         f.tree_search()
@@ -198,8 +198,8 @@ def search(smiles: str, max_depth: int = 4, *, time_limit_s: int = DEFAULT_TIME_
             "leaf_materials": list(leaves.values()),
             "aizynth_score": round(float(sc.get("state score", next(iter(sc.values())))), 3),
         })
-    # AiZynth 점수는 짧고 다 살 수 있는 경로면 거의 다 0.998이라 순서를 못 정한다.
-    # 비용 엔진의 g당 재료비(수율 반영)로 정렬한다 (cost/rank.py)
+    # AiZynth scores are almost all 0.998 for short routes where everything is purchasable, so they cannot order them.
+    # Sort by material cost per gram from the cost engine (yield-adjusted) (cost/rank.py)
     routes = cost_rank.rank(routes)[:max_routes]
     for r in routes:
         ROUTES[r["id"]] = r
@@ -209,8 +209,8 @@ def search(smiles: str, max_depth: int = 4, *, time_limit_s: int = DEFAULT_TIME_
             "solved": bool(stats.get("is_solved")),
             "search_time_s": round(float(stats.get("search_time", 0.0)), 1),
             "analogous_min_precedents": ANALOGOUS_MIN_PRECEDENTS,
-            # 유사 반응 인덱스가 없으면 analogs가 전부 빈 리스트다. UI가 "꺼짐"과 "못 찾음"을
-            # 구분할 수 있어야 한다 — 둘 다 빈 화면으로 보이면 안 된다
+            # If the analog index is missing, every analogs list is empty. The UI must be able to tell "off" from
+            # "not found" -- both must not look like the same blank screen
             "analog_index": analogs.stats() or None,
         },
     }

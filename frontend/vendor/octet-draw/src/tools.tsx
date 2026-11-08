@@ -1,7 +1,7 @@
 // The tool palette: one tool per kind of object, each with variants in a strip that opens beside it.
 // Click an active tool again (or press and hold any tool) to open its strip; press, slide and release also works.
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
-import { frameSpan, frameTop } from "./synthpath"; // SynthPath: the editor's height is its pane's, not the window's
+import { frameSpan, frameTop } from "./synpath"; // SynPath: the editor's height is its pane's, not the window's
 import { flushSync } from "react-dom";
 import { ArrowClockwise, ArrowCounterClockwise, CaretLeft, CaretRight, Cube, Eraser, Lasso, Plus, PushPin, Selection, TextT, Trash, X } from "@phosphor-icons/react";
 import { chairPoints, type SymbolKind } from "./edit";

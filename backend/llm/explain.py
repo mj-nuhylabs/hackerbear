@@ -1,13 +1,13 @@
-"""설명 생성. 입력 = 이미 검색된 레코드뿐.
+"""Explanation generation. Input = already-retrieved records only.
 
-LLM은 **자연어 설명문만** 쓴다. 그래서 프롬프트에 숫자를 아예 넣지 않는다 —
-수율·온도·시간·선례 수·출처는 UI가 레코드값으로 직접 띄우고, LLM은 "왜 되는지"만 쓴다.
-숫자를 주면 되풀이하게 되고, 되풀이한 숫자는 레코드값처럼 보이지만 LLM이 쓴 글자다.
+The LLM writes **natural-language prose only**. So the prompt contains no numbers at all:
+yield, temperature, time, precedent count and sources are shown by the UI straight from the records; the LLM only writes "why it works".
+Given a number, it would repeat it, and a repeated number looks like a record value but is text the LLM wrote.
 
-출력은 반드시 evidence/guards.py의 enforce()를 통과한다. 위반이면 그 출력은 버린다 —
-고쳐서 내보내지 않는다. 고치면 무엇이 원문이고 무엇이 수정본인지 알 수 없다.
+The output always passes enforce() in evidence/guards.py. On a violation the output is discarded:
+it is never repaired and shipped, because after repair you cannot tell what is original and what is an edit.
 
-키가 없으면 설명문 대신 사유를 돌려준다. 지어내지 않는다.
+With no key, we return a reason instead of prose. We do not make anything up.
 """
 from __future__ import annotations
 
@@ -75,7 +75,7 @@ def _unavailable(reason: str) -> dict:
 
 
 def explain(step: dict, position: int = 0, total: int = 1) -> dict:
-    """스텝 하나 → 설명문 셋. 생성 실패나 가드 위반이면 available=False와 사유."""
+    """One step -> three pieces of prose. On generation failure or guard violation: available=False and a reason."""
     key = os.environ.get("ANTHROPIC_API_KEY")
     if not key:
         return _unavailable("ANTHROPIC_API_KEY is not set, so no explanation was generated.")
@@ -103,7 +103,7 @@ def explain(step: dict, position: int = 0, total: int = 1) -> dict:
             last = e
             prompt_suffix = "\n\nYour previous answer was discarded: " + str(e) + " Write it again without that."
             prompt += prompt_suffix
-        except Exception as e:                      # API 오류, JSON 파싱 실패 등
+        except Exception as e:                      # API error, JSON parse failure, etc.
             last = e
             break
     return _unavailable(f"the explanation was discarded: {last}")

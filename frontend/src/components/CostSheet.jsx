@@ -230,7 +230,7 @@ export default function CostSheet({ cost, targetG, setTargetG, purification, set
                     <Mol compound={l.compound} size="xs" />
                     <CompoundName compound={l.compound} />
                   </div>
-                  {/* backend/chem/stock.py: ZINC에 없는 흔한 시약. 구매 가능의 근거이지 가격이 아니다 */}
+                  {/* backend/chem/stock.py: a common reagent that ZINC lacks. It is the basis for "purchasable", not a price */}
                   {l.compound.stock_status === 'commodity' && (
                     <div
                       className="bom-stock muted small"
@@ -271,8 +271,8 @@ export default function CostSheet({ cost, targetG, setTargetG, purification, set
           <span className="muted small">What the material you actually use is worth</span>
           {gap && <span className="total-gap small">{gap}</span>}
         </div>
-        {/* 레코드가 적어 둔 당량으로 다시 계산한 값. 순위는 양론 기준값으로 매긴다 — 그래야
-            당량이 기록된 경로가 기록이 없는 경로보다 비싸 보이지 않는다 (backend/cost/rank.py) */}
+        {/* Recomputed from the equivalents the record lists. Ranking uses the stoichiometric baseline -- so that
+            a route with recorded equivalents does not look more expensive than one with no record (backend/cost/rank.py) */}
         {totals.asRecorded != null && (
           <div className="total">
             <span className="total-k">At the recorded equivalents</span>
@@ -289,8 +289,8 @@ export default function CostSheet({ cost, targetG, setTargetG, purification, set
           <span className="muted small">What you pay buying whole packs</span>
           {gap && <span className="total-gap small">{gap}</span>}
         </div>
-        {/* 기록된 반응 시간의 합. 후처리·정제 시간은 레코드에 없으므로 들어가 있지 않다.
-            시간이 적힌 스텝이 하나도 없으면 0 h가 아니라 —다 (절대 규칙 3) */}
+        {/* Sum of recorded reaction times. Workup and purification time is not in the records, so it is not included.
+            If no step has a time, show —, not 0 h (absolute rule 3) */}
         <div className="total">
           <span className="total-k">Recorded reaction time</span>
           <span className="total-v num">

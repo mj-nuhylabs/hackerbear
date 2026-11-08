@@ -1,16 +1,17 @@
-"""학습 스크립트 (한 번 돌리고 pkl 저장).
+"""Training script (run once, save pkl).
 
-usage (backend/에서):  ../.venv/bin/python -m model.train [--kind drfp|diff] [--k-templates 2000] [--fresh]
+usage (from backend/):  ../.venv/bin/python -m model.train [--kind drfp|diff] [--k-templates 2000] [--fresh]
 
-데이터
-  Positive  USPTO-50K (data/uspto50k/*.parquet). source_id = 특허번호
-  Negative  같은 반응물에 다른 AiZynth 템플릿을 정방향 적용한 생성물 (positive당 최대 --max-decoys개)
-            - 템플릿 풀: library_occurence 상위 K개, P>>R을 (R)>>P로 뒤집어 RDChiral로 실행
-            - 남기는 조건: 가장 큰 조각, sanitize 성공, 라디칼 없음, 실제 생성물의 heavy atom 50% 이상,
-              같은 반응물 집합의 어떤 기록 생성물과도 다름(입체 무시), 반응물 자체가 아님
-Split      생성물 Murcko scaffold로 group split, train/calib/test = 60/20/20. decoy는 자기 positive 그룹을 따른다
-출력       data/model.pkl, data/calibrator.pkl, data/calibration.png, data/metrics.json
-캐시       data/ml/ (positives → dataset → features). --fresh면 다시 만든다
+Data
+  Positive  USPTO-50K (data/uspto50k/*.parquet). source_id = patent number
+  Negative  products of applying a different AiZynth template forward to the same reactants
+            (up to --max-decoys per positive)
+            - template pool: top K by library_occurence, R>>P flipped from P>>R to (R)>>P and run with RDChiral
+            - kept if: largest fragment, sanitizes, no radicals, at least 50% of the real product's heavy atoms,
+              differs from every recorded product of the same reactant set (ignoring stereo), is not the reactant itself
+Split      group split by product Murcko scaffold, train/calib/test = 60/20/20. A decoy follows its own positive's group
+Output     data/model.pkl, data/calibrator.pkl, data/calibration.png, data/metrics.json
+Cache      data/ml/ (positives -> dataset -> features). --fresh rebuilds
 """
 from __future__ import annotations
 
@@ -32,8 +33,8 @@ from rdkit.Chem import Descriptors
 from rdkit.Chem.Scaffolds import MurckoScaffold
 
 from .featurize import N_BITS, featurize, normalize_rxn
-# calibrate(=sklearn)와 lightgbm은 main() 안에서 늦게 import한다.
-# --shard 로 decoy만 돌리는 머신에는 rdkit/pandas/scipy만 있으면 되게 하려고.
+# calibrate (= sklearn) and lightgbm are imported late, inside main().
+# So a machine that only runs decoys via --shard needs just rdkit/pandas/scipy.
 
 RDLogger.DisableLog("rdApp.*")
 
@@ -44,7 +45,7 @@ ORD_FLAT = DATA / "ord_flat.parquet"
 TEMPLATES = DATA / "aizynth/uspto_templates.csv.gz"
 SEED = 0
 WORKERS = 10
-ORD_FAILED_YIELD_PCT = 5.0   # 기록된 수율이 전부 이 미만이면 실패한 시도다 — positive에서 뺀다
+ORD_FAILED_YIELD_PCT = 5.0   # if all recorded yields are below this, it was a failed attempt; drop it from positives
 
 
 def log(msg: str):
@@ -77,10 +78,10 @@ def _load_uspto50k() -> pd.DataFrame:
 
 
 def _load_ord() -> pd.DataFrame:
-    """ORD에서 positive 후보. 기록된 수율이 전부 ORD_FAILED_YIELD_PCT 미만인 반응은 뺀다.
+    """Positive candidates from ORD. Reactions whose recorded yields are all below ORD_FAILED_YIELD_PCT are dropped.
 
-    그건 성공한 반응이 아니라 실패한 시도다. positive로 쓰면 라벨이 거짓말이 된다.
-    rxn_class는 ORD에 없다 — 0('미분류')으로 두고 클래스별 AUC에서 따로 보인다.
+    Those are failed attempts, not successful reactions. Using them as positives would make the label a lie.
+    ORD has no rxn_class: set to 0 ('unclassified'), which shows up separately in the per-class AUC.
     """
     df = pd.read_parquet(ORD_FLAT, columns=["rxn_smiles", "yield_pct", "patent", "doi", "reaction_id"])
     df = df.dropna(subset=["rxn_smiles"])
@@ -92,7 +93,7 @@ def _load_ord() -> pd.DataFrame:
 
 
 def load_positives(source: str = "uspto50k") -> pd.DataFrame:
-    """source: uspto50k | ord | all. 정규화 SMILES로 중복 제거 — 코퍼스가 겹쳐도 한 번만 쓴다."""
+    """source: uspto50k | ord | all. Dedup by normalized SMILES, so overlapping corpora count once."""
     parts = []
     if source in ("uspto50k", "all"):
         parts.append(_load_uspto50k())
@@ -104,7 +105,7 @@ def load_positives(source: str = "uspto50k") -> pd.DataFrame:
     log(f"  raw candidates: {len(df):,}")
     df["rxn"] = _normalize_parallel(df.rxn_smiles.tolist())
     df = df.dropna(subset=["rxn"])
-    # uspto50k를 앞에 두었으므로 keep='first'면 겹치는 반응은 큐레이션된 쪽의 class를 남긴다
+    # uspto50k comes first, so keep='first' keeps the curated side's class for overlapping reactions
     df = df.drop_duplicates("rxn", keep="first").reset_index(drop=True)
     return df[["rxn", "source_id", "rxn_class", "corpus"]]
 
@@ -122,7 +123,7 @@ def _init_templates(k: int):
         prod, reac = rt.split(">>")
         q = Chem.MolFromSmarts(reac)
         if q is not None:
-            _FWD.append([f"({reac})>>{prod}", q, None])   # rdchiralReaction은 처음 쓸 때 만든다
+            _FWD.append([f"({reac})>>{prod}", q, None])   # rdchiralReaction is built on first use
 
 
 def _decoys_for(args: tuple[str, frozenset]) -> list[str]:
@@ -166,10 +167,10 @@ def _flat_chunk(smis: list[str]) -> list[str | None]:
 
 def build_dataset(pos: pd.DataFrame, k: int, max_decoys: int, timebox_s: int,
                   rows_idx: np.ndarray | None = None) -> tuple[pd.DataFrame, dict]:
-    """pos 전체에서 '이미 알려진 생성물' 집합을 만들고, rows_idx 행에 대해서만 decoy를 생성한다.
+    """Build the set of 'already known products' from all of pos, and generate decoys only for the rows_idx rows.
 
-    known을 항상 pos 전체에서 만드는 이유: 샤드로 쪼개 돌려도, 다른 샤드에 기록된 실제 생성물을
-    decoy로 뱉지 않게 하기 위해서다.
+    Why known is always built from all of pos: even when split into shards, a real product recorded in
+    another shard must not come out as a decoy.
     """
     reac = pos.rxn.str.split(">>").str[0].tolist()
     prods = pos.rxn.str.split(">>").str[1].tolist()
@@ -275,11 +276,11 @@ def main():
     ap.add_argument("--fresh", action="store_true")
     ap.add_argument("--limit", type=int, default=0, help="smoke test: use only the first N positives")
     ap.add_argument("--positives", default="uspto50k", choices=["uspto50k", "ord", "all"])
-    ap.add_argument("--max-positives", type=int, default=0, help="0 = 전부")
+    ap.add_argument("--max-positives", type=int, default=0, help="0 = all")
     ap.add_argument("--shard", default="", metavar="i/n",
-                    help="decoy 생성을 i/n 샤드만 돌리고 저장 후 종료 (다른 머신과 나눠 돌릴 때)")
-    ap.add_argument("--merge-shards", action="store_true", help="샤드를 모아 dataset.parquet을 만들고 학습 진행")
-    ap.add_argument("--workers", type=int, default=0, help="0 = CPU 코어 수 (머신마다 다르다)")
+                    help="generate decoys for shard i/n only, save, and exit (for splitting work across machines)")
+    ap.add_argument("--merge-shards", action="store_true", help="gather shards into dataset.parquet, then train")
+    ap.add_argument("--workers", type=int, default=0, help="0 = CPU cores (differs per machine)")
     a = ap.parse_args()
     global WORKERS
     WORKERS = a.workers or os.cpu_count() or 4
@@ -290,8 +291,8 @@ def main():
     ds_path, stats_path = ML / "dataset.parquet", ML / "dataset_stats.json"
     need_pos = a.shard or a.merge_shards or a.fresh or not ds_path.exists()
     if need_pos:
-        # 정규화 결과를 캐시한다. 2M건 정규화는 몇 분 걸리고, 두 번째 머신은 이 파일만 있으면 된다
-        # (ORD 원본 1.4GB를 옮길 필요 없음).
+        # Cache the normalization result. Normalizing 2M rows takes minutes, and the second machine needs only this file
+        # (no need to move the 1.4GB ORD original).
         pos_cache = ML / f"positives_{a.positives}.parquet"
         if pos_cache.exists() and not a.fresh:
             pos = pd.read_parquet(pos_cache)
@@ -331,8 +332,8 @@ def main():
     elif a.fresh or not ds_path.exists():
         ds, stats = build_dataset(pos, a.k_templates, a.max_decoys, a.timebox_min * 60)
     if a.merge_shards or a.fresh or not ds_path.exists():
-        # 외부 검증용 홀드아웃을 통째로 뺀다. positive만 빼면 그 decoy가 남아 라벨이 한쪽으로 쏠린다.
-        # 여기서 빼는 이유: 샤드의 parent는 전체 positive 리스트의 인덱스라, 미리 거르면 인덱스가 어긋난다.
+        # Remove the whole external-validation holdout. Removing only positives would leave their decoys and skew labels.
+        # Done here because a shard's parent indexes the full positive list; filtering earlier would misalign indices.
         holdout_path = DATA / "external_holdout.txt"
         if holdout_path.exists():
             held = set(holdout_path.read_text().split("\n")) - {""}
@@ -344,7 +345,7 @@ def main():
             stats["external_holdout_positives"] = len(bad)
         log(f"scaffold groups for {len(ds):,} rows")
         ds["group"] = scaffold_groups(ds.rxn.tolist())
-        # decoy는 자기 positive의 그룹을 따른다
+        # a decoy follows its own positive's group
         ds["group"] = ds.groupby("parent").group.transform("first")
         ds.to_parquet(ds_path, index=False)
         stats_path.write_text(json.dumps(stats, indent=2))

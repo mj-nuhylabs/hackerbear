@@ -1,10 +1,10 @@
-// 타당성 모델이 얼마나 쓸만한지 — 백엔드가 계산한 수치를 그대로 읽어 띄운다.
+// How useful the plausibility model is -- read straight from the numbers the backend computed and show them.
 //
-// 판정 문장을 하드코딩하지 않는다. "잘 캘리브레이션돼 있다" / "구분하지 못한다"는 **오늘 모델**에
-// 대한 말이고, 재학습하면 틀린 말이 될 수 있다. 그래서 문장을 AUC/ECE에서 끌어낸다 —
-// 숫자가 바뀌면 문장도 같이 바뀐다.
+// Verdict sentences are not hardcoded. "Well calibrated" / "cannot discriminate" are statements about **today's model**,
+// and could become false after retraining. So the sentences are derived from AUC/ECE --
+// when the numbers change, the sentences change with them.
 //
-// 값이 없으면(백엔드 꺼짐, 아직 학습 전) —로 띄운다. 지어내지 않는다.
+// If a value is missing (backend off, not trained yet), show —. We do not make it up.
 import { useEffect, useState } from 'react'
 
 const LOADING = undefined
@@ -13,7 +13,7 @@ const UNAVAILABLE = null
 const num = (v, digits = 3) => (v == null || Number.isNaN(v) ? '—' : Number(v).toFixed(digits))
 const count = (v) => (v == null ? '—' : Number(v).toLocaleString())
 
-// 외부 검증 판정 — 0.5가 우연이다
+// External validation verdict -- 0.5 is chance
 function outcomeVerdict(auc) {
   if (auc == null) return null
   if (auc <= 0.55)

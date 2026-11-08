@@ -1,13 +1,13 @@
-"""반응 레코드 로드 + 인덱싱 — ORD(Open Reaction Database) projections parquet.
+"""Reaction record loading + indexing: ORD (Open Reaction Database) projections parquet.
 
-여기서 나오는 값은 전부 레코드에 적힌 것이거나 그것으로 계산한 것이다.
-절차문(`procedure_details`)은 원문 그대로 싣는다. 요약하거나 다시 쓰지 않는다 — LLM도 마찬가지다.
-없는 값은 None이고, UI는 그걸 —로 띄운다.
+Every value here is either written in the record or computed from it.
+The procedure text (`procedure_details`) is carried verbatim. It is never summarized or rewritten, by an LLM or anyone.
+Missing values are None, and the UI shows them as —.
 
-ORD 스키마에서 쓰는 것:
-  smiles                              반응 SMILES "A.B>>C"
-  notes.procedure_details             실험 절차 원문
-  inputs                              {역할명: {components: [{smiles, amount{mass_grams, moles_moles,
+Fields used from the ORD schema:
+  smiles                              reaction SMILES "A.B>>C"
+  notes.procedure_details             original experimental procedure text
+  inputs                              {role name: {components: [{smiles, amount{mass_grams, moles_moles,
                                       volume_liters}, reaction_role, is_limiting}]}}
   conditions.temperature.setpoint_kelvin
   outcomes[].reaction_time_seconds
@@ -28,7 +28,7 @@ RDLogger.DisableLog("rdApp.*")
 
 PROJECTIONS = Path(__file__).resolve().parents[1] / "data/ord/projections"
 
-# projections에서 읽을 컬럼만. 나머지는 메모리에 올리지 않는다
+# Only the columns to read from projections. The rest is never loaded into memory
 COLUMNS = ["reaction_id", "smiles", "notes", "inputs", "conditions", "outcomes", "provenance"]
 
 
@@ -36,10 +36,10 @@ _canon_cache: dict[str, str | None] = {}
 
 
 def canon(smiles: str | None) -> str | None:
-    """정규 SMILES. ORD 반응의 60% 가까이가 원자 매핑([CH3:12])을 달고 있는데 RDKit은 매핑을 정규형에
-    그대로 남기므로, 매핑 없는 SMILES와 비교하려면 먼저 떼야 한다.
+    """Canonical SMILES. Nearly 60% of ORD reactions carry atom maps ([CH3:12]), and RDKit keeps maps in the canonical
+    form, so they must be stripped before comparing with unmapped SMILES.
 
-    같은 생성물이 여러 레코드에 반복해서 나오므로 원문 문자열로 캐시한다 — 전수 스캔 비용의 대부분이 여기다.
+    The same product recurs across many records, so cache by the raw string; this is most of the cost of a full scan.
     """
     if not smiles:
         return None
@@ -57,16 +57,16 @@ def canon(smiles: str | None) -> str | None:
 
 @dataclass
 class Reagent:
-    label: str                  # ORD inputs의 역할명 그대로 ("Base", "amine" 등)
+    label: str                  # role name from ORD inputs, verbatim ("Base", "amine", etc.)
     smiles: str | None
-    name: str | None            # 레코드에 NAME 식별자가 있을 때만
+    name: str | None            # only when the record has a NAME identifier
     role: str | None            # REACTANT / REAGENT / SOLVENT / CATALYST ...
     mass_g: float | None
     moles: float | None
     volume_l: float | None
     is_limiting: bool | None
-    moles_calc: float | None = None  # 계산값: 레코드에 몰수가 없을 때 질량 ÷ 구조에서 구한 분자량
-    equiv: float | None = None       # 계산값: 몰수 ÷ 한계 시약 몰수
+    moles_calc: float | None = None  # computed: mass / MW from the structure, when no moles
+    equiv: float | None = None       # computed: moles / moles of the limiting reagent
 
 
 @dataclass
@@ -75,7 +75,7 @@ class Procedure:
     rxn_smiles: str | None
     reactants: list[str]
     product: str | None
-    text: str | None                       # 원문 절차. 가공 금지
+    text: str | None                       # original procedure text. Do not process
     reagents: list[Reagent] = field(default_factory=list)
     workups: list[dict] = field(default_factory=list)
     temperature_c: float | None = None
@@ -94,7 +94,7 @@ _mw_cache: dict[str, float | None] = {}
 
 
 def mw(smiles: str | None) -> float | None:
-    """구조에서 구한 분자량. 레코드에 몰수가 없을 때 질량을 몰수로 바꾸는 데 쓴다."""
+    """Molecular weight from the structure. Used to convert mass to moles when the record has no moles."""
     if not smiles:
         return None
     if smiles not in _mw_cache:
@@ -104,15 +104,15 @@ def mw(smiles: str | None) -> float | None:
 
 
 def _amount(a: dict | None) -> tuple[float | None, float | None, float | None]:
-    """0은 '값 없음'으로 본다 — ORD에는 양을 0으로 적어둔 레코드가 있는데 양이 아니다."""
+    """0 is treated as 'no value': some ORD records write the amount as 0, which is not an amount."""
     if not a:
         return None, None, None
-    pick = lambda k: (a.get(k) or None)  # noqa: E731  (0.0과 None을 모두 None으로)
+    pick = lambda k: (a.get(k) or None)  # noqa: E731  (both 0.0 and None become None)
     return pick("mass_grams"), pick("moles_moles"), pick("volume_liters")
 
 
 def _reagents(inputs) -> list[Reagent]:
-    """ORD inputs(map 또는 list of pairs) → 시약 목록. 당량은 한계 시약 기준으로 계산한다."""
+    """ORD inputs (map or list of pairs) -> reagent list. Equivalents are computed against the limiting reagent."""
     out: list[Reagent] = []
     if not inputs:
         return out
@@ -136,14 +136,14 @@ def _reagents(inputs) -> list[Reagent]:
                     is_limiting=c.get("is_limiting"),
                 )
             )
-    # 레코드가 질량만 적어둔 경우가 많다. 구조에서 분자량을 구해 몰수로 바꿔야 당량을 낼 수 있다.
+    # Many records give mass only. Moles (needed for equivalents) come from the molecular weight of the structure.
     for r in out:
         if r.moles is None and r.mass_g:
             m = mw(r.smiles)
             if m:
                 r.moles_calc = r.mass_g / m
 
-    # 당량: 한계 시약이 표시돼 있으면 그 몰수, 없으면 REACTANT 중 최소 몰수를 기준으로 쓴다
+    # Equivalents: relative to the moles of the marked limiting reagent, else the smallest REACTANT moles
     def n(r: Reagent) -> float | None:
         return r.moles if r.moles is not None else r.moles_calc
 
@@ -159,7 +159,7 @@ def _reagents(inputs) -> list[Reagent]:
 
 
 def _outcome_bits(outcomes) -> tuple[float | None, float | None]:
-    """(시간 h, 수율 %) — 레코드에 있는 것만."""
+    """(time in h, yield in %): only what the record has."""
     time_h = yield_pct = None
     for o in outcomes or []:
         secs = o.get("reaction_time_seconds")
@@ -170,8 +170,8 @@ def _outcome_bits(outcomes) -> tuple[float | None, float | None]:
                 if m.get("type") != "YIELD":
                     continue
                 v = (m.get("percentage") or {}).get("value")
-                # ORD USPTO 수율 중 37,578건이 0 이하이거나 100 초과다. 수율로 쓸 수 없는 값이고,
-                # 0은 비용 엔진에서 0으로 나누기가 된다. 고쳐 쓰지 말고 없는 값으로 둔다.
+                # 37,578 ORD USPTO yields are <= 0 or > 100. They cannot be used as yields, and
+                # 0 becomes a divide-by-zero in the cost engine. Do not repair them; leave the value missing.
                 if v is None or not (0 < v <= 100):
                     continue
                 if yield_pct is None or p.get("is_desired_product"):
@@ -187,7 +187,7 @@ def _provenance(prov) -> tuple[str | None, str | None]:
 
 
 def parse(rec: dict) -> Procedure | None:
-    """projections 한 행 → Procedure. 절차문이 없는 레코드는 버린다."""
+    """One projections row -> Procedure. Records without procedure text are dropped."""
     text = ((rec.get("notes") or {}).get("procedure_details") or "").strip() or None
     if not text:
         return None
@@ -226,13 +226,13 @@ def parse(rec: dict) -> Procedure | None:
 
 
 def scan(wanted: set[str], projections: Path = PROJECTIONS, progress=None) -> dict[str, list[Procedure]]:
-    """원하는 생성물 SMILES를 만드는 레코드만 모아 {정규 생성물 SMILES: [Procedure]}로 돌려준다.
+    """Collect only the records that make the wanted product SMILES; return {canonical product SMILES: [Procedure]}.
 
-    ORD는 반응 200만 건이 넘으므로 비싼 일을 뒤로 미룬다:
-      1) row group에서 `smiles` 컬럼만 읽는다 (절차문이 든 나머지 컬럼은 건드리지 않는다)
-      2) 생성물 문자열 길이로 거른다 — 같은 분자의 정규 SMILES는 표기가 달라도 길이가 비슷하다
-      3) 살아남은 것만 RDKit으로 정규화한다
-      4) 실제로 맞은 행만 전체 컬럼으로 다시 읽는다
+    ORD has over 2M reactions, so the expensive work is deferred:
+      1) read only the `smiles` column per row group (the other columns, which hold the procedure text, are untouched)
+      2) filter by product string length: canonical SMILES of one molecule have similar lengths
+      3) canonicalize only the survivors with RDKit
+      4) re-read only the rows that actually matched, with all columns
     """
     hits: dict[str, list[Procedure]] = {}
     files = sorted(projections.glob("**/*.parquet"))
@@ -266,10 +266,10 @@ def scan(wanted: set[str], projections: Path = PROJECTIONS, progress=None) -> di
 
 
 def scan_ids(wanted_ids: set[str], projections: Path = PROJECTIONS):
-    """reaction_id로 레코드를 찾아 Procedure를 하나씩 내준다. 절차문 없는 레코드는 건너뛴다.
+    """Look up records by reaction_id and yield Procedures one by one. Records without procedure text are skipped.
 
-    scan()과 같은 원칙: row group마다 reaction_id 컬럼만 읽고, 맞은 행만 전체 컬럼으로 다시 읽는다.
-    생성물 정규화가 없어서 훨씬 빠르다.
+    Same principle as scan(): per row group read only the reaction_id column, then re-read matched rows in full.
+    Much faster because there is no product canonicalization.
     """
     left = set(wanted_ids)
     for path in sorted(projections.glob("**/*.parquet")):
@@ -291,19 +291,19 @@ def scan_ids(wanted_ids: set[str], projections: Path = PROJECTIONS):
                     yield p
 
 
-# 스텝과 레코드가 얼마나 맞는지. REPORTED로 칠 수 있는 것은 앞의 둘이다.
+# How well a step matches a record. The first two count as REPORTED.
 MATCH_RANK = {"exact": 4, "covered": 3, "partial": 2, "product": 1}
 REPORTED_MATCHES = ("exact", "covered")
 
 
 def best_match(procs: list[Procedure], reactants: set[str]) -> tuple[Procedure | None, str]:
-    """스텝의 반응물 집합과 가장 잘 맞는 레코드.
+    """The record that best matches the step's reactant set.
 
-    exact   — 반응물 집합이 같다
-    covered — 스텝 반응물이 레코드 반응물에 모두 들어 있다. ORD는 반응 SMILES 왼쪽에 염·시약까지
-              적는 경우가 많아서(로셀염, 중탄산염, 짝이온 등) 실제로는 이쪽이 "같은 반응"이다
-    partial — 생성물은 같고 반응물이 일부만 겹친다
-    product — 생성물만 같다 (문헌은 다른 경로로 만든다)
+    exact   - the reactant sets are equal
+    covered - all step reactants are among the record's reactants. ORD often lists salts and reagents on the left
+              of the reaction SMILES (Rochelle salt, bicarbonate, counterions, etc.), so in practice this is the "same reaction"
+    partial - same product, reactants only partly overlap
+    product - same product only (the literature makes it by a different route)
     """
     best, kind, score = None, "none", -1.0
     for p in procs:
@@ -320,7 +320,7 @@ def best_match(procs: list[Procedure], reactants: set[str]) -> tuple[Procedure |
             this = "partial"
         else:
             this = "product"
-        # 같은 등급이면 겹침이 크고 수율이 적힌 쪽을 고른다
+        # At equal grade, prefer more overlap and a recorded yield
         rank = MATCH_RANK[this] + jac + (0.1 if p.yield_pct is not None else 0)
         if rank > score:
             best, kind, score = p, this, rank

@@ -1,17 +1,17 @@
-"""외부 검증 — decoy로 학습한 모델이 **진짜 실패한 반응**도 낮게 보는가?
+"""External validation: does a model trained on decoys also score **truly failed reactions** low?
 
-학습의 negative는 우리가 템플릿으로 만들어낸 decoy다. 그래서 테스트 AUC 0.94는
-"우리가 만든 가짜와 진짜를 가른다"는 뜻이지, 실험이 될지 안 될지를 맞춘다는 뜻이 아니다.
-이 스크립트는 그 질문을 따로 묻는다.
+The training negatives are decoys we generated from templates. So a test AUC of 0.94 means
+"it separates our fakes from the real thing", not that it predicts whether an experiment will work.
+This script asks that question separately.
 
-데이터: ORD의 비-USPTO 레코드(HTE·문헌·ELN). 같은 반응이 여러 조건으로 기록돼 있다.
-  실패   기록된 모든 조건에서 최대 수율 < FAIL_PCT       → 그 반응은 되지 않았다
-  성공   최대 수율 >= WORK_PCT                          → 어떤 조건에서는 됐다
+Data: non-USPTO ORD records (HTE, literature, ELN). The same reaction is recorded under multiple conditions.
+  failure  max yield over all recorded conditions < FAIL_PCT       -> the reaction did not work
+  success  max yield >= WORK_PCT                                    -> it worked under some condition
 
-주의: 이건 "조건 실패"가 아니라 "모든 조건에서 실패"만 센다. 우리 모델은 조건을 보지 않으므로
-조건별 실패를 물으면 애초에 대답할 수 없는 질문이 된다.
+Note: this counts only "failed under all conditions", not "failed under a given condition". Our model does not look at conditions,
+so asking about per-condition failure would be a question it cannot answer in the first place.
 
-오염 검사: 학습 positive(data/ml/positives_*.parquet)와 겹치는 반응은 세어서 따로 보고한다.
+Contamination check: reactions overlapping the training positives (data/ml/positives_*.parquet) are counted and reported separately.
 
 usage: .venv/bin/python scripts/validate_external.py
 """
@@ -31,7 +31,7 @@ from model.predict import score_many               # noqa: E402
 ORD_FLAT = ROOT / "backend/data/ord_flat.parquet"
 OUT_JSON = ROOT / "backend/data/external_validation.json"
 OUT_PNG = ROOT / "backend/data/external_validation.png"
-# 이 반응들은 학습에서 빼야 외부 검증이 성립한다. train.py가 이 파일을 읽어 positive에서 제외한다.
+# These reactions must be removed from training for the external validation to hold. train.py reads this file and excludes them from the positives.
 HOLDOUT = ROOT / "backend/data/external_holdout.txt"
 FAIL_PCT, WORK_PCT = 5.0, 20.0
 
@@ -44,9 +44,9 @@ def main():
     d = d[~d.dataset_name.fillna("").str.startswith("uspto")]
     d = d.dropna(subset=["rxn_smiles", "yield_pct"])
 
-    # **정규화를 먼저 하고 그 다음에 묶는다.** 원본 SMILES로 묶으면 같은 반응이 표기 차이로
-    # 여러 그룹에 흩어지고, 그러면 한쪽 그룹의 최대 수율만 보고 "모든 조건에서 실패"라고
-    # 잘못 판정한다. 실제로 그렇게 8건이 실패와 성공 양쪽에 동시에 들어가 있었다.
+    # **Normalize first, then group.** Grouping on raw SMILES scatters the same reaction across
+    # several groups because of notation differences, and then we look only at one group's max yield and
+    # wrongly call it "failed under all conditions". In fact 8 cases were in both failure and success at once.
     uniq = {r: normalize_rxn(r) for r in d.rxn_smiles.unique()}
     d = d.assign(rxn=d.rxn_smiles.map(uniq)).dropna(subset=["rxn"])
     g = d.groupby("rxn").yield_pct.max()
@@ -60,13 +60,13 @@ def main():
     rxns = failed + worked
     y = np.array([0] * len(failed) + [1] * len(worked))
 
-    # 다음 학습이 이걸 외워버리지 않도록 홀드아웃 목록을 남긴다 (train.py가 읽는다)
+    # Leave a holdout list so the next training run does not memorize these (train.py reads it)
     HOLDOUT.write_text("\n".join(rxns))
     print(f"  wrote {HOLDOUT.name} ({len(rxns):,} reactions to keep out of training)")
 
-    # 오염 검사 — **지금 model.pkl이 실제로 학습한 행**과 겹치는가.
-    # positives_*.parquet은 '다음 학습에 쓸 후보'지 이번 모델이 본 것이 아니다. 그걸로 재면
-    # 아직 학습하지도 않은 데이터를 오염으로 세게 된다. 실제로 본 행은 ml/dataset.parquet에 있다.
+    # Contamination check: overlap with the rows **the current model.pkl actually trained on**.
+    # positives_*.parquet are "candidates for the next training run", not what this model saw. Measuring against them
+    # would count data it has not been trained on as contamination. The rows it really saw are in ml/dataset.parquet.
     seen = None
     ds_path = ROOT / "backend/data/ml/dataset.parquet"
     if ds_path.exists():
@@ -75,7 +75,7 @@ def main():
     contaminated = sum(1 for r in rxns if r in seen) if seen is not None else None
     print(f"  overlap with THIS model's training positives: "
           f"{'unknown (ml/dataset.parquet missing)' if contaminated is None else f'{contaminated:,} of {len(rxns):,}'}")
-    # 참고용 — 다음 학습 후보와의 겹침. 홀드아웃이 걸리면 0이 되어야 한다.
+    # For reference: overlap with the next training candidates. Should be 0 once the holdout is applied.
     next_overlap = {}
     for cache in sorted((ROOT / "backend/data/ml").glob("positives_*.parquet")):
         train = set(pd.read_parquet(cache, columns=["rxn"]).rxn)
@@ -100,9 +100,9 @@ def main():
         "failed_under_every_condition_pct": FAIL_PCT, "worked_under_some_condition_pct": WORK_PCT,
         "n_failed": int((yy == 0).sum()), "n_worked": int((yy == 1).sum()),
         "roc_auc": auc, "median_score_failed": med_f, "median_score_worked": med_w,
-        # 이번에 재고 있는 모델이 실제로 학습한 행과의 겹침. 0이면 깨끗한 홀드아웃이다.
+        # Overlap with rows the model being measured actually trained on. 0 means a clean holdout.
         "overlap_with_this_model_training": contaminated,
-        # 다음 학습 후보 집합과의 겹침(참고). train.py가 external_holdout.txt로 떨궈서 0이 된다.
+        # Overlap with the next training candidate set (for reference). Becomes 0 because train.py drops them via external_holdout.txt.
         "overlap_with_next_run_candidates": next_overlap,
         "caveat": ("The model never sees reaction conditions, so this only asks about reactions that failed "
                    "under every condition on record, not condition-level failures."),
