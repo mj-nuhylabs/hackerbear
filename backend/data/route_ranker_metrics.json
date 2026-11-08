@@ -1,0 +1,80 @@
+{
+  "what": "Model B: rank AiZynthFinder routes by closeness to the route a patent reports",
+  "split": "md5(patent) 70/15/15; test = held-out patents",
+  "label": "3 all reference steps matched / 2 final step + \u226550% / 1 final step / 0 none",
+  "generated": "2026-11-08 06:25",
+  "targets_with_candidates": 4989,
+  "routes": 149686,
+  "label_counts": {
+    "0": 135043,
+    "1": 10096,
+    "2": 4021,
+    "3": 526
+  },
+  "train_groups": 1235,
+  "val_groups": 257,
+  "best_iteration": 178,
+  "test": {
+    "n_targets": 764,
+    "ceiling_any_rel2": 0.1793,
+    "ceiling_any_final": 0.3626,
+    "methods": {
+      "aizynth_state_score": {
+        "top1_rel2": 0.0668,
+        "top5_rel2": 0.1126,
+        "top1_final": 0.1675,
+        "top5_final": 0.267
+      },
+      "fewest_steps": {
+        "top1_rel2": 0.0641,
+        "top5_rel2": 0.1086,
+        "top1_final": 0.1662,
+        "top5_final": 0.2644
+      },
+      "random": {
+        "top1_rel2": 0.0284,
+        "top5_rel2": 0.0729,
+        "top1_final": 0.0843,
+        "top5_final": 0.2021
+      },
+      "model": {
+        "top1_rel2": 0.1518,
+        "top5_rel2": 0.1675,
+        "top1_final": 0.2919,
+        "top5_final": 0.3298
+      }
+    }
+  },
+  "feature_importance_gain": {
+    "n_steps_recorded": 21316.2,
+    "pp_min": 16505.6,
+    "pp_mean": 11991.4,
+    "lo_mean_log": 2486.1,
+    "lo_min_log": 2336.1,
+    "n_steps": 2159.2,
+    "n_leaves": 1855.0,
+    "plaus_mean": 1724.3,
+    "plaus_min": 1640.9,
+    "state_score": 1525.4,
+    "convergent": 963.6,
+    "cls_0": 491.9,
+    "longest_branch": 419.0,
+    "frac_leaves_in_stock": 167.7,
+    "n_ring_forming": 154.6,
+    "cls_1": 0.0,
+    "cls_2": 0.0,
+    "cls_3": 0.0,
+    "cls_4": 0.0,
+    "cls_5": 0.0,
+    "cls_6": 0.0,
+    "cls_7": 0.0,
+    "cls_8": 0.0,
+    "cls_9": 0.0,
+    "cls_10": 0.0,
+    "cls_11": 0.0
+  },
+  "caveats": [
+    "AiZynthFinder's public USPTO policy was trained on patent reactions that include these reference routes, so the candidate generator finds them more easily than it would for a new molecule. The comparison between ranking methods is still fair: all rank the same candidates.",
+    "A route counts as a hit only against the one route its patent reports; other valid routes score 0."
+  ]
+}
