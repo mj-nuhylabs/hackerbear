@@ -37,7 +37,13 @@ sys.path.insert(0, str(ROOT / "backend"))
 # SYNTHPATH_DEEP_DIR lets a rebuild write somewhere other than the live demo inputs (the retrain
 # loop re-runs score_deep_targets.py on whatever is in data/deep/ at any moment)
 DEEP = Path(os.environ.get("SYNTHPATH_DEEP_DIR") or ROOT / "backend/data/deep")
-ADAPT_K = 3
+ADAPT_K = 3             # nearest recorded reactions shown in the step panel
+# ...but this many are looked at when choosing the one to build the sheet from. They are
+# ordered by Model A, not by similarity, so the first three are not the three closest: a step
+# could be refused a sheet for "the closest record is only 0.29 similar" while the seventh
+# candidate was 0.6 similar with a temperature and a time. Looking further costs a rescore and
+# lowers no bar — evidence/procedures.adapts_to still decides, record by record.
+ADAPT_SEARCH_K = 15     # 50 (every candidate with text) was tried and found nothing 15 did not
 SHOW_ROUTES = 10      # recorded and computed together, one per final disconnection
 SCALE_MMOL = 1.0      # tables are per 1 mmol of the limiting substrate; the UI multiplies
 
@@ -117,7 +123,7 @@ def main():
 
         adapted = []
         for rank_i, j in enumerate(order):
-            if len(adapted) >= ADAPT_K:
+            if len(adapted) >= ADAPT_SEARCH_K:
                 break
             m = meta.iloc[rows[j]]
             ids = list(m.reaction_ids) if m.reaction_ids is not None else []
@@ -143,7 +149,9 @@ def main():
             entry["experimental"] = sc["experimental"]
             entry["not_experimental_reason"] = sc["reason"] or None
         adapted.sort(key=lambda e: not e["experimental"])
-        step_out[rxn] = {"recorded_records": recorded, "adapted_procedures": adapted, "analogs": shown,
+        # the full list is what _protocol_for searches; the payload carries the first ADAPT_K
+        step_out[rxn] = {"recorded_records": recorded, "adapted_procedures": adapted[:ADAPT_K],
+                         "adapted_candidates": adapted, "analogs": shown,
                          "adapted_order": "model_a" if scores is not None else "similarity"}
         if n % 200 == 0:
             log(f"  steps {n:,}/{len(steps):,}")
@@ -160,7 +168,8 @@ def main():
     def step_payload(product: str, reactants: list[str], *, template_id=None, classification=None,
                      precedent_count=None, recorded_info=None) -> dict:
         rxn = normalize_rxn(".".join(reactants) + ">>" + product)
-        ev = step_out.get(rxn, {"recorded_records": [], "adapted_procedures": [], "analogs": [],
+        ev = step_out.get(rxn, {"recorded_records": [], "adapted_procedures": [],
+                                "adapted_candidates": [], "analogs": [],
                                 "adapted_order": None})
         raw, cal = plaus([rxn])[0] if rxn else (None, None)
         # A record that formulates the compound is not a record of making it, however the mining
@@ -189,6 +198,16 @@ def main():
         # is missing from the record and nothing is missing from the bill: the cost engine charges
         # that line. Say which material it is instead of claiming the record left a reactant out.
         _proto = _protocol_for(recs, ev, _cond, rxn, desc(product))
+        # The sheet may have come from a candidate outside the three the panel shows (they are in
+        # Model A's order, and the sheet is chosen on whether it adapts). Put that one in the list
+        # so the record the amounts came from is on screen beside them.
+        _shown = list(ev["adapted_procedures"])
+        _from = (_proto or {}).get("from_analog") or {}
+        if _from.get("reaction_id") and all(a.get("reaction_id") != _from["reaction_id"] for a in _shown):
+            _match = next((a for a in (ev.get("adapted_candidates") or [])
+                           if a.get("reaction_id") == _from["reaction_id"]), None)
+            if _match is not None:
+                _shown = [_match] + _shown
         _missing = missing_atoms(reactants, product)
         _supplied = None
         _charges = [] if (_proto or {}).get("from_analog") else ((_proto or {}).get("charges") or [])
@@ -214,7 +233,7 @@ def main():
             # Without the fallback the precomputed demo showed fewer conditions than a live search.
             "conditions": _cond,
             "analogs": ev["analogs"],
-            "adapted_procedures": ev["adapted_procedures"],
+            "adapted_procedures": _shown,
             "adapted_order": ev["adapted_order"],
             "reported_yield": y / 100.0 if y is not None else None,
             "assumed_yield": y / 100.0 if y is not None else 0.70,
@@ -494,16 +513,20 @@ def _protocol_for(recs, ev, cond, rxn_smiles, product=None):
         # has no sheet instead of leaving the chemist to guess.
         why = []
         best = None
-        for a in (ev.get("adapted_procedures") or []):
+        for a in (ev.get("adapted_candidates") or ev.get("adapted_procedures") or []):
             t = a.get("table") or {}
             reason = adapts_to(t, rxn_smiles or "", a.get("similarity"),
                                t.get("temperature_c"), t.get("time_h"))
             if reason is None and a.get("experimental"):
                 best = a
                 break
-            why.append(reason or a.get("not_experimental_reason") or "the record is not a procedure")
+            why.append((a.get("similarity") or 0.0,
+                        reason or a.get("not_experimental_reason") or "the record is not a procedure"))
         if best is None:
-            return {"no_sheet_because": why[0] if why else "no record of this reaction carries amounts"}
+            # the reason belonging to the CLOSEST candidate, not the first one Model A ranked —
+            # a step that says "the closest record is only 0.29 similar" has to mean the closest
+            why.sort(key=lambda x: -x[0])
+            return {"no_sheet_because": why[0][1] if why else "no record of this reaction carries amounts"}
         table = best["table"]
         analog = {"similarity": best.get("similarity"), "reaction_id": best.get("reaction_id"),
                   "patent": best.get("patent"), "url": best.get("url")}

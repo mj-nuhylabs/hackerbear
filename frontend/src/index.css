@@ -424,6 +424,14 @@ button, input, select { font: inherit; color: inherit; }
 .pip-reported { background: var(--reported); }
 .pip-analogous { background: var(--analogous-pip); }
 .pip-computed { background: var(--computed); opacity: 0.55; }
+/* 등급은 선례가 얼마나 있나를 말하고, 이 줄무늬는 그 스텝을 실제로 돌릴 수 있나를 말한다 —
+   REPORTED인데 양을 적을 수 있는 레코드가 없는 스텝이 있다 */
+.pip-nosheet {
+  background-image: repeating-linear-gradient(
+    135deg, transparent 0 2px, color-mix(in srgb, var(--bg) 70%, transparent) 2px 4px
+  );
+  opacity: 0.5;
+}
 .rc-figs { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 12px; font-size: var(--fs-sm); color: var(--ink-2); }
 .rc-cost strong { color: var(--ink); font-weight: 600; }
 .rc-warn { color: var(--warn); }

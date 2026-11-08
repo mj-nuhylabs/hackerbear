@@ -213,7 +213,10 @@ function RouteList({ routes, costs, routeId, onPick, targetG, search }) {
           a route with no procedure for a step has no recorded yield for it either, so its cost rests on an assumed
           yield. Below those, cheapest first: material cost per gram of target, with every step’s yield carried back
           through the route. A “≥” total leaves out a material with no price; where that is more than half of what the
-          route buys by mass, or a record omits a reactant, the route drops below the ones whose cost is known.{' '}
+          route buys by mass, or a record omits a reactant, the route drops below the ones whose cost is known. Each
+          card says how many of its steps have a procedure, and the hatched bars are the ones that do not — an
+          evidence grade says how much literature stands behind a step, not whether anything written down says how to
+          run it at your amount. Open a step to see why it has none and what the nearest recorded reactions are.{' '}
           {search?.precomputed
             ? `${search.candidates_costed ?? '—'} candidates costed — ${search.recorded_routes_found} recorded routes (every step an ORD record) and ${search.aizynth_routes_searched} from AiZynthFinder — one shown per final disconnection.`
             : `AiZynthFinder searched for ${search?.search_time_s ?? '—'} s.`}
@@ -222,6 +225,9 @@ function RouteList({ routes, costs, routeId, onPick, targetG, search }) {
       <ul className="route-list" data-n={routes.length}>
         {routes.map((r, i) => {
           const c = tierCounts(r)
+          // 절차가 있는 스텝 수. 등급 배지는 "이 반응에 선례가 얼마나 있나"를 말하지, "이걸 어떻게
+          // 돌리나"를 말하지 않는다 — ANALOGOUS 스텝도 양을 적을 수 있는 레코드가 없으면 시트가 없다
+          const withSheet = r.steps.filter((s) => s.protocol?.charges?.length).length
           return (
             <li key={r.id}>
               <button
@@ -277,14 +283,31 @@ function RouteList({ routes, costs, routeId, onPick, targetG, search }) {
                   {r.steps.map((s, k) => (
                     <span
                       key={k}
-                      className={`pip pip-${s.evidence.tier.toLowerCase()}`}
-                      title={`Step ${k + 1}: ${s.evidence.tier}`}
+                      className={`pip pip-${s.evidence.tier.toLowerCase()}${
+                        s.protocol?.charges?.length ? '' : ' pip-nosheet'
+                      }`}
+                      title={`Step ${k + 1}: ${s.evidence.tier}${
+                        s.protocol?.charges?.length
+                          ? ''
+                          : ` · no procedure — ${s.protocol?.no_sheet_because ?? 'no record of this reaction carries amounts'}`
+                      }`}
                     />
                   ))}
                 </span>
                 <span className="rc-figs">
                   <span>
                     {r.leaf_materials.length} to buy
+                    <span
+                      className={withSheet < r.steps.length ? 'rc-warn' : undefined}
+                      title={
+                        withSheet < r.steps.length
+                          ? `${r.steps.length - withSheet} of ${r.steps.length} steps have no written preparation the corpus can scale to your amount. Open the step to see why and what the nearest recorded reactions are.`
+                          : 'Every step has a bench sheet: quantities at your scale, conditions and the work-up, from a record.'
+                      }
+                    >
+                      {' '}
+                      · {withSheet}/{r.steps.length} with a procedure
+                    </span>
                     {c.COMPUTED > 0 && <span className="rc-warn"> · {c.COMPUTED} thin on precedent</span>}
                   </span>
                   <span className="rc-cost">
