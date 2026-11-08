@@ -46,7 +46,55 @@ def supplier_names() -> dict[str, str]:
     return out
 
 
-def name_for(smiles: str | None) -> str | None:
-    """A name for this structure, or None so the caller can fall back to the offline namer."""
+CACHE = Path(__file__).resolve().parents[1] / "data/pubchem_titles.json"
+
+
+@lru_cache(maxsize=1)
+def _pubchem_cache() -> dict:
+    import json
+    if CACHE.exists():
+        try:
+            return json.loads(CACHE.read_text())
+        except Exception:
+            return {}
+    return {}
+
+
+def _save_cache(d: dict) -> None:
+    import json
+    try:
+        CACHE.write_text(json.dumps(d, indent=0, sort_keys=True))
+    except Exception:
+        pass
+
+
+def pubchem_name(smiles: str | None) -> str | None:
+    """PubChem's own title for the structure — "Aspirin", not "2-(acetyloxy)benzoic acid".
+
+    Cached on disk because the demo payload names a few hundred compounds and PubChem asks for no
+    more than five requests a second. A miss is cached as well, so a compound PubChem does not name
+    is asked for once and then left alone.
+    """
     c = canon(smiles)
-    return supplier_names().get(c) if c else None
+    if not c:
+        return None
+    cache = _pubchem_cache()
+    if c in cache:
+        return cache[c] or None
+    from .resolve import pubchem_title
+    title = (pubchem_title(c) or {}).get("title")
+    cache[c] = title or ""
+    _save_cache(cache)
+    return title or None
+
+
+def name_for(smiles: str | None, use_pubchem: bool = True) -> str | None:
+    """A name for this structure, or None so the caller can fall back to the offline namer.
+
+    The supplier's own product name first — that is the name you order by — then PubChem's title,
+    which is the common name where one exists.
+    """
+    c = canon(smiles)
+    if not c:
+        return None
+    return supplier_names().get(c) or (pubchem_name(c) if use_pubchem else None)

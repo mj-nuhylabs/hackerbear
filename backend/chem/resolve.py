@@ -16,6 +16,8 @@ from rdkit.Chem.Draw import rdMolDraw2D
 RDLogger.DisableLog("rdApp.*")
 
 PUBCHEM = "https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/name"
+# 구조로 조회할 때의 베이스. PUBCHEM은 /name으로 끝나므로 그걸 쓰면 경로가 틀어진다
+PUBCHEM_SMILES = "https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/smiles"
 CAS_RE = re.compile(r"\d{2,7}-\d{2}-\d")
 
 # 다크/라이트 양쪽에서 읽히는 원자 색. 탄소(검정)는 SVG에서 currentColor로 치환된다
@@ -94,6 +96,32 @@ def pubchem(term: str) -> dict:
             "cas": next((s for s in syns if CAS_RE.fullmatch(s)), None)}
 
 
+@lru_cache(maxsize=2048)
+def pubchem_title(smiles: str) -> dict:
+    """구조 → PubChem이 그 화합물을 부르는 이름(Title)과 CAS. 못 찾으면 빈 dict.
+
+    이름으로 검색하면 PubChem Title이 붙어서 "Aspirin"이 뜨는데, 그려서 들어오거나 SMILES로
+    들어오면 그 경로를 안 타서 이름이 없었다. 화학자가 아스피린을 그려 놓고 화면에서
+    "2-(acetyloxy)benzoic acid"만 보는 이유가 이것이다. Title은 PubChem이 적어 둔 값 그대로다.
+    """
+    try:
+        # PubChem은 기본 User-Agent로 온 요청을 거절한다. 사람 이메일이 아니라 클라이언트 이름을 보낸다
+        with httpx.Client(timeout=15, headers={"User-Agent": "SynthPath/1.0"}) as c:
+            r = c.get(f"{PUBCHEM_SMILES}/{smiles}/property/Title/JSON")
+            if r.status_code != 200:
+                return {}
+            title = (r.json()["PropertyTable"]["Properties"][0] or {}).get("Title")
+            cas = None
+            rs = c.get(f"{PUBCHEM_SMILES}/{smiles}/synonyms/JSON")
+            if rs.status_code == 200:
+                syns = rs.json()["InformationList"]["Information"][0].get("Synonym", [])
+                cas = next((s for s in syns if CAS_RE.fullmatch(s)), None)
+            return {"title": title or None, "cas": cas}
+    except Exception:
+        # 이름이 없어도 앱은 돈다 — 구조로 하던 일을 그대로 한다
+        return {}
+
+
 def resolve(query: str, kind: str = "auto", *, svg: bool = True) -> dict:
     """{query, kind} → {smiles, inchikey, mw, svg, name, cas}. 실패하면 ResolveError."""
     q = (query or "").strip()
@@ -101,7 +129,10 @@ def resolve(query: str, kind: str = "auto", *, svg: bool = True) -> dict:
         raise ResolveError("the query is empty")
     k = detect_kind(q) if kind in ("auto", "", None) else kind
     if k == "smiles":
-        return describe(q, svg=svg)
+        out = describe(q, svg=svg)
+        pc = pubchem_title(out["smiles"])
+        return {**out, "name": out.get("name") or pc.get("title"),
+                "cas": out.get("cas") or pc.get("cas")}
     if k in ("name", "cas"):
         pc = pubchem(q)
         return describe(pc["smiles"], name=pc["title"], cas=pc["cas"], svg=svg)

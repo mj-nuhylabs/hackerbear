@@ -72,3 +72,6 @@ backend/data/deep_next/
 # SciFinder 등 라이선스 있는 검색에서 내보낸 레코드. 검색을 돌린 사람에게 라이선스가 있는 자료이므로
 # 저장소에 올리지 않는다 (scripts/import_scifinder.py)
 backend/data/scifinder/
+
+# PubChem 화합물 이름 캐시 (chem/names.py가 다시 채운다)
+backend/data/pubchem_titles.json
