@@ -196,6 +196,8 @@ def main():
                             if y is not None else {"basis": "assumed", "value": 0.70}),
             "plausibility_raw": raw, "plausibility_calibrated": cal,
             "recorded_step": recorded_info,
+            # 이 스텝을 우리 규모로 돌리는 순서표. 숫자는 전부 레코드/환산표에서 온다 (evidence/protocol.py)
+            "protocol": _protocol_for(recs, ev, _cond),
             # atoms of the product no listed reactant supplies (chem/balance.py): the record is missing
             # a reactant, so this step's material is not on the bill and the route's cost is a lower bound
             "missing_atoms": missing_atoms(reactants, product),
@@ -427,6 +429,27 @@ def _conditions(recs: list[dict]) -> dict | None:
     """Per-field, from the first record stating each — evidence/provenance.conditions_from."""
     from evidence.provenance import conditions_from
     return conditions_from(recs)
+
+
+def _protocol_for(recs, ev, cond):
+    """The bench sheet for this step at SCALE_MMOL; the UI multiplies it to the chemist's scale.
+
+    The quantity table has to be the one belonging to the record the conditions name, or the sheet
+    charges one run's reagents at another run's temperature.
+    """
+    from evidence.protocol import build as build_protocol
+
+    sid = (cond or {}).get("source_id")
+    table = next((r.get("table") for r in recs if r.get("table") and r.get("reaction_id") == sid), None)
+    if table is None:
+        table = next((r.get("table") for r in recs if r.get("table")), None)
+    proc = _first_procedure(recs, sid)
+    if table is None and proc is None:
+        return None
+    y = next((r["yield_pct"] for r in recs if r.get("yield_pct") is not None), None)
+    return build_protocol({"conditions": cond, "procedure": proc, "product": {},
+                           "reported_yield": None if y is None else y / 100.0,
+                           "yield_basis": {}}, table, 1.0)
 
 
 def _sound(summ: dict, complete: bool) -> bool:

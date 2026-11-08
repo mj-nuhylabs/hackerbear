@@ -150,8 +150,12 @@ def conditions_from(records: list[dict]) -> dict | None:
         lim = t.get("limiting_recorded_mmol")
         if not lim:
             return 0.0
+        # Only what the record calls a solvent. Counting every non-substrate volume made a
+        # reactant charged by volume look like solvent burden, and the classic aspirin
+        # preparation - whose acetic anhydride is both reagent and medium - lost to a record
+        # that simply states no volumes at all.
         vol = sum((row.get("volume_ml") or 0.0) for row in (t.get("rows") or [])
-                  if not row.get("is_substrate"))
+                  if (row.get("role") or "").upper() == "SOLVENT")
         return -(vol * (t.get("scale_mmol") or 1.0) / lim)
 
     def timed(r: dict) -> int:

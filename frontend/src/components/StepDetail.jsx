@@ -7,6 +7,7 @@ import { Mock, Mol, TIER_INFO, TierBadge } from './bits'
 import Procedure from './Procedure'
 import Analogs from './Analogs'
 import Adapted from './Adapted'
+import Protocol from './Protocol'
 import './analogs.css'
 
 // ORD는 용매·촉매를 구조로 적는다. 그대로 띄우면 화학자가 "C(CCC)O"를 읽어야 하므로, Octet의
@@ -303,6 +304,8 @@ export default function StepDetail({ route, stepIndex, onSelect, scale, targetG,
             다수지만 독립된 근거는 하나다 (backend/evidence/provenance.py _by_source) */}
         <SourceSpread by={s.conditions?.by_source} />
       </div>
+
+      <Protocol protocol={s.protocol} factor={scale?.nRxn != null ? scale.nRxn * 1000 : 1} targetG={targetG} />
 
       <Procedure procedure={s.procedure} ourMmol={scale?.nRxn != null ? scale.nRxn * 1000 : null} />
 

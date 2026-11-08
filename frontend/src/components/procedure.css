@@ -197,3 +197,11 @@
   color: var(--ink-3);
   overflow-wrap: anywhere;
 }
+
+/* 우리 규모의 순서표 (backend/evidence/protocol.py) */
+.protocol { border-left: 3px solid var(--accent); padding-left: 12px; }
+.protocol-steps { margin: 6px 0 8px; padding-left: 20px; display: grid; gap: 5px; }
+.protocol-steps li { font-size: var(--fs-sm); }
+.protocol-verb { font-weight: 600; color: var(--ink); }
+.protocol-quote { font-style: italic; color: var(--ink-2); }
+.protocol-scaleup { margin: 2px 0 6px; color: var(--warn); }

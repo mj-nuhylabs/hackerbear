@@ -43,6 +43,7 @@ from rdkit import Chem, RDLogger
 
 RDLogger.DisableLog("rdApp.*")
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "backend"))   # chem.density for volume -> mass
 OUT_DIR = ROOT / "backend/data/scifinder"
 CAS_RE = re.compile(r"^\d{2,7}-\d{2}-\d$")
 
@@ -64,6 +65,10 @@ ALIASES = {
     "citation": ["citation", "reference", "journal", "title", "source"],
     "procedure": ["procedure", "experimental", "notes", "text", "experimentalprocedure"],
     "id": ["id", "reactionid", "rxnid", "answernumber"],
+    # one JSON list of {name, smiles, role, mass_g, volume_ml, is_limiting}: what the source
+    # charged and how much. Without it an imported record has no equivalents, so nothing
+    # downstream can rescale it to the chemist's scale (evidence/adapt.py).
+    "reagents_json": ["reagentsjson", "amounts", "amountsjson", "charges"],
 }
 
 
@@ -134,6 +139,59 @@ def cas_to_smiles(cas: str) -> str | None:
         out = None
     _pubchem_cache[cas] = out
     time.sleep(0.22)                       # PubChem asks for <= 5 requests/second
+    return out
+
+
+def _reagents_from(cell) -> list[dict]:
+    """The source's own charges, as evidence/corpus.Reagent shapes them.
+
+    A volume with no mass cannot give an equivalent, and ORD records are no different; where the
+    supplier page we took the price from also stated a density, the mass is computed from it and
+    the row says so. Anything else stays as the source wrote it, blanks included.
+    """
+    raw = _text(cell)
+    if not raw:
+        return []
+    try:
+        items = json.loads(raw)
+    except Exception:
+        log(f"  WARNING: reagents_json is not valid JSON, ignored: {raw[:60]}")
+        return []
+    from chem.density import of as density_of
+
+    out = []
+    for it in items:
+        smiles = _canon(it.get("smiles"))
+        mass_g, vol_ml = it.get("mass_g"), it.get("volume_ml")
+        computed = False
+        if mass_g is None and vol_ml is not None and smiles:
+            d = density_of(smiles)
+            if d:
+                mass_g, computed = float(vol_ml) * d["g_per_ml"] / 1.0, True
+        row = {"label": it.get("role") or "REACTANT", "smiles": smiles,
+               "name": it.get("name"), "role": (it.get("role") or "REACTANT").upper(),
+               "mass_g": mass_g, "moles": it.get("moles"),
+               "volume_l": None if vol_ml is None else float(vol_ml) / 1000.0,
+               "is_limiting": bool(it.get("is_limiting")), "moles_calc": None, "equiv": None,
+               "mass_from_density": computed}
+        out.append(row)
+    # moles and equivalents, the same way evidence/corpus does for an ORD record
+    from rdkit import Chem
+    from rdkit.Chem import Descriptors
+    for r in out:
+        if r["moles"] is None and r["mass_g"] and r["smiles"]:
+            m = Chem.MolFromSmiles(r["smiles"])
+            if m is not None:
+                r["moles_calc"] = r["mass_g"] / Descriptors.MolWt(m)
+    n = lambda r: r["moles"] if r["moles"] is not None else r["moles_calc"]
+    basis = next((n(r) for r in out if r["is_limiting"] and n(r)), None)
+    if basis is None:
+        cand = [n(r) for r in out if r["role"] == "REACTANT" and n(r)]
+        basis = min(cand) if cand else None
+    if basis:
+        for r in out:
+            if n(r):
+                r["equiv"] = round(n(r) / basis, 3)
     return out
 
 
@@ -228,9 +286,10 @@ def to_record(raw: dict, n: int, label: str = "SciFinder export",
     }
     proc = None
     text = _text(raw.get("procedure"))
+    reagents = _reagents_from(raw.get("reagents_json"))
     if text:
         proc = {"reaction_id": rid, "rxn_smiles": ".".join(reactants) + ">>" + product,
-                "reactants": reactants, "product": product, "text": text, "reagents": [],
+                "reactants": reactants, "product": product, "text": text, "reagents": reagents,
                 "workups": [], "temperature_c": temp, "time_h": t_h, "yield_pct": y,
                 "url": url, "organization": citation or patent or doi,
                 # the UI must not call a retyped procedure verbatim (frontend Procedure.jsx)
