@@ -184,3 +184,6 @@
 .proc-adapted[open] > summary {
   margin-bottom: 6px;
 }
+
+/* 레코드가 돌린 규모 → 우리 규모 (backend/evidence/adapt.py limiting_recorded_mmol) */
+.proc-scale { margin: 6px 0 8px; }

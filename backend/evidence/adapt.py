@@ -137,6 +137,9 @@ def adapt(procedure: dict, our_substrates: list[str], our_product: str, our_limi
         "text": procedure.get("text"),
         "scale_mmol": our_limiting_mmol,
         "limiting_recorded": limiting.get("smiles") if limiting else None,
+        # 레코드가 돌린 규모. 이게 없으면 화면에 원문("0.0072 moles")과 환산표(8.11 mmol)가 나란히
+        # 뜨는데 둘의 관계를 말해 주는 게 없어서, 적은 양으로 많은 양을 만든 것처럼 읽힌다
+        "limiting_recorded_mmol": round(lim_n * 1000.0, 4) if lim_n else None,
         "rows": rows,
         "unscaled_inputs": missing,
         "note": ("Recorded equivalents rescaled to our substrates. The conditions and procedure were "

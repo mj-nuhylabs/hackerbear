@@ -261,7 +261,7 @@ export default function StepDetail({ route, stepIndex, onSelect, scale, targetG,
         </dl>
       </div>
 
-      <Procedure procedure={s.procedure} />
+      <Procedure procedure={s.procedure} ourMmol={scale?.nRxn != null ? scale.nRxn * 1000 : null} />
 
       <Adapted step={s} scaleMol={scale?.nRxn} />
 

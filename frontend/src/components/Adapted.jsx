@@ -14,6 +14,22 @@ function qty(row, k) {
   return sig(v)
 }
 
+// What the record was run at, against what this step needs. Without it the verbatim text ("0.0072
+// moles of salicylic acid") sits beside a table saying 8.11 mmol and nothing connects the two, so
+// it reads as though a small charge were making a larger one.
+function ScaleNote({ table, factor }) {
+  const was = table?.limiting_recorded_mmol
+  if (was == null || !factor) return null
+  const k = (factor * (table.scale_mmol || 1)) / was
+  return (
+    <p className="proc-scale muted small">
+      The record was run at <span className="num">{sig(was)}</span> mmol of its limiting substrate. Your step needs{' '}
+      <span className="num">{sig(factor * (table.scale_mmol || 1))}</span> mmol, so every amount below is the
+      record&apos;s own, multiplied by <span className="num">{sig(k, 2)}</span>.
+    </p>
+  )
+}
+
 function Table({ table, factor }) {
   if (!table?.rows?.length) return null
   const scaled = (row, k) => (row[k] == null ? null : row[k] * factor)
@@ -118,6 +134,7 @@ export default function Adapted({ step, scaleMol }) {
                   <span className="muted small"> · text is not a procedure</span>
                 )}
               </summary>
+              <ScaleNote table={r.table} factor={factor} />
               <Table table={r.table} factor={factor} />
               {r.procedure?.text && <blockquote className="proc-text">{r.procedure.text}</blockquote>}
             </details>
@@ -159,6 +176,7 @@ export default function Adapted({ step, scaleMol }) {
               <p className="muted small">
                 Recorded reaction: <code className="proc-smiles">{a.analog_rxn}</code>
               </p>
+              <ScaleNote table={a.table} factor={factor} />
               <Table table={a.table} factor={factor} />
               {a.table?.text && (
                 <>

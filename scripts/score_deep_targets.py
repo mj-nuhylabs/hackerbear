@@ -367,10 +367,17 @@ def _first_procedure(recs: list[dict]) -> dict | None:
     an HPLC assay method (evidence/procedures.py)."""
     from evidence.procedures import score as proc_score
 
+    from evidence.procedures import amount_conflicts
+
     with_text = [r for r in recs if r.get("procedure") and r["procedure"].get("text")]
     if not with_text:
         return None
-    best = max(with_text, key=lambda r: (proc_score(r["procedure"]["text"])["experimental"],
+    # A record whose own mass and molar amount for the same reagent disagree cannot be scaled from.
+    # Prefer one that does not contradict itself, before anything else about it.
+    for r in with_text:
+        r["_conflicts"] = amount_conflicts(r["procedure"]["text"], _mw_lookup(r["procedure"]))
+    best = max(with_text, key=lambda r: (not r["_conflicts"],
+                                         proc_score(r["procedure"]["text"])["experimental"],
                                          r["procedure"].get("yield_pct") is not None,
                                          r["procedure"].get("temperature_c") is not None,
                                          len(r["procedure"].get("reagents") or [])))
@@ -378,7 +385,31 @@ def _first_procedure(recs: list[dict]) -> dict | None:
     s = proc_score(p["text"])
     return {**p, "match": "covered", "url": p.get("url") or best.get("url"), "patent": best.get("patent"),
             # the UI must not head prose with "Procedure"
-            "experimental": s["experimental"], "not_experimental_reason": s["reason"] or None}
+            "experimental": s["experimental"], "not_experimental_reason": s["reason"] or None,
+            # the scale this record was run at. The reagent table under the procedure is the record's
+            # own amounts, and the panel above it is our scale; without this the two read as one
+            "limiting_recorded_mmol": (best.get("table") or {}).get("limiting_recorded_mmol"),
+            # the record's own figures contradict each other; nothing scaled from it can be trusted
+            "amount_conflicts": best.get("_conflicts") or None}
+
+
+def _mw_lookup(procedure: dict):
+    """Reagent name as the record writes it -> molar mass from the structure the record gives."""
+    from rdkit import Chem
+    from rdkit.Chem import Descriptors
+
+    table = {}
+    for r in procedure.get("reagents") or []:
+        nm, smi = (r.get("name") or "").strip().lower(), r.get("smiles")
+        if nm and smi:
+            m = Chem.MolFromSmiles(smi)
+            if m is not None:
+                table[nm] = Descriptors.MolWt(m)
+
+    def mw_of(name: str):
+        return table.get((name or "").strip().lower())
+
+    return mw_of
 
 
 def _conditions(recs: list[dict]) -> dict | None:

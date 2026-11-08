@@ -81,6 +81,54 @@ def is_experimental(text: str | None) -> bool:
     return score(text)["experimental"]
 
 
+# "salicylic acid (10 mg, 0.72 mmol)" — a mass and a molar amount for the same reagent, which the
+# text states together and which the molar mass ties to each other.
+_MASS_MOL = re.compile(
+    r"(\d+(?:\.\d+)?)\s*(mg|g|kg)\s*,\s*(\d+(?:\.\d+)?)\s*(mmol|mol|mmoles|moles)\b", re.I)
+_TO_G = {"mg": 1e-3, "g": 1.0, "kg": 1e3}
+_TO_MOL = {"mmol": 1e-3, "mmoles": 1e-3, "mol": 1.0, "moles": 1.0}
+# How far the two may disagree before the record is calling itself wrong. Rounding and purity move
+# these by a few percent; a factor of two is not rounding, and the cases seen are factors of ten.
+AMOUNT_TOLERANCE = 2.0
+
+
+def amount_conflicts(text: str | None, mw_of) -> list[dict]:
+    """Places where the text's own mass and molar amount cannot both be right.
+
+    An aspirin record says "salicylic acid (10 mg, 0.72 mmol)". 10 mg of salicylic acid is
+    0.072 mmol; 0.72 mmol is 99 mg. ORD kept only the mass, so nothing downstream could notice,
+    and the step was scaled from a number the record itself contradicts. The same example says
+    "acetic anhydride (10 ul, 1.09 mmoles)", also ten-fold apart.
+
+    `mw_of` maps a reagent name as the text writes it to a molar mass, or returns None. Only pairs
+    whose compound is identified are checked; the rest cannot be checked and are not guessed at.
+    """
+    out = []
+    t = text or ""
+    for m in _MASS_MOL.finditer(t):
+        grams = float(m.group(1)) * _TO_G[m.group(2).lower()]
+        moles = float(m.group(3)) * _TO_MOL[m.group(4).lower()]
+        # The reagent is named just before the bracket. How many words it takes is not fixed
+        # ("salicylic acid", "acetic anhydride", "pyridine"), so try the longest name that is
+        # recognised and give up when none is.
+        before = re.sub(r"[\s(]+$", "", t[max(0, m.start() - 80):m.start()])
+        words = re.findall(r"[A-Za-z][A-Za-z0-9'\-,’]*", before)
+        name, mw = None, None
+        for n in range(min(4, len(words)), 0, -1):
+            cand = " ".join(words[-n:]).strip(" ,")
+            got = mw_of(cand)
+            if got:
+                name, mw = cand, got
+                break
+        if not mw or moles <= 0:
+            continue
+        ratio = (grams / mw) / moles
+        if ratio > AMOUNT_TOLERANCE or ratio < 1 / AMOUNT_TOLERANCE:
+            out.append({"reagent": name, "stated_g": grams, "stated_mol": moles, "mw": mw,
+                        "mol_from_mass": grams / mw, "ratio": round(ratio, 3)})
+    return out
+
+
 def rank_key(text: str | None):
     """Sort key for choosing which recorded text to show: real procedures first, then the most
     detailed. Use with reverse=True."""

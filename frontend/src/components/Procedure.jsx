@@ -73,12 +73,26 @@ function Reagents({ reagents }) {
 }
 
 // 시약 표가 있을 때만 해당하는 설명. 표가 없으면 할 말이 없다.
-function AmountsNote() {
+// 이 표는 레코드가 돌린 규모 그대로다. 바로 위 "Run this step"은 우리 규모(1 g 기준)라서, 둘을
+// 연결해 주지 않으면 "0.72 mmol로 8.11 mmol을 만든다"처럼 읽힌다 — 실제로 그렇게 읽은 사람이 있다.
+function AmountsNote({ scaleMmol, ourMmol }) {
+  const factor = scaleMmol && ourMmol ? ourMmol / scaleMmol : null
   return (
     <p className="proc-note muted small">
-      Amounts are as written in the record. Equivalents are worked out from those amounts, using molar masses computed
-      from the structures — where the record gives only a volume, there is no density to go on and the column stays
-      empty.
+      {scaleMmol != null && (
+        <strong className="proc-scale-warn">
+          These are the amounts the record itself used, at its own scale of {sig(scaleMmol)} mmol — not the amounts
+          for your step.{' '}
+          {ourMmol != null && factor != null && (
+            <>
+              Yours needs {sig(ourMmol)} mmol, which is {sig(factor, 2)}× this. The rescaled amounts are in the table
+              further down.{' '}
+            </>
+          )}
+        </strong>
+      )}
+      Equivalents are worked out from those amounts, using molar masses computed from the structures — where the
+      record gives only a volume, there is no density to go on and the column stays empty.
     </p>
   )
 }
@@ -99,7 +113,7 @@ function SourceNote() {
   )
 }
 
-export default function Procedure({ procedure }) {
+export default function Procedure({ procedure, ourMmol }) {
   if (!procedure) {
     return (
       <div className="proc">
@@ -175,7 +189,9 @@ export default function Procedure({ procedure }) {
       )}
 
       <Reagents reagents={procedure.reagents} />
-      {procedure.reagents?.length > 0 && <AmountsNote />}
+      {procedure.reagents?.length > 0 && (
+        <AmountsNote scaleMmol={procedure.limiting_recorded_mmol} ourMmol={ourMmol} />
+      )}
 
       {procedure.text && (
         <>
