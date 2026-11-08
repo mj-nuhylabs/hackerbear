@@ -33,6 +33,17 @@ export default function CostSheet({ cost, targetG, setTargetG, purification, set
   const priced = lines.filter((l) => l.price)
   const real = priced.filter((l) => !l.price.mock)
   const asOf = real[0]?.price.as_of_date ?? priced[0]?.price.as_of_date
+  // A material with no price on record adds nothing to either total, so with any of them missing the totals are
+  // only a lower bound. Say so on the number itself, not just in a footnote: a bare $63.00 reads as the whole bill.
+  const unpriced = lines.length - priced.length
+  const partial = unpriced > 0 && priced.length > 0
+  const total = (v) => (v != null && partial ? `≥ ${usd(v)}` : usd(v))
+  const gap =
+    unpriced === 0
+      ? null
+      : priced.length === 0
+        ? 'No material on this route has a price on record'
+        : `Leaves out ${unpriced} of ${lines.length} materials that have no price on record`
   return (
     <section className="panel cost" aria-labelledby="cost-title">
       <div className="panel-head">
@@ -140,13 +151,15 @@ export default function CostSheet({ cost, targetG, setTargetG, purification, set
       <div className="totals">
         <div className="total">
           <span className="total-k">Consumption basis</span>
-          <span className="total-v num">{usd(totals.consumption)}</span>
+          <span className="total-v num">{total(totals.consumption)}</span>
           <span className="muted small">What the material you actually use is worth</span>
+          {gap && <span className="total-gap small">{gap}</span>}
         </div>
         <div className="total total-main">
           <span className="total-k">Actual purchase</span>
-          <span className="total-v num">{usd(totals.purchase)}</span>
+          <span className="total-v num">{total(totals.purchase)}</span>
           <span className="muted small">What you pay buying whole packs</span>
+          {gap && <span className="total-gap small">{gap}</span>}
         </div>
         <div className="total">
           <span className="total-k">Estimated time</span>
@@ -162,9 +175,16 @@ export default function CostSheet({ cost, targetG, setTargetG, purification, set
       <p className="cost-foot muted small">
         {real.length > 0 && (
           <>
-            {real.length} of {priced.length} prices are supplier list prices read on {asOf}; each links to the page it
-            came from. The pack is the smallest one at or above 1 g, and the unit price is that same pack&apos;s, so
-            the two totals differ only by what is left in the bottle.{' '}
+            {real.length} of {lines.length} materials have a supplier list price, read on {asOf}; each links to the
+            page it came from. The pack is the smallest one at or above 1 g, and the unit price is that same pack&apos;s,
+            so the two totals differ only by what is left in the bottle. For a reagent sold only as a solution, the pack
+            size counts the reagent itself, from the concentration on its page.{' '}
+          </>
+        )}
+        {unpriced > 0 && (
+          <>
+            {unpriced} material{unpriced > 1 ? 's have' : ' has'} no price on record and{' '}
+            {unpriced > 1 ? 'are' : 'is'} shown as {DASH}, not estimated.{' '}
           </>
         )}
         {real.length < priced.length && (

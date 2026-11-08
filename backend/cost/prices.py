@@ -1,13 +1,17 @@
 """가격 조회 — data/prices.csv 정적 스냅샷.
 
-**이 파일의 가격은 실제 공급사 가격이 아니다.** 실시간 공급사 API는 범위 밖이라
-(CLAUDE_HACKFNM.md 데이터 소스), prices.csv의 모든 행에 `is_mock` 컬럼이 있고
-데모 스냅샷은 전부 true다. 그 플래그는 BOM 줄까지 그대로 전달돼 UI가 배지를 붙인다.
+prices.csv의 모든 행은 공급사 제품 페이지에서 읽은 정가다. 읽은 값 그대로는
+data/price_sources/*.json에 있고, prices.csv는 거기서 계산만 해서 만든다:
 
-실제 가격을 넣을 때는 같은 스키마로 행을 바꾸고 is_mock=false, as_of_date를 갱신하면 된다.
-계산(cost/stoich.py)은 진짜다 — 가정값은 가격뿐이다.
+    data/price_sources/*.json → scripts/prices_from_source.py → scripts/import_prices.py --drop-examples
 
-CSV 컬럼: smiles,name,price_per_g,pack_size_g,pack_price,currency,supplier,as_of_date,is_mock
+행마다 supplier·catalog_no·url·as_of_date가 있다 — 숫자에는 출처가 있어야 한다 (절대 규칙 2).
+가격을 못 찾은 물질은 행이 없다. lookup()이 키를 안 돌려주고, 비용은 None, UI는 —다.
+예시 가격(is_mock=true) 행은 없다. 플래그 처리는 남아 있지만 지금 데이터에는 쓰이지 않는다.
+
+실시간 공급사 API는 범위 밖이다 (CLAUDE_HACKFNM.md 데이터 소스). 이건 as_of_date 시점의 스냅샷이다.
+
+CSV 컬럼: smiles,name,price_per_g,pack_size_g,pack_price,currency,supplier,catalog_no,url,as_of_date,is_mock
 """
 from __future__ import annotations
 

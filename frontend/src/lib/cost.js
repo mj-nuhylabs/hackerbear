@@ -45,7 +45,8 @@ export function computeCost(route, { targetG, purification, prices }) {
     }
   })
 
-  const sum = (k) => lines.reduce((a, l) => a + (l[k] ?? 0), 0)
+  // 가격 있는 줄만 더한다. 하나도 없으면 0이 아니라 null이다 (backend/cost/stoich.py와 같다) — $0.00은 거짓말이다
+  const sum = (k) => (lines.some((l) => l[k] != null) ? lines.reduce((a, l) => a + (l[k] ?? 0), 0) : null)
   const unpriced = lines.filter((l) => !l.price).length
 
   // 총 소요 시간: 문헌에 시간이 있는 스텝만 합산

@@ -250,7 +250,12 @@ function RouteList({ routes, costs, routeId, onPick, targetG, search }) {
                     {c.COMPUTED > 0 && <span className="rc-warn"> · {c.COMPUTED} thin on precedent</span>}
                   </span>
                   <span className="rc-cost">
-                    <strong className="num">{usd(costs[r.id]?.totals.purchase)}</strong> for {targetG} g
+                    {/* 가격 없는 재료가 있으면 합계는 하한이다 — CostSheet와 같이 ≥를 붙인다 */}
+                    <strong className="num">
+                      {costs[r.id]?.totals.purchase != null && costs[r.id].totals.unpriced > 0 ? '≥ ' : ''}
+                      {usd(costs[r.id]?.totals.purchase)}
+                    </strong>{' '}
+                    for {targetG} g
                     {costs[r.id]?.buy?.verdict === 'buy' && <span className="rc-buy"> · cheaper to buy</span>}
                   </span>
                 </span>

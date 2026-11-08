@@ -23,6 +23,12 @@
   border-bottom-color: var(--accent);
 }
 
+/* 가격 없는 재료가 있으면 합계는 하한이다. 숫자 바로 밑에서 그렇다고 말한다 */
+.total-gap {
+  color: var(--warn);
+  margin-top: 2px;
+}
+
 .price-src .muted {
   color: var(--ink-3);
 }

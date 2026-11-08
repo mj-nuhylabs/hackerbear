@@ -102,6 +102,9 @@ def main():
     ap.add_argument("--sheet", type=Path, default=SHEET)
     ap.add_argument("--prices", type=Path, default=PRICES)
     ap.add_argument("--dry-run", action="store_true")
+    ap.add_argument("--drop-examples", action="store_true",
+                    help="drop every example (is_mock) row instead of keeping it — a material with no real "
+                         "price then has no row at all and its cost shows as —")
     a = ap.parse_args()
 
     if not a.sheet.exists():
@@ -126,6 +129,15 @@ def main():
             smi = canon(row.get("smiles", "")) or row.get("smiles", "")
             existing[smi] = {c: row.get(c, "") for c in COLUMNS}
 
+    dropped = 0
+    if a.drop_examples:
+        examples = [s for s, r in existing.items()
+                    if str(r.get("is_mock", "")).strip().lower() in ("true", "1", "yes")]
+        for s in examples:
+            del existing[s]
+        dropped = len(examples)
+        print(f"dropped:  {dropped} example rows (no real price on record; they will show as —)")
+
     replaced = sum(1 for s in new if s in existing)
     merged = {**existing, **new}
 
@@ -140,7 +152,7 @@ def main():
     if a.dry_run:
         print("\n--dry-run, nothing written.")
         return 0
-    if not new:
+    if not new and not dropped:
         print("\nNothing to import. Fill in price_per_g / pack_size_g / pack_price, supplier and url.")
         return 0
 

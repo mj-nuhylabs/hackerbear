@@ -1,11 +1,14 @@
 """공급사에서 읽어 둔 가격 기록 → 가격 시트 채우기.
 
-입력은 backend/data/price_sources/*.json이다. 그 파일은 공급사 제품 페이지에서 읽은
+입력은 backend/data/price_sources/*.json 전부다. 그 파일들은 공급사 제품 페이지에서 읽은
 값 그대로다 — 정가, 팩 크기, 밀도, 제품 URL. 이 스크립트는 거기서 **계산만** 한다:
 
     부피 팩 → 그램      mass_g = qty_mL * density      (밀도는 같은 제품 페이지의 값)
+    용액 → 화합물 그램   mass_g *= content_wt_frac      (농도도 같은 페이지의 값. 포르말린 37 wt% 등)
     대표 팩 선택         1 g 이상인 가장 작은 팩, 없으면 가장 큰 팩
     price_per_g         pack_price / pack_size_g       (같은 팩에서 나온다)
+
+같은 CAS가 두 파일에 있으면 실행을 멈춘다 — 어느 쪽 가격이 맞는지 코드가 고르지 않는다.
 
 대표 팩을 "가장 작은 것"으로 두는 이유: 1 g을 만드는 데 4 L짜리 아세트산을 사지 않는다.
 반대로 mg 팩만 있는 화합물은 가장 큰 팩을 쓴다 — 100 mg짜리를 30번 사는 계산이 되면
@@ -24,30 +27,35 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-SOURCE = ROOT / "backend/data/price_sources/sigmaaldrich_2026-11-07.json"
+SOURCES = ROOT / "backend/data/price_sources"
 SHEET = ROOT / "backend/data/prices_to_fill.csv"
 
 TO_GRAM = {"mg": 0.001, "g": 1.0, "kg": 1000.0}      # 질량 단위는 그대로 환산된다
 VOLUME = {"mL": 1.0, "L": 1000.0}                     # 부피는 밀도가 있어야 환산된다
 
 
-def pack_grams(pack: dict, density: float | None) -> float | None:
-    """팩 하나 → 그램. 부피인데 밀도가 없으면 None (버린다)."""
+def pack_grams(pack: dict, density: float | None, wt_frac: float | None = None) -> float | None:
+    """팩 하나 → 그 화합물의 그램. 부피인데 밀도가 없으면 None (버린다).
+
+    용액이면(wt_frac) 용액 질량에 페이지에 적힌 농도를 곱한다 — 물과 안정제 값까지 화합물 값으로 치지 않는다.
+    """
     unit, qty = pack["unit"], float(pack["qty"])
     if unit in TO_GRAM:
-        return qty * TO_GRAM[unit]
-    if unit in VOLUME:
+        g = qty * TO_GRAM[unit]
+    elif unit in VOLUME:
         if density is None:
             return None
-        return qty * VOLUME[unit] * float(density)
-    return None
+        g = qty * VOLUME[unit] * float(density)
+    else:
+        return None
+    return g * float(wt_frac) if wt_frac else g
 
 
-def choose(packs: list[dict], density: float | None) -> dict | None:
+def choose(packs: list[dict], density: float | None, wt_frac: float | None = None) -> dict | None:
     """대표 팩. 1 g 이상인 것 중 가장 작은 것, 그런 게 없으면 가장 큰 것."""
     sized = []
     for p in packs:
-        g = pack_grams(p, density)
+        g = pack_grams(p, density, wt_frac)
         if g and g > 0:
             sized.append({**p, "grams": g})
     if not sized:
@@ -56,15 +64,31 @@ def choose(packs: list[dict], density: float | None) -> dict | None:
     return min(big, key=lambda p: p["grams"]) if big else max(sized, key=lambda p: p["grams"])
 
 
+def load_sources(paths: list[Path]) -> dict[str, dict]:
+    """CAS → 제품. 제품마다 그 기록 파일의 site·currency를 붙여 둔다. 같은 CAS가 두 번 나오면 멈춘다."""
+    products: dict[str, dict] = {}
+    for path in paths:
+        src = json.loads(path.read_text())
+        for cas, prod in src["products"].items():
+            if cas in products:
+                raise SystemExit(f"CAS {cas} is in both {products[cas]['_file']} and {path.name}. "
+                                 "Keep one — the code does not pick between two prices.")
+            products[cas] = {**prod, "_site": src["site"], "_currency": src.get("currency", "USD"),
+                             "_file": path.name}
+    return products
+
+
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--source", type=Path, default=SOURCE)
+    ap.add_argument("--source", type=Path, nargs="*",
+                    help="price record(s); default: every *.json in backend/data/price_sources/")
     ap.add_argument("--sheet", type=Path, default=SHEET)
     ap.add_argument("--dry-run", action="store_true")
     a = ap.parse_args()
 
-    src = json.loads(a.source.read_text())
-    site, products = src["site"], src["products"]
+    paths = a.source or sorted(SOURCES.glob("*.json"))
+    products = load_sources(paths)
+    print(f"{len(products)} products on record in {', '.join(p.name for p in paths)}\n")
 
     rows = list(csv.DictReader(a.sheet.open(newline="")))
     if not rows:
@@ -79,7 +103,8 @@ def main():
             print(f"  no price on record   {r['name'][:46]}")
             skipped += 1
             continue
-        pick = choose(prod["packs"], prod.get("density_g_per_ml"))
+        wt = prod.get("content_wt_frac")
+        pick = choose(prod["packs"], prod.get("density_g_per_ml"), wt)
         if not pick:
             print(f"  volume pack with no density, skipped   {r['name'][:40]}")
             skipped += 1
@@ -88,13 +113,15 @@ def main():
         r["price_per_g"] = f"{pick['usd'] / grams:.4f}"
         r["pack_size_g"] = f"{grams:g}"
         r["pack_price"] = f"{pick['usd']:.2f}"
-        r["currency"] = src.get("currency", "USD")
+        r["currency"] = prod["_currency"]
         r["supplier"] = prod.get("brand") or ""
         r["catalog_no"] = pick.get("sku") or prod["href"].rsplit("/", 1)[-1]
-        r["url"] = site + prod["href"]
+        r["url"] = prod["_site"] + prod["href"]
         filled += 1
         unit = f"{pick['qty']:g}{pick['unit']}"
         conv = "" if pick["unit"] in TO_GRAM else f" = {grams:g} g at {prod['density_g_per_ml']} g/mL"
+        if wt:
+            conv += f" x {wt:g}"
         print(f"  {r['name'][:40]:42} {unit:>8}{conv:<24} ${pick['usd']:>8.2f}  ${pick['usd']/grams:>8.3f}/g")
 
     print(f"\n{filled} filled, {skipped} left blank")
