@@ -173,6 +173,11 @@ def _reagents_from(cell) -> list[dict]:
                "mass_g": mass_g, "moles": it.get("moles"),
                "volume_l": None if vol_ml is None else float(vol_ml) / 1000.0,
                "is_limiting": bool(it.get("is_limiting")), "moles_calc": None, "equiv": None,
+               # The source says this one went into the others, not the other way round. Without it
+               # the assembled experimental paragraph makes the limiting reagent the flask's first
+               # occupant, which reversed Bax & Stevens: the thiophenol is added to the preformed
+               # formic acid/acetic anhydride mixture. Only set it where the source states it.
+               "added_last": bool(it.get("added_last")),
                "mass_from_density": computed}
         out.append(row)
     # moles and equivalents, the same way evidence/corpus does for an ORD record

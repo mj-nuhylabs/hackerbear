@@ -17,7 +17,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "backend"))
 DEEP = ROOT / "backend/data/deep"
-TARGETS = ["aspirin", "caffeine", "lidocaine", "imatinib", "osimertinib"]
+# Every target with a precomputed payload, so a target added later is audited too
+TARGETS = sorted(p.stem[len("demo_"):] for p in DEEP.glob("demo_*.json"))
 
 # Bounds that say "no reaction is run like this", not "this is unusual".
 MAX_SCALE_FACTOR = 500        # record -> our scale; beyond this the record's amounts are suspect
@@ -32,6 +33,7 @@ def flag(out, step_id, kind, msg):
 
 
 def audit(n_routes: int) -> list[dict]:
+    from cost.stoich import rollup
     from evidence.procedures import score as proc_score
 
     found: list[dict] = []
@@ -39,6 +41,9 @@ def audit(n_routes: int) -> list[dict]:
     for t in TARGETS:
         d = json.loads((DEEP / f"demo_{t}.json").read_text())
         for r in d["routes"][:n_routes]:
+            # the scale the screen shows by default: this step's n_rxn for 1 g of the target,
+            # in mmol, which is exactly what the UI multiplies the 1 mmol table by
+            n_rxn = rollup(r["steps"], 1.0)["n_rxn"]
             for i, s in enumerate(r["steps"], 1):
                 seen += 1
                 sid = f"{t}/{r['id']}/s{i}"
@@ -52,16 +57,21 @@ def audit(n_routes: int) -> list[dict]:
                         flag(found, sid, "record-contradicts-itself",
                              f"{c['reagent']}: {c['stated_g']*1000:g} mg vs {c['stated_mol']*1000:g} mmol")
 
-                # scale: what the record ran at against what this step needs
+                # scale: what the record ran at against what this step needs. The table is stored
+                # normalised to 1 mmol and the UI multiplies it, so comparing the record with the
+                # stored 1 is comparing it with nothing: it made a 1 mol literature prep look like a
+                # 1000x stretch when what the screen shows is 9.24 mmol, a 108x step down. Compare
+                # against the scale the demo actually displays — the default 1 g of this target.
                 was = p.get("limiting_recorded_mmol")
                 tbl = next((x.get("table") for x in (s.get("recorded_records") or []) if x.get("table")), None)
                 ours = None
                 if tbl:
-                    ours = tbl.get("scale_mmol")
+                    ours = (tbl.get("scale_mmol") or 1.0) * (n_rxn.get(i - 1) or 0.0) * 1000
                 if was and was > 0 and ours:
                     k = ours / was
                     if k > MAX_SCALE_FACTOR or k < 1 / MAX_SCALE_FACTOR:
-                        flag(found, sid, "implausible-scale", f"record {was:g} mmol -> table {ours:g} mmol (x{k:.0f})")
+                        flag(found, sid, "implausible-scale",
+                             f"record {was:g} mmol -> {ours:.3g} mmol for 1 g of target (x{k:.3g})")
 
                 for rec in (s.get("recorded_records") or [])[:3]:
                     y, temp, th = rec.get("yield_pct"), rec.get("temperature_c"), rec.get("time_h")

@@ -150,15 +150,15 @@ def _demo_payload(smiles: str) -> dict | None:
     기록된 경로(모든 스텝이 ORD 레코드) + 깊게 돌린 AiZynth 경로, 두 모델의 순위가 들어 있다.
     파일이 없으면 None — 라이브 검색으로 간다.
     """
-    from model.holdout import DEMO_TARGETS
+    from model.holdout import ALL_TARGETS, slug
     from rdkit import Chem
     m = Chem.MolFromSmiles(smiles)
     if m is None:
         return None
     key = Chem.MolToSmiles(m, isomericSmiles=False)
-    for name, s in DEMO_TARGETS.items():
+    for name, s in ALL_TARGETS.items():
         if Chem.MolToSmiles(Chem.MolFromSmiles(s), isomericSmiles=False) == key:
-            p = DEEP / f"demo_{name.lower()}.json"
+            p = DEEP / f"demo_{slug(name)}.json"
             if p.exists():
                 import json
                 return json.loads(p.read_text())

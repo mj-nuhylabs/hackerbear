@@ -26,3 +26,4 @@ Clc1nccc(-c2c[nH]c3ccccc23)n1
 Cn1c(=O)c2c(ncn2C)n(C)c1=O
 Cn1cc(-c2ccnc(Cl)n2)c2ccccc21
 Cn1cc(-c2nc(Cl)ncc2Cl)c2ccccc21
+O=CSc1ccccc1

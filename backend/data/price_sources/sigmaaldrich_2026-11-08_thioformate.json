@@ -1,0 +1,81 @@
+{
+ "retrieved": "2026-11-08",
+ "site": "https://www.sigmaaldrich.com",
+ "country": "US",
+ "currency": "USD",
+ "note": "List prices read off each product page in a browser (no account, no contract pricing), for the materials S-phenyl thioformate's recorded route buys and for the pyridine aspirin's leading route charges. Multipack SKUs (4X100ML, 6X1L, 12X100ML, 4X2L, 4X4L) are recorded but not used for a per-unit figure: their price covers several units. The pack used in prices.csv is the smallest single pack on the page.",
+ "products": {
+  "108-98-5": {
+   "href": "/US/en/product/aldrich/240249",
+   "brand": "Sigma-Aldrich",
+   "name": "Thiophenol, >=99%",
+   "density_g_per_ml": 1.073,
+   "role": "reagent",
+   "packs": [
+    {
+     "qty": 10,
+     "unit": "g",
+     "usd": 45.0
+    },
+    {
+     "qty": 50,
+     "unit": "g",
+     "usd": 122.0
+    }
+   ]
+  },
+  "64-18-6": {
+   "href": "/US/en/product/sigald/f0507",
+   "brand": "Sigma-Aldrich",
+   "name": "Formic acid, reagent grade, >=95%",
+   "density_g_per_ml": 1.22,
+   "role": "reagent",
+   "packs": [
+    {
+     "qty": 100,
+     "unit": "mL",
+     "usd": 59.7
+    },
+    {
+     "qty": 500,
+     "unit": "mL",
+     "usd": 97.4
+    },
+    {
+     "qty": 1,
+     "unit": "L",
+     "usd": 187.0
+    },
+    {
+     "qty": 4,
+     "unit": "L",
+     "usd": 622.0
+    }
+   ]
+  },
+  "110-86-1": {
+   "href": "/US/en/product/sial/270970",
+   "brand": "Sigma-Aldrich",
+   "name": "Pyridine, anhydrous, 99.8%",
+   "density_g_per_ml": 0.978,
+   "role": "reagent",
+   "packs": [
+    {
+     "qty": 100,
+     "unit": "mL",
+     "usd": 171.0
+    },
+    {
+     "qty": 1,
+     "unit": "L",
+     "usd": 293.0
+    },
+    {
+     "qty": 2,
+     "unit": "L",
+     "usd": 465.0
+    }
+   ]
+  }
+ }
+}

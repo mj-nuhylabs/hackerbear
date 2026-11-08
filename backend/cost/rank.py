@@ -57,6 +57,14 @@ def summary(route: dict, table: dict[str, dict] | None = None,
     found = {l["smiles"]: table[l["smiles"]] for l in leaves if l.get("smiles") in table}
     b = stoich.bom(route["steps"], leaves, 1.0, found, purification_factor)
     t = b["totals"]
+    # A gap the record's own quantity table fills (missing_supplied_by) still counts here, and the
+    # reason is comparability, not doubt. cost_per_g is the cost of the LEAF materials; a material
+    # the substrate test set aside is charged in the reagent column instead, and the two columns are
+    # not added together. Aspirin shows what happens if this is let through: the same US07842696B2
+    # run appears twice, once with acetic anhydride on the arrow (a leaf, $0.97/g) and once with it
+    # in the reagent column ($0.62/g), and the second wins a comparison it never entered. Ranking it
+    # below the fully costed routes keeps the ordering honest. The UI still says which material it
+    # is (missing_supplied_by) rather than claiming the record left a reactant out.
     gaps = [i for i, s in enumerate(route["steps"]) if s.get("missing_atoms")]
     cost = t["consumption_cost"]
     # a line without a consumption cost is unpriced whether it has no row or a row without a price

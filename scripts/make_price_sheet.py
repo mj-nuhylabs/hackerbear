@@ -35,7 +35,8 @@ PUBCHEM = "https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound"
 CAS_RE = re.compile(r"\d{2,7}-\d{2}-\d")
 
 # 데모에서 돌릴 타겟 — 홈 화면에 뜨는 다섯 개 전부. 하나라도 빠지면 그 타겟의 BOM이 가격 없이 뜬다
-DEFAULT_TARGETS = ["imatinib", "lidocaine", "aspirin", "caffeine", "osimertinib"]
+DEFAULT_TARGETS = ["imatinib", "lidocaine", "aspirin", "caffeine", "osimertinib",
+                   "s-phenyl thioformate"]
 
 # /routes가 데모 타겟에 돌려주는 미리 계산된 페이로드 (chem/routes.py _demo_payload).
 # 있으면 그걸 읽는다 — 데모가 실제로 보여주는 경로가 바로 이것이다

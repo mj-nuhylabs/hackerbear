@@ -121,6 +121,8 @@ def adapt(procedure: dict, our_substrates: list[str], our_product: str, our_limi
             "recorded_volume_l": r.get("volume_l"),
             "equiv": equiv,
             "is_substrate": bool(mapped),
+            # the source states this one was added to the rest (scripts/import_scifinder.py)
+            "added_last": bool(r.get("added_last")),
             # a recorded substrate too unlike any of ours to pair: its own molecule, flagged
             "unmatched_substrate": rf in rec_subs and not mapped,
             "our_smiles": our_smiles,

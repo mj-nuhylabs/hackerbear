@@ -88,6 +88,16 @@ export default function Protocol({ protocol, factor, targetG }) {
           excess on a small scale becomes a large volume here, and the work-up was not written for it.
         </p>
       )}
+      {/* 반대 방향도 같은 문제다. 1 mol 제법을 9 mmol로 내리면 촉매가 1 µL가 되고, 감압 증류로
+          거두게 되어 있던 분리가 이 양에서는 같은 조작이 아니다 */}
+      {protocol.record_scale_mmol > 0 && protocol.record_scale_mmol / here >= 5 && (
+        <p className="protocol-scaleup muted small">
+          This record was run at {sig(protocol.record_scale_mmol)} mmol. Everything below is that run scaled down{' '}
+          <strong className="num">{sig(protocol.record_scale_mmol / here, 2)}×</strong> — a catalyst charge this small
+          is hard to measure out accurately, and an isolation written for that much material is not the same operation
+          at this one.
+        </p>
+      )}
       <ol className="protocol-steps">
         {protocol.charges.map((c, i) => (
           <Charge key={`${c.smiles ?? c.name}-${i}`} c={c} factor={factor} />

@@ -29,8 +29,10 @@ function amountOf(c, factor) {
       : null
   const bits = [primary]
   if (a.mmol != null) bits.push(`${sig(a.mmol * factor)} mmol`)
-  // 용매는 당량을 쓰지 않는다
-  if (a.equiv != null && (c.role || '').toUpperCase() !== 'SOLVENT') bits.push(`${a.equiv.toFixed(2)} equiv`)
+  // 용매는 당량을 쓰지 않는다. 촉매는 소수점 두 자리로 자르면 레코드가 적은 값이 사라진다 —
+  // 0.015 equiv가 "0.01 equiv"로 나오면 그건 출처가 적지 않은 숫자다
+  if (a.equiv != null && (c.role || '').toUpperCase() !== 'SOLVENT')
+    bits.push(`${a.equiv >= 0.1 ? a.equiv.toFixed(2) : sig(a.equiv, 3)} equiv`)
   return bits.filter(Boolean).join(', ')
 }
 
@@ -56,11 +58,17 @@ function paragraph(protocol, factor) {
     const inSolvent = solvents.length
       ? ` in ${listOf(solvents.map((c) => withAmount(c, factor)))}`
       : ''
+    // 기본은 "한계 시약이 플라스크에 먼저 있고 나머지를 넣는다"이지만, 레코드가 반대라고 적어 두면
+    // (added_last) 그대로 쓴다. Bax & Stevens는 티오페놀을 미리 만든 혼합물에 넣는다 — 뒤집어 쓰면
+    // 출처가 말하지 않은 순서를 주장하게 된다
     sentences.push(
-      rest.length
-        ? `To ${withAmount(limiting, factor)}${inSolvent} ${rest.length > 1 ? 'were' : 'was'} added ` +
-          `${listOf(rest.map((c) => withAmount(c, factor)))}.`
-        : `${withAmount(limiting, factor)}${inSolvent} was charged to the flask.`,
+      !rest.length
+        ? `${withAmount(limiting, factor)}${inSolvent} was charged to the flask.`
+        : limiting.added_last
+          ? `${withAmount(limiting, factor)} was added to ` +
+            `${listOf(rest.map((c) => withAmount(c, factor)))}${inSolvent}.`
+          : `To ${withAmount(limiting, factor)}${inSolvent} ${rest.length > 1 ? 'were' : 'was'} added ` +
+            `${listOf(rest.map((c) => withAmount(c, factor)))}.`,
     )
   }
 
@@ -100,7 +108,10 @@ function paragraph(protocol, factor) {
   } else if (y == null) {
     sentences.push('The source reports no yield, so none is stated here.')
   }
-  return sentences.join(' ')
+  // 첫 글자는 대문자로. "To ..."로 시작하지 않는 형태("thiophenol was added to ...")가 생기면서
+  // 문단이 소문자로 시작했다
+  const text = sentences.join(' ')
+  return text ? text[0].toUpperCase() + text.slice(1) : text
 }
 
 export default function Experimental({ protocol, factor, targetG }) {
@@ -143,6 +154,15 @@ export default function Experimental({ protocol, factor, targetG }) {
           by <strong className="num">{sig(here / protocol.record_scale_mmol, 2)}×</strong>, so a reagent it used in
           large excess at small scale becomes a volume worth reconsidering before you write this up, and its isolation
           was not designed for this much material.
+        </p>
+      )}
+      {/* 내려가는 쪽. 1 mol 문헌 제법을 g 규모로 쓰는 것은 흔한 일이고, 쓰기 전에 알아야 하는 것도 같다 */}
+      {protocol.record_scale_mmol > 0 && protocol.record_scale_mmol / here >= 5 && (
+        <p className="protocol-scaleup muted small">
+          The source ran this at {sig(protocol.record_scale_mmol)} mmol. Every quantity above is that run scaled down{' '}
+          <strong className="num">{sig(protocol.record_scale_mmol / here, 2)}×</strong>, so a catalyst charge this
+          small is hard to measure out accurately, and an isolation written for that much material is not the same
+          operation at this one. Say what you actually did, not what the paper did.
         </p>
       )}
       <p className="exp-title">{title}</p>

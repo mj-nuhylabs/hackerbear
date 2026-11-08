@@ -71,8 +71,11 @@ O=C(OCc1ccccc1)c1ccccc1O,Benzyl Salicylate,0.3435,117.6,40.4,USD,Sigma-Aldrich,8
 O=C(OO)c1cccc(Cl)c1,m-Chloroperbenzoic acid,2.272,25.0,56.8,USD,Aldrich,273031,https://www.sigmaaldrich.com/US/en/product/aldrich/273031,2026-11-07,false
 O=C([O-])[O-].[K+].[K+],Potassium Carbonate,0.66,100.0,66.0,USD,Sigma-Aldrich,209619-100G,https://www.sigmaaldrich.com/US/en/product/sigald/209619,2026-11-08,false
 O=C1CCC(=O)N1Br,N-bromobutanimide,7.16,5.0,35.8,USD,Sigma-Aldrich,B81255-5G,https://www.sigmaaldrich.com/US/en/product/aldrich/B81255,2026-11-08,false
+O=CO,Formic acid,0.4893,122.0,59.7,USD,Sigma-Aldrich,F0507-100ML,https://www.sigmaaldrich.com/US/en/product/sigald/f0507,2026-11-08,false
 O=S(Cl)Cl,Thionyl Chloride,5.7388,8.155,46.8,USD,Sigma-Aldrich,230464-5ML,https://www.sigmaaldrich.com/US/en/product/sial/230464,2026-11-08,false
 OB(O)c1cccnc1,3-Pyridinylboronic Acid,129.0,1.0,129.0,USD,Sigma-Aldrich,512125-1G,https://www.sigmaaldrich.com/US/en/product/aldrich/512125,2026-11-08,false
+Sc1ccccc1,Thiophenol,4.5,10.0,45.0,USD,Sigma-Aldrich,240249-10G,https://www.sigmaaldrich.com/US/en/product/aldrich/240249,2026-11-08,false
 [Cl-].[NH4+],Ammonium Chloride,2.384,25.0,59.6,USD,Sigma-Aldrich,213330-25G,https://www.sigmaaldrich.com/US/en/product/sigald/213330,2026-11-08,false
 [Fe],Iron Powder,0.1432,500.0,71.6,USD,Sigma-Aldrich,12310-500G-R,https://www.sigmaaldrich.com/US/en/product/sial/12310,2026-11-08,false
 c1ccc(P(c2ccccc2)c2ccc3ccccc3c2-c2c(P(c3ccccc3)c3ccccc3)ccc3ccccc23)cc1,rac-BINAP,28.2,5.0,141.0,USD,Sigma-Aldrich,481084-5G,https://www.sigmaaldrich.com/US/en/product/aldrich/481084,2026-11-08,false
+c1ccncc1,Pyridine,1.7485,97.8,171.0,USD,Sigma-Aldrich,270970-100ML,https://www.sigmaaldrich.com/US/en/product/sial/270970,2026-11-08,false

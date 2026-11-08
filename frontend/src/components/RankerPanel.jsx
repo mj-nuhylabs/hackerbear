@@ -165,8 +165,10 @@ export function RankerPanel() {
       <h2 id="ranker-title">Do the two rankers help?</h2>
       <p className="muted">
         Both are ranking models: they order records and routes that already exist and write no chemistry of their
-        own. Both were trained with the demo targets and their recorded intermediates held out, so these numbers are
-        not the demo marking its own homework.
+        own. Both were trained with the five original demo targets and their recorded intermediates held out, so
+        these numbers are not the demo marking its own homework. S-phenyl thioformate was added after training, so
+        that exclusion was never applied to it — but the corpus holds no record that makes it and none that consumes
+        it, so there was no route to it for either model to have memorised.
       </p>
       <div className="model-grid">
         <Transfer m={m?.transfer} />

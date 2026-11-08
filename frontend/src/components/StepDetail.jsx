@@ -265,15 +265,33 @@ export default function StepDetail({ route, stepIndex, onSelect, scale, targetG,
         </svg>
         <Mol compound={s.product} size="sm" caption={caption(s.product)} />
       </div>
-      {/* backend/chem/balance.py: 반응물 목록이 생성물의 원자를 다 대지 못한다 — 레코드에서 반응물이 빠졌다 */}
+      {/* backend/chem/balance.py: 반응물 목록이 생성물의 원자를 다 대지 못한다 — 레코드에서 반응물이 빠졌다.
+          단, 그 원자를 레코드의 투입표에 있는 시약이 대고 있으면 빠진 게 아니다 (missing_supplied_by) */}
       {s.missing_atoms && Object.keys(s.missing_atoms).length > 0 && (
         <p className="step-gap" role="note">
-          <strong>A reactant is missing from this step.</strong> The product has{' '}
-          {Object.entries(s.missing_atoms)
-            .map(([el, n]) => `${n} ${el}`)
-            .join(', ')}{' '}
-          that none of the listed reactants supply — the record left one out. That material is not on the bill, so
-          this route’s cost is a lower bound.
+          {s.missing_supplied_by?.length ? (
+            <>
+              <strong>The arrow does not show everything this step needs.</strong> The product has{' '}
+              {Object.entries(s.missing_atoms)
+                .map(([el, n]) => `${n} ${el}`)
+                .join(', ')}{' '}
+              that no starting material supplies. The record&apos;s own quantity table charges{' '}
+              {s.missing_supplied_by
+                .map((m) => m.name || m.smiles)
+                .reduce((a, x, i, all) => (i === 0 ? x : i === all.length - 1 ? `${a} and ${x}` : `${a}, ${x}`), '')}
+              , which between them account for it, so the material is on the sheet below and in the bill as a reagent
+              line rather than missing from it.
+            </>
+          ) : (
+            <>
+              <strong>A reactant is missing from this step.</strong> The product has{' '}
+              {Object.entries(s.missing_atoms)
+                .map(([el, n]) => `${n} ${el}`)
+                .join(', ')}{' '}
+              that none of the listed reactants supply — the record left one out. That material is not on the bill, so
+              this route’s cost is a lower bound.
+            </>
+          )}
         </p>
       )}
       {/* 만들 때 바로 봐야 하는 것부터: 스케일, 수율, 조건 → 절차 → 내 스케일로 환산한 양 */}

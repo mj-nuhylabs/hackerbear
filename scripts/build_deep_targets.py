@@ -33,7 +33,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "backend"))
 
-from model.holdout import DEMO_TARGETS  # noqa: E402
+from model.holdout import ALL_TARGETS, slug  # noqa: E402
 
 # SYNTHPATH_DEEP_DIR lets a rebuild write somewhere other than the live demo inputs (the retrain
 # loop re-runs score_deep_targets.py on whatever is in data/deep/ at any moment)
@@ -51,10 +51,6 @@ def log(m: str):
     print(f"[{time.strftime('%H:%M:%S')}] {m}", flush=True)
 
 
-def slug(name: str) -> str:
-    return name.lower()
-
-
 # ---------------------------------------------------------------- recorded
 def stage_recorded():
     from evidence.recorded_routes import Purchasable, RecordIndex, build_graph, enumerate_routes
@@ -63,7 +59,7 @@ def stage_recorded():
     log("loading record index + stock")
     index, stock = RecordIndex(), Purchasable()
     holdout: set[str] = set()
-    for name, smi in DEMO_TARGETS.items():
+    for name, smi in ALL_TARGETS.items():
         g = build_graph(smi, index, stock)
         routes = enumerate_routes(g)
         holdout |= set(g.steps)                      # molecules made by a recorded step
@@ -119,7 +115,7 @@ def _aizynth_one(item):
 
 def stage_aizynth(workers: int):
     DEEP.mkdir(parents=True, exist_ok=True)
-    items = list(DEMO_TARGETS.items())
+    items = list(ALL_TARGETS.items())
     log(f"aizynth: {len(items)} targets, {workers} workers, {ITERATIONS} iterations each")
     with Pool(workers) as pool:
         for name, msg in pool.imap_unordered(_aizynth_one, items):
@@ -152,7 +148,7 @@ def stage_steps():
                                    "substrates": sorted(flat(x) for x in substrates), "origins": set()})
         s["origins"].add(origin)
 
-    for name in DEMO_TARGETS:
+    for name in ALL_TARGETS:
         rec = json.loads((DEEP / f"recorded_{slug(name)}.json").read_text())
         for mol, opts in rec["graph"]["steps"].items():
             for o in opts:

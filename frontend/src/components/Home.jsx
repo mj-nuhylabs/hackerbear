@@ -4,12 +4,15 @@
 import { Fragment, useEffect, useState } from 'react'
 import { ImageSquare, PencilSimple } from '@phosphor-icons/react'
 import demo from '../mock/demo.json'
+import late from '../mock/late_targets.json'
 import * as api from '../api'
 import { Mock, Mol, TierBadge } from './bits'
 import './home.css'
 
 const hydrate = (c) => ({ ...c, svg: c.svg ?? demo.compounds[c.smiles]?.svg ?? null })
-const EXAMPLES = demo.targets.map((t) => ({ name: t.name, compound: hydrate(t.compound) }))
+// demo.json's five, then the ones added after it was written (late_targets.json). The live backend
+// answers all of them from its precomputed payloads; the USE_MOCK path only carries demo.json's.
+const EXAMPLES = [...demo.targets, ...late.targets].map((t) => ({ name: t.name, compound: hydrate(t.compound) }))
 
 // The last step of the first saved route for the first example target: what a step on the results looks like.
 const SAMPLE = (() => {

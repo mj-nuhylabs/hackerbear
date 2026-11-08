@@ -67,7 +67,7 @@ def main():
     from evidence.recorded_routes import flat
     from model import route_ranker, transfer_ranker
     from model.featurize import normalize_rxn
-    from model.holdout import DEMO_TARGETS
+    from model.holdout import ALL_TARGETS, slug
     from model.predict import score_many
 
     steps = json.loads((DEEP / "steps.json").read_text())
@@ -181,6 +181,23 @@ def main():
         _ysrc = (next((r for r in _yrecs if r.get("reaction_id") == _sid), None)
                  or (_yrecs[0] if _yrecs else None))
         y = _ysrc["yield_pct"] if _ysrc else None
+        # The step's substrates are the recorded reactants that evidence/recorded_routes.substrates_of
+        # could see ending up in the product. That test is fingerprint overlap with no atom maps, and
+        # it sets aside anything small and very common — which is right for triethylamine and wrong
+        # for formic acid donating the formyl group of a thioformate. When the record's own quantity
+        # table charges a material that supplies exactly the atoms no substrate accounts for, nothing
+        # is missing from the record and nothing is missing from the bill: the cost engine charges
+        # that line. Say which material it is instead of claiming the record left a reactant out.
+        _proto = _protocol_for(recs, ev, _cond, rxn, desc(product))
+        _missing = missing_atoms(reactants, product)
+        _supplied = None
+        _charges = [] if (_proto or {}).get("from_analog") else ((_proto or {}).get("charges") or [])
+        _charged = [c for c in _charges if c.get("smiles") and c["smiles"] not in reactants
+                    and (c.get("role") or "").upper() != "SOLVENT"]
+        if _missing and _charged:
+            closed = missing_atoms(reactants + [c["smiles"] for c in _charged], product)
+            if closed == {}:
+                _supplied = [{"name": c.get("name"), "smiles": c["smiles"]} for c in _charged]
         return {
             "rxn_smiles": rxn or (".".join(reactants) + ">>" + product),
             "template_id": template_id, "classification": classification,
@@ -209,10 +226,12 @@ def main():
             "plausibility_raw": raw, "plausibility_calibrated": cal,
             "recorded_step": recorded_info,
             # 이 스텝을 우리 규모로 돌리는 순서표. 숫자는 전부 레코드/환산표에서 온다 (evidence/protocol.py)
-            "protocol": _protocol_for(recs, ev, _cond, rxn, desc(product)),
+            "protocol": _proto,
             # atoms of the product no listed reactant supplies (chem/balance.py): the record is missing
             # a reactant, so this step's material is not on the bill and the route's cost is a lower bound
-            "missing_atoms": missing_atoms(reactants, product),
+            "missing_atoms": _missing,
+            # unless the record's own quantity table charges what supplies them — then it is on the bill
+            "missing_supplied_by": _supplied,
         }
 
     model_b = route_ranker._load_model() is not None
@@ -264,9 +283,9 @@ def main():
              "route_rank_score": model_b_score}
         return r, cost_rank.summary(r, price_table)
 
-    for name, smi in DEMO_TARGETS.items():
-        slug = name.lower()
-        rec = json.loads((DEEP / f"recorded_{slug}.json").read_text())
+    for name, smi in ALL_TARGETS.items():
+        stem = slug(name)
+        rec = json.loads((DEEP / f"recorded_{stem}.json").read_text())
         g = rec["graph"]
         cands = []          # (key, kind, final disconnection, index)
 
@@ -279,7 +298,7 @@ def main():
                           _sound(summ, r["complete"]), runnable_fraction(spec)))
 
         # AiZynth routes
-        p = DEEP / f"aizynth_{slug}.json"
+        p = DEEP / f"aizynth_{stem}.json"
         dicts, state, mb, stats = [], [], [], {}
         if p.exists():
             az = json.loads(p.read_text())
@@ -382,7 +401,7 @@ def main():
                           "analog_index": analogs.stats() or None,
                           "analogous_min_precedents": 10}}
         a.out_dir.mkdir(parents=True, exist_ok=True)
-        (a.out_dir / f"demo_{slug}.json").write_text(json.dumps(out, default=str))
+        (a.out_dir / f"demo_{stem}.json").write_text(json.dumps(out, default=str))
         log(f"  {name}: {sum(r['kind'] == 'recorded' for r in routes)} recorded + "
             f"{sum(r['kind'] == 'computed' for r in routes)} computed routes")
 

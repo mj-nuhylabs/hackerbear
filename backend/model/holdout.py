@@ -14,6 +14,8 @@ Two rules:
      by scripts/build_deep_targets.py from the 5 targets' recorded route trees (targets and
      every recorded intermediate). Building blocks bought off the shelf are not listed —
      those appear in thousands of unrelated reactions and are general chemistry.
+
+LATE_TARGETS, below, are shown in the demo but are not covered by either rule — see its comment.
 """
 from __future__ import annotations
 
@@ -32,8 +34,30 @@ DEMO_TARGETS = {
     "Aspirin": "CC(=O)Oc1ccccc1C(=O)O",
     "Caffeine": "Cn1c(=O)c2c(ncn2C)n(C)c1=O",
 }
+
+# Targets precomputed for the demo that are NOT part of the held-out five above, because they were
+# added after both models had finished training. Keeping them in their own dict is the honest
+# bookkeeping: `is_held_out` governs what went into training, and training already happened, so
+# adding a molecule to DEMO_TARGETS now would claim an exclusion that was never applied.
+#
+# S-phenyl thioformate is a deliberate case: the corpus holds no record that makes it and none
+# that consumes it (checked over all 2.4 M reactions), so there is no reference route for either
+# model to have memorised — and nothing to show as REPORTED either. What the demo shows for it is
+# AiZynthFinder's proposal, graded on what precedent the corpus does have for each step.
+LATE_TARGETS = {
+    "S-phenyl thioformate": "O=CSc1ccccc1",
+}
+ALL_TARGETS = {**DEMO_TARGETS, **LATE_TARGETS}
 NEIGHBOUR_TANIMOTO = 0.6
 HOLDOUT_FILE = Path(__file__).resolve().parents[1] / "data/deep/holdout_molecules.txt"
+
+
+def slug(name: str) -> str:
+    """Target name → the stem of its precomputed files. Lower case with runs of anything that is
+    not a letter or digit collapsed to '_', so a name with a space in it ("S-phenyl thioformate")
+    does not put a space in a filename. The five single-word names are unchanged by this."""
+    import re
+    return re.sub(r"[^a-z0-9]+", "_", name.lower()).strip("_")
 
 _gen = rdFingerprintGenerator.GetMorganGenerator(radius=2, fpSize=2048)
 
